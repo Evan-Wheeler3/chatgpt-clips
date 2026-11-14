@@ -10,6 +10,7 @@ import { openRenderer, renderAnimatic } from './storyboard/animatic.mjs';
 import { validateDefinition } from './characters/validate.mjs';
 import { judgeCharacterMetrics } from './characters/metrics.mjs';
 import { figureIssues, figureMeasures } from './characters/rig-checks.mjs';
+import { loadCharacter } from './characters/load.mjs';
 
 const run = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -97,7 +98,7 @@ export async function runRigReview({character = 'cooper', outDir, quality = 'pro
   const started = Date.now();
   const tmp = join(outDir, 'tmp');
   await mkdir(tmp, {recursive:true});
-  const def = JSON.parse(await readFile(join(root, 'characters', `${character}.json`), 'utf8'));
+  const def = await loadCharacter(root, character);
   const report = {character, reference:def.reference, quality, generatedAt:new Date().toISOString(), definition:validateDefinition(def)};
 
   // Studio stills

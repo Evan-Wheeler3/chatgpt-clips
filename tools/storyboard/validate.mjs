@@ -2,6 +2,7 @@ import { PerspectiveCamera, Vector3, Ray, MathUtils, Box3 } from 'three';
 import { samplePlan } from './sample.mjs';
 import { propWorldBox, INSTANT_ACTIONS } from './actions.mjs';
 import { FRAMING, focusPoint, moveProgress } from './camera.mjs';
+import { rigPoints } from './character.mjs';
 
 // Vertical-short safe area in NDC: the bottom band carries captions and platform UI, the top band platform chrome
 export const SAFE_AREA = {left:-0.8, right:0.8, bottom:-0.5, top:0.76};
@@ -312,6 +313,22 @@ function validateWorld(plan, samples, aspect, {errors, warnings, perFrameErrors,
       const head = projectPoint(camera, aspect, pos.clone().setY(c.heightM * 0.8));
       const feet = projectPoint(camera, aspect, pos.clone());
       const onScreenHeight = (head.y - feet.y) / 2;
+      // No cropped heads: if any of the character is in frame, the whole head (crown to chin, both sides) must be.
+      // The head box comes from the pose's forward kinematics, so crouches and leans are measured, not guessed
+      if (!camera.whip) {
+        const def = plan.cast.find(m => m.id === c.id).definition, R = def.rig, units = def.heightM / R.heightMm;
+        const crown = R.heightMm - (R.hipY + R.neckHeight + R.headCenter), [hx, hy] = rigPoints(def, c.pose).headCenter;
+        const toCamera = camera.position.clone().sub(pos).setY(0).normalize(), right = new Vector3(toCamera.z, 0, -toCamera.x);
+        const at = ([x, y]) => projectPoint(camera, aspect, pos.clone().addScaledVector(right, x * units * c.mirror).setY(y * units));
+        const points = rigPoints(def, c.pose), corners = [[-1, 1], [1, 1], [-1, -0.5], [1, -0.5]].map(([sx, sy]) => at([hx + sx * crown * 0.95, hy + sy * crown]));
+        const inFrame = corners.filter(onScreen).length;
+        if ((inFrame > 0 && inFrame < corners.length) || (inFrame === 0 && (onScreen(feet) || onScreen(at([0, R.hipY])))))
+          issue(perFrameWarnings, 'CHARACTER_HEAD_CROPPED', `${c.id}'s head is cut by the frame edge`, c.id);
+        // A hand reaching into frame from a character who is otherwise out of shot reads as a stray, detached limb
+        // (hand points are palm centres, so allow a margin for the mitten and a pointing finger)
+        else if (inFrame === 0 && [points.handF, points.handB].map(at).some(h => Math.abs(h.x) <= 1.15 && Math.abs(h.y) <= 1.15 && h.z < 1))
+          issue(perFrameWarnings, 'CHARACTER_STRAY_LIMB', `only ${c.id}'s hand is in frame`, c.id);
+      }
       if (onScreen(head) && onScreenHeight > 0.25 && head.y < CAPTION_BAND_TOP) issue(perFrameWarnings, 'CHARACTER_FACE_IN_CAPTION_ZONE', `${c.id}'s face is in the caption band`, c.id);
       // The character should not block the subject unless the shot declares it as foreground
       const subject = propById.get(shot.subject);

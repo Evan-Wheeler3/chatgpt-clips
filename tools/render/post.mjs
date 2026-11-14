@@ -31,6 +31,18 @@ void main() {
 }`
 };
 
+const SanitizeShader = {
+  uniforms:{tDiffuse:{value:null}},
+  vertexShader:'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader:`uniform sampler2D tDiffuse; varying vec2 vUv;
+void main() {
+  vec4 c = texture2D(tDiffuse, vUv);
+  bvec3 bad = bvec3(!(c.r >= 0.0 && c.r < 1e4), !(c.g >= 0.0 && c.g < 1e4), !(c.b >= 0.0 && c.b < 1e4));
+  vec3 rgb = mix(c.rgb, vec3(0.0), vec3(bad));
+  gl_FragColor = vec4(min(rgb, vec3(8.0)), c.a);
+}`
+};
+
 export function createPost(renderer, scene, camera, {quality, style, width, height}) {
   if (quality.post === 'none') return {render:() => renderer.render(scene, camera), setFrame() {}};
   const target = new THREE.WebGLRenderTarget(width, height, {type:THREE.HalfFloatType, samples:quality.msaa});
@@ -39,6 +51,9 @@ export function createPost(renderer, scene, camera, {quality, style, width, heig
   composer.setSize(width, height);
   composer.addPass(new RenderPass(scene, camera));
   if (quality.post === 'full') {
+    // A single non-finite or extreme pixel (a specular glint overflowing the half-float target) would be smeared by
+    // bloom into a full-frame flash; clamp before bloom so only genuinely bright areas (windows, flames) glow
+    composer.addPass(new ShaderPass(SanitizeShader));
     const b = style.grade.bloom;
     composer.addPass(new UnrealBloomPass(new THREE.Vector2(width, height), b.strength, b.radius, b.threshold));
   }

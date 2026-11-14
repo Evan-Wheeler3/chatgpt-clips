@@ -1,10 +1,10 @@
-# The approved cooper and the vector character rig (Phase 5.3)
+# The approved cooper and the vector character rig (Phases 5.3–5.4)
 
-**Status:** the approved cooper is reconstructed and rigged, and review stills plus one five-second rig test are rendered. **Awaiting human approval.**
-- Bram is still the cast of `stories/barrel-bilge`.
-- Phase 6 has not started.
+**Status:** the cooper (design 1.0.0) is the **approved Hold Up master character**. The human approved the design and the five-second rig test.
+- Since Phase 5.4 the cooper stars in `stories/barrel-bilge`.
+- Bram (`characters/bram.json`, `status: "legacy"`) is kept for reference only.
 
-**Visual source of truth:** `characters/references/cooper-reference.png`, the approved Hold Up character sheet.
+**Visual source of truth:** `characters/cooper/reference.png`, the approved Hold Up character sheet.
 - It is a raster image, not a layered source file. The character was rebuilt as vector shapes measured from the sheet's 3/4 turnaround figure and expression heads; nothing was traced or extracted.
 - The sheet's logo and background render are presentation, not character content.
 
@@ -12,7 +12,10 @@
 ```bash
 node tools/character-rig.mjs                       # production review: stills, rig-test.mp4, validation.json (~25 s on an M1)
 node tools/character-rig.mjs --quality preview     # faster look check
-node --test tests/character-rig.test.mjs           # rig tests (the render test uses SwiftShader)
+node tools/characters/regression.mjs               # compare the cooper with its approved baselines (~9 s)
+node tools/character-rollout.mjs --cast cooper --approved production/character-rig/cooper --current production/character-rig/cooper-5.4
+                                                   # rollout report and regression sheet for a story (production/<story>/)
+node --test tests/character-rig.test.mjs tests/character-regression.test.mjs
 ```
 Outputs go to `production/character-rig/cooper/`, which is gitignored:
 - `reference-comparison.png`, `neutral.png`, `expressions.png`, `with-barrel.png`, `in-environment.png`
@@ -93,6 +96,47 @@ Garments the cooper doesn't wear (coats, skirts, hats with other shapes) need ne
 | colour accuracy (studio) | ΔE 0.6–2.7 |
 
 Plan validation shows no errors. The only warnings are inherent to review stills: `JUMP_CUT` between deliberately matched studio stills, `CHARACTER_OCCLUDES_SUBJECT` where the character stands in front of an invisible framing prop, and `STATIC_SHOT` for the rig test's single held shot.
+
+## Locked design and visual regression (Phase 5.4)
+The master character lives in one folder:
+
+| path | contents |
+|---|---|
+| `characters/cooper/character.json` | the versioned definition (`design.version` 1.0.0, `status: "approved-master"`) |
+| `characters/cooper/reference.png` | the approved sheet |
+| `characters/cooper/metadata.json` | approval, provenance, and SHA-256 of every locked file |
+| `characters/cooper/approved/` | the approved Phase 5.3 renders, kept as the record |
+| `characters/cooper/regression/` | baselines |
+
+`characters/cooper/README.md` describes the change procedure.
+
+Stories still name the character `"cooper"`. The loader (`tools/characters/load.mjs`) finds either `characters/<id>.json` or `characters/<id>/character.json`.
+
+**Regression levels** (`tools/characters/regression.mjs`, run by `tests/character-regression.test.mjs`):
+1. **Geometry snapshot:** hashes of the painted shapes for 23 canonical states (neutral, all 10 expressions, all pose presets, blink, gaze turn, walk stride). It is exact: any change to a form, colour, rig length or figure code fails.
+2. **Flat sheets:** the same states painted by Chrome's 2D canvas, compared pixel by pixel. At most 0.2% of pixels may move by more than 32 levels.
+3. **Scene strip:** the studio stills rendered in Three.js on SwiftShader. This catches card, outline, compensation and post-processing changes. At most 0.5% of pixels may change.
+
+**Lock:** `metadata.json` records the SHA-256 of the definition, the reference and the baselines, so changing any of them without bumping the design version and relocking fails the tests. Never regenerate baselines just to make a test pass.
+
+## Production rollout (Phase 5.4, `stories/barrel-bilge`)
+The cooper is 1.40 m tall against Bram's 1.12 m. Only character positions changed; cameras, narration timing and prop animation are as in Phase 4/5. The story's `staging` note lists each change.
+
+**New validation:**
+- **`CHARACTER_HEAD_CROPPED`:** the whole head (crown to chin, from the pose's forward kinematics) must be in frame whenever any of the character is.
+- **`CHARACTER_STRAY_LIMB`:** a hand in frame while the rest of the character is out of shot.
+
+Both are warnings. The two remaining ones in barrel-bilge are deliberate camera-move entrances: the reveal rises from the floor (f0–14), and the profile orbit sweeps him in (f88–100).
+
+**Grounding:** vector rigs take the hip height from the legs' actual reach when the authored hip drop is more than 2 mm off. Crouches and pushes plant the feet (the presets were tuned by eye for Bram), and the approved standing renders stay pixel-identical.
+
+**Post-processing:** production post now clamps non-finite or extreme pixels before bloom. A one-frame full-screen flash (f363, also present in the Phase 5 Bram render) came from a single bad pixel being bloomed. Dust motes also fade near the camera.
+
+**Rollout outputs** (`production/barrel-bilge/`):
+- `production-approved-cooper.mp4`
+- `approved-cooper-storyboard.png`
+- `character-regression.png` (approved vs. now, plus the cooper in every shot)
+- `character-rollout-report.json`
 
 ## Known differences from the approved sheet (reconstruction, not pixel-identical)
 - **Shading:** the sheet has soft painted shading and paper grain; the rig is flat colour. It could be added later as a shade layer, but that wasn't done here.

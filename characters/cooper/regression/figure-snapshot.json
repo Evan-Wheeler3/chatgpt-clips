@@ -1,0 +1,28 @@
+{
+  "designVersion": "1.0.0",
+  "states": {
+    "neutral": "c2e33100579e0af2",
+    "face-neutral": "c2e33100579e0af2",
+    "face-speaking": "00986de02faf17f3",
+    "face-happy": "477378ddd83235a8",
+    "face-surprised": "8ec44f32fa83cef0",
+    "face-concerned": "5f99f87c0e407112",
+    "face-thinking": "a571799c948eeec2",
+    "face-confused": "85d64bec363687d4",
+    "face-determined": "dce4228f161cdfaa",
+    "face-realization": "3b941f46aac390b7",
+    "face-disappointed": "cf3c6178ed133f56",
+    "pose-idle": "c2e33100579e0af2",
+    "pose-think": "0e7b1876660309cb",
+    "pose-point": "15f04b83ca70b513",
+    "pose-present": "467db85e5c536689",
+    "pose-ready": "c59c603860be6574",
+    "pose-push": "93a7a91e60e13643",
+    "pose-thumbs-up": "f7c46e5822854a08",
+    "pose-surprised": "413d3f0a62c83667",
+    "pose-shrug": "228694259cb7b313",
+    "blink": "e52df0a79dbd9f5d",
+    "gaze-turn": "de1ab29192f09eee",
+    "walk-stride": "8e97bc5adeaf5e97"
+  }
+}

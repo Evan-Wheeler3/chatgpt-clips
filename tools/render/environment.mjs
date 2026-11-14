@@ -336,7 +336,10 @@ export async function buildEnvironment({scene, renderer, env, style, quality, lo
 float inShaft(vec3 p, vec3 o) { vec3 d = p - o; float t = dot(d, dir); float r = length(d - dir * t); return t > 0.0 ? 1.0 - smoothstep(0.4, 1.2, r - t * 0.1) : 0.0; }
 void main() { vec3 p = position + vec3(sin(time * 0.21 + seed * 40.0) * 0.18, sin(time * 0.13 + seed * 17.0) * 0.12 + time * 0.012 * (seed - 0.5), cos(time * 0.17 + seed * 23.0) * 0.18);
   vBright = 0.08 + 0.92 * max(inShaft(p, o0), inShaft(p, o1));
-  vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_PointSize = size / -mv.z; gl_Position = projectionMatrix * mv; }`,
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
+  // A mote drifting past the lens would otherwise balloon (size / depth) into a full-frame flash: fade it out near the camera and cap its size
+  vBright *= smoothstep(0.35, 1.2, -mv.z);
+  gl_PointSize = min(size / max(-mv.z, 0.05), size / 0.8); gl_Position = projectionMatrix * mv; }`,
       fragmentShader:'uniform vec3 color; varying float vBright; void main(){ float d = length(gl_PointCoord - 0.5); if (d > 0.5) discard; gl_FragColor = vec4(color * vBright * (1.0 - d * 2.0) * 0.9, 1.0); }'
     });
     dust = new THREE.Points(g, material);

@@ -16,7 +16,8 @@ Original `SKILL.md` is a detailed instruction set for a particular bridge short.
 3. Asset converter/validator: deterministic glTF → GLB, Khronos + scale/orientation validation, Three.js previews, approved catalog registration. (done; Blender path for other formats/repairs still open)
 4. Voice-first storyboard: measured narration timing, shot-plan compiler, reusable camera/action library, validation and low-res animatic. (done; see `docs/STORYBOARD.md`)
 5. Environments, art direction, 2D characters in 3D, animation presets, preview and production quality with pixel QA. (done; see `docs/VISUALS.md`)
-   5.3 The approved cooper rebuilt as a reusable vector rig (`render.mode: "vector-2d"`). Stills and rig test await approval; see `docs/CHARACTER-RIG.md`.
+   5.3 The approved cooper rebuilt as a reusable vector rig (`render.mode: "vector-2d"`). Approved. See `docs/CHARACTER-RIG.md`.
+   5.4 The cooper is locked as the master character (`characters/cooper/`, versioned, with visual regression) and stars in barrel-bilge; Bram is legacy.
 6. Final voice, captions, sound design and audio QA; Remotion composition.
 6. Benchmarked end-to-end sample and iteration.
 

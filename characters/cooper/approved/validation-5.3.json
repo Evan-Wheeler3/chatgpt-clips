@@ -1,0 +1,143 @@
+{
+  "character": "cooper",
+  "reference": "characters/references/cooper-reference.png",
+  "quality": "production",
+  "generatedAt": "2026-11-14T16:14:40.819Z",
+  "definition": {
+    "status": "pass",
+    "errors": [],
+    "warnings": [],
+    "metrics": {
+      "headRatio": 3.26,
+      "paintedHeightMm": 1526,
+      "expressions": 10,
+      "parts": 26
+    }
+  },
+  "studioMetrics": {
+    "status": "pass",
+    "warnings": [],
+    "summary": {
+      "lead": {
+        "frames": 6,
+        "edgeContrast": 0.555,
+        "colorContrast": 40.5,
+        "minHeadPoints": 56.1,
+        "maxPieces": 1,
+        "colorDriftBetweenShots": 7.2
+      }
+    },
+    "neutralBox": [
+      336,
+      543,
+      622,
+      1421
+    ]
+  },
+  "studioProblems": [],
+  "renderer": {
+    "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)",
+    "chrome": "Chrome/157.0.8103.78",
+    "size": [
+      1080,
+      1920
+    ]
+  },
+  "studioValidation": {
+    "errors": {
+      "CHARACTER_CLIPPING": 6
+    },
+    "warnings": {
+      "JUMP_CUT": 3,
+      "CHARACTER_OCCLUDES_SUBJECT": 1
+    }
+  },
+  "rigTestValidation": {
+    "errors": {},
+    "warnings": {
+      "STATIC_SHOT": 1
+    }
+  },
+  "rigChecks": {
+    "frames": 150,
+    "issues": [],
+    "lengthDriftMm": {
+      "upperArmF": 0,
+      "forearmF": 0,
+      "upperArmB": 0,
+      "forearmB": 0,
+      "thighF": 0,
+      "shinF": 0,
+      "thighB": 0,
+      "shinB": 0,
+      "neckToHead": 0,
+      "headWidth": 0,
+      "headHeight": 0
+    },
+    "deterministic": true
+  },
+  "environmentMetrics": {
+    "status": "pass",
+    "warnings": [],
+    "summary": {
+      "cooper": {
+        "frames": 5,
+        "edgeContrast": 0.135,
+        "colorContrast": 22.3,
+        "minHeadPoints": 56.8,
+        "maxPieces": 1,
+        "colorDriftBetweenShots": 0
+      }
+    }
+  },
+  "contact": {
+    "frames": 23,
+    "firstFrame": 103,
+    "maxShortfallM": 0,
+    "maxPalmOffsetPx": 5.62440774525813
+  },
+  "ground": {
+    "minFootY": 0.00025566029153428304,
+    "maxFootY": 0.0002618706629885571
+  },
+  "rigTestProblems": [],
+  "video": {
+    "file": "rig-test.mp4",
+    "frames": 150,
+    "seconds": 5,
+    "renderMs": 11705
+  },
+  "colorAccuracy": {
+    "skin": {
+      "palette": "#FDEBD3",
+      "rendered": "#fee6cd",
+      "deltaE": 2.7
+    },
+    "shirt": {
+      "palette": "#EAD1AD",
+      "rendered": "#ebcfab",
+      "deltaE": 1.3
+    },
+    "apron": {
+      "palette": "#A4662E",
+      "rendered": "#a4672f",
+      "deltaE": 0.6
+    },
+    "trousers": {
+      "palette": "#4A372B",
+      "rendered": "#493629",
+      "deltaE": 0.8
+    },
+    "cap": {
+      "palette": "#835D3A",
+      "rendered": "#845f3b",
+      "deltaE": 1
+    },
+    "hair": {
+      "palette": "#66472A",
+      "rendered": "#634428",
+      "deltaE": 1.3
+    }
+  },
+  "timeSec": 24.2
+}

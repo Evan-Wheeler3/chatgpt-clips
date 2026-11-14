@@ -1,0 +1,40 @@
+{
+  "id": "cooper",
+  "name": "Cooper",
+  "role": "Hold Up master character",
+  "designVersion": "1.0.0",
+  "status": "approved-master",
+  "approvedOn": "2026-11-14",
+  "approvedFrom": "Phase 5.3 stills and five-second rig test (commit 4a2fcb4)",
+  "renderer": {
+    "mode": "vector-2d",
+    "code": [
+      "tools/characters/figure.mjs",
+      "tools/render/character-vector.mjs",
+      "tools/characters/display.mjs"
+    ]
+  },
+  "files": {
+    "character.json": "cbd61768291ee0db181e77aa7f22ada769ab7db3a4ab9ab05520bc63e66737f7",
+    "reference.png": "4dd36019c8b0e33dfcc316fcdb53db2557e20ced542e03c77ceb9876a80451b1",
+    "regression/figure-snapshot.json": "1f6933615fc90ebf0f9968ddc18c6399ed8f57639bfed7491b538051b789fcf0",
+    "regression/flat-figures.png": "0372b057dcd73a964d77a398270cc3ef4697ac67d15bf14dc109ba7a945f16f6",
+    "regression/flat-faces.png": "2739a07724f23bf7a93d94369f59113fe90fc6875fbeffc08cdbfda85c85c665",
+    "regression/scene-strip.png": "f17786716f8fd2253ecd186961b714a14ae457d5b107b5e1f9bd6b243644a52b"
+  },
+  "approvedRecord": [
+    "approved/expressions.png",
+    "approved/in-environment.jpg",
+    "approved/neutral.jpg",
+    "approved/rig-test-keyframes.jpg",
+    "approved/validation-5.3.json",
+    "approved/with-barrel.jpg"
+  ],
+  "provenance": {
+    "reference": "Approved Hold Up character sheet supplied by the channel owner (raster). The vector forms in character.json were measured from it by hand in Phase 5.3; nothing was traced or extracted.",
+    "palette": "Sampled from the sheet swatch pixels (see character.json paletteSource)."
+  },
+  "legacy": {
+    "bram": "characters/bram.json (Phase 5 cutout, retired from production in Phase 5.4; kept for reference)"
+  }
+}

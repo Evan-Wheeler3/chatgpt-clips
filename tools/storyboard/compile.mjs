@@ -5,6 +5,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readGlbShape, cachedShape } from './shape.mjs';
 import { compileEnvironment, loadStyle } from '../environment/compile.mjs';
+import { loadCharacter } from '../characters/load.mjs';
 import { CHARACTER_ACTIONS, INSTANT_CHARACTER_ACTIONS, POSE_PRESETS } from './character.mjs';
 import { resolveAssets } from '../asset-resolver.mjs';
 import { resolveAnchor } from './anchors.mjs';
@@ -82,7 +83,7 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
   const cast = [];
   for (const member of story.cast ?? []) {
     if (!/^[a-z][a-z0-9-]*$/.test(member.id ?? '') || propById.has(member.id)) throw new Error(`Invalid or duplicate cast id: ${member.id}`);
-    const definition = JSON.parse(await readFile(resolve(rootDir, 'characters', `${member.character}.json`), 'utf8'));
+    const definition = await loadCharacter(rootDir, member.character);
     if (definition.version !== 1 || definition.id !== member.character.split('/').pop()) throw new Error(`Character ${member.character}: bad definition`);
     if (!Array.isArray(member.start?.position)) throw new Error(`Cast ${member.id}: needs start.position [x, z]`);
     cast.push({id:member.id, character:member.character, definition, start:member.start, actions:[]});

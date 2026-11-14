@@ -83,7 +83,7 @@
       "position": [
         -1.3,
         0,
-        -1.0
+        -1
       ],
       "rotation": [
         0,
@@ -99,7 +99,7 @@
       "shots": [
         {
           "id": "reveal",
-          "purpose": "Rise from floor level so the barrel's silhouette builds up and its widest point arrives on 'bulge'; Bram puzzles over the barrel behind it, voicing the question with his pose",
+          "purpose": "Rise from floor level so the barrel's silhouette builds up and its widest point arrives on 'bulge'; the cooper puzzles over the barrel behind it, voicing the question with his pose",
           "subject": "barrel",
           "camera": {
             "move": "reveal",
@@ -127,7 +127,7 @@
           ],
           "events": [
             {
-              "character": "bram",
+              "character": "cooper",
               "at": "Why",
               "do": "pose",
               "params": {
@@ -136,7 +136,7 @@
               }
             },
             {
-              "character": "bram",
+              "character": "cooper",
               "at": "middle",
               "do": "pose",
               "params": {
@@ -155,7 +155,7 @@
         {
           "id": "profile",
           "start": "That",
-          "purpose": "Drop to eye level on the barrel's outer edge and swing round so the bulging curve becomes a silhouette against the dark wall as it is named; Bram fills the empty half of the frame and points at the curve on 'bilge'",
+          "purpose": "Drop to eye level on the barrel's outer edge and swing round so the bulging curve becomes a silhouette against the dark wall as it is named; the cooper fills the empty half of the frame and points at the curve on 'bilge'",
           "subject": "barrel",
           "transition": {
             "type": "cut",
@@ -185,26 +185,26 @@
           ],
           "events": [
             {
-              "character": "bram",
+              "character": "cooper",
               "at": "shot-start",
               "do": "place",
               "params": {
                 "position": [
-                  0.9,
-                  1.0
+                  1.3,
+                  0.6
                 ],
                 "face": "barrel"
               }
             },
             {
-              "character": "bram",
+              "character": "cooper",
               "at": "bilge",
               "do": "pose",
               "params": {
                 "preset": "point",
                 "target": "barrel"
               },
-              "duration": 1.0
+              "duration": 1
             }
           ]
         }
@@ -247,6 +247,20 @@
           "focus": [
             "hoops",
             "staves"
+          ],
+          "events": [
+            {
+              "character": "cooper",
+              "at": "shot-start",
+              "do": "place",
+              "params": {
+                "position": [
+                  2.6,
+                  0.6
+                ],
+                "face": "barrel"
+              }
+            }
           ]
         }
       ]
@@ -258,7 +272,7 @@
         {
           "id": "contact",
           "start": "And#1",
-          "purpose": "Whip to the barrel lying on its side; push in low to show it touches the floor only at the bulge; Bram crouches behind it, winding up for the shove",
+          "purpose": "Whip to the barrel lying on its side; push in low to show it touches the floor only at the bulge; the cooper crouches behind it, winding up for the shove",
           "subject": "barrel",
           "transition": {
             "type": "whip"
@@ -301,19 +315,19 @@
               }
             },
             {
-              "character": "bram",
+              "character": "cooper",
               "at": "shot-start",
               "do": "place",
               "params": {
                 "position": [
-                  -1.5,
-                  0.7
+                  -1.45,
+                  0.45
                 ],
                 "face": "barrel"
               }
             },
             {
-              "character": "bram",
+              "character": "cooper",
               "at": "bulge#2",
               "do": "pose",
               "params": {
@@ -329,7 +343,7 @@
         {
           "id": "roll",
           "start": "heavy",
-          "purpose": "Cut on Bram's shove: the barrel is already rolling on the first frame, and the camera follows at the same height and focus so the eye stays on it, so 'easy to roll' is felt, not just heard",
+          "purpose": "Cut on the cooper's shove: the barrel is already rolling on the first frame, and the camera follows at the same height and focus so the eye stays on it, so 'easy to roll' is felt, not just heard",
           "subject": "barrel",
           "transition": {
             "type": "cut",
@@ -366,7 +380,7 @@
               "ease": "out"
             },
             {
-              "character": "bram",
+              "character": "cooper",
               "at": "shot-start",
               "do": "push",
               "params": {
@@ -375,13 +389,13 @@
               "duration": 0.35
             },
             {
-              "character": "bram",
+              "character": "cooper",
               "at": "barrel",
               "do": "walk",
               "params": {
                 "to": [
-                  0.1,
-                  -0.35
+                  0.2,
+                  -0.6
                 ]
               },
               "until": "and#2"
@@ -394,7 +408,7 @@
         {
           "id": "turn",
           "start": "easy#2",
-          "purpose": "Rise and pull back as the barrel pivots on its bulge from the first frame, revealing how little floor it needs to turn; Bram, behind it, presents the turn and gives a proud thumbs-up on 'spot'",
+          "purpose": "Rise and pull back as the barrel pivots on its bulge from the first frame, revealing how little floor it needs to turn; the cooper, behind it, presents the turn and gives a proud thumbs-up on 'spot'",
           "subject": "barrel",
           "transition": {
             "type": "cut",
@@ -442,7 +456,7 @@
               }
             },
             {
-              "character": "bram",
+              "character": "cooper",
               "at": "shot-start",
               "do": "pose",
               "params": {
@@ -452,7 +466,7 @@
               "until": "right"
             },
             {
-              "character": "bram",
+              "character": "cooper",
               "at": "spot",
               "do": "pose",
               "params": {
@@ -476,15 +490,19 @@
   },
   "cast": [
     {
-      "id": "bram",
-      "character": "bram",
+      "id": "cooper",
+      "character": "cooper",
       "start": {
         "position": [
-          0.05,
-          -1.15
+          -0.25,
+          -1.2
         ],
         "face": "barrel"
       }
     }
-  ]
+  ],
+  "staging": {
+    "character": "cooper",
+    "note": "Phase 5.4 restaging for the approved cooper (1.40 m; Bram was 1.12 m). Only character positions changed: start [0.05,-1.15] -> [-0.25,-1.2] (head inside the reveal frame), profile place [0.9,1] -> [1.3,0.6] (fills the empty half instead of the frame edge), contact place [-1.5,0.7] -> [-1.45,0.45] (stays in frame while the follow camera tracks the roll), roll walk to [0.1,-0.35] -> [0.2,-0.6]; hoops gains a place to [2.6,0.6] on its cut, so no hand strays into the hoops close-up. Cameras, narration timing and prop animation are unchanged."
+  }
 }

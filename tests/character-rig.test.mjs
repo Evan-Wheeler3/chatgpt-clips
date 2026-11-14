@@ -17,7 +17,7 @@ import { judgeCharacterMetrics } from '../tools/characters/metrics.mjs';
 import { rigTestStory, studioStory, rigChecks, ticks } from '../tools/character-rig.mjs';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const cooper = async () => JSON.parse(await readFile(join(repo, 'characters/cooper.json'), 'utf8'));
+const cooper = async () => JSON.parse(await readFile(join(repo, 'characters/cooper/character.json'), 'utf8'));
 const NEUTRAL = NEUTRAL_STATE.pose;
 const presetPose = name => ({...NEUTRAL, ...Object.fromEntries(Object.entries(POSE_PRESETS[name]).filter(([k]) => k in NEUTRAL))});
 
@@ -132,4 +132,36 @@ test('the vector rig renders in Three.js as one piece, grounded, with the palm o
       assert.deepEqual(r.problems, []);
     } finally { await r.close(); }
   } finally { if (gpu === undefined) delete process.env.HOLDUP_GPU; else process.env.HOLDUP_GPU = gpu; }
+});
+
+test('barrel-bilge stars the approved cooper: feet planted, contact made, heads only cropped by camera-move entrances', async t => {
+  const { compileFiles } = await import('../tools/storyboard/compile.mjs');
+  // Measured narration timing is generated locally (production/ is not in git)
+  const words = join(repo, 'production/barrel-bilge/words.json');
+  if (!await readFile(words).then(() => true, () => false)) return t.skip('No production/barrel-bilge/words.json; run the storyboard with --narrate first');
+  const plan = await compileFiles(join(repo, 'stories/barrel-bilge/story.json'), words);
+  assert.deepEqual(plan.cast.map(m => m.definition.id), ['cooper']);
+  assert.equal(plan.cast[0].definition.design.status, 'approved-master');
+  const v = validatePlan(plan);
+  assert.deepEqual(v.errors, []);
+  // Only the two camera-move entrances are cropped (reveal rising from the floor, profile orbiting him into frame)
+  const crops = v.warnings.filter(w => w.code === 'CHARACTER_HEAD_CROPPED' || w.code === 'CHARACTER_STRAY_LIMB');
+  assert.deepEqual([...new Set(crops.map(w => w.shot))].sort(), ['profile', 'reveal']);
+  assert.ok(crops.every(w => w.shot === 'reveal' ? w.frames[1] <= 15 : w.frames[0] >= 85 && w.frames[1] <= 101), JSON.stringify(crops));
+  const def = plan.cast[0].definition, units = def.heightM / def.rig.heightMm, track = castTracks(plan).get('cooper');
+  for (const state of track) {
+    const J = buildFigure(def, state).joints, foot = Math.min(J.heelF[1], J.toeF[1], J.heelB[1], J.toeB[1]) * units;
+    assert.ok(Math.abs(foot) < 0.0025, `frame ${state.frame}: lowest foot ${foot.toFixed(4)} m`);
+  }
+  const shoves = track.filter(s => s.contact);
+  assert.ok(shoves.length >= 4 && shoves.every(s => s.contact.prop === 'barrel' && s.contact.shortfallM <= 0.03));
+});
+
+test('cropped-head and stray-limb checks fire when the framing cuts the character', async () => {
+  const plan = await compileStory(rigTestStory('cooper'), {words:ticks(5), audio:{durationSec:5}});
+  assert.ok(!validatePlan(plan).warnings.some(w => w.code === 'CHARACTER_HEAD_CROPPED'));
+  const tight = rigTestStory('cooper');
+  tight.beats[0].shots[0].camera = {move:'hold', framing:'close', azimuth:8, elevation:6, focus:[-0.45, 0.25, 0]};
+  const cut = await compileStory(tight, {words:ticks(5), audio:{durationSec:5}});
+  assert.ok(validatePlan(cut).warnings.some(w => w.code === 'CHARACTER_HEAD_CROPPED'));
 });

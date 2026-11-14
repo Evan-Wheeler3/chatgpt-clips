@@ -37,7 +37,7 @@ export const FACES = {
   curious:{mouth:'hmm', brow:12, browTilt:10},
   surprised:{mouth:'oh', brow:22, browTilt:0},
   effort:{mouth:'grit', brow:-10, browTilt:12},
-  // The approved cooper's core set (characters/cooper.json); cutout rigs map them onto their nearest mouths
+  // The approved cooper's core set (characters/cooper/character.json); cutout rigs map them onto their nearest mouths
   speaking:{mouth:'grin', brow:4, browTilt:0},
   concerned:{mouth:'hmm', brow:4, browTilt:14},
   thinking:{mouth:'hmm', brow:6, browTilt:8},
@@ -205,6 +205,16 @@ export function characterTrack(plan, member, cameraAt) {
       pose.torso += 5 * moving;
       bob = -14 * bodyScale * Math.abs(Math.cos(walkPhase * Math.PI)) * moving;
       if (u >= 1) walk = null;
+    }
+
+    // Feet on the floor: vector rigs take the hip height from the legs' actual reach, so crouches and strides plant the
+    // lower foot instead of sinking or floating it (the presets' hip drops were tuned by eye for the Phase 5 cutout)
+    if (def.render?.mode === 'vector-2d') {
+      const reach = side => { const [thigh, knee] = pose[`leg${side}`]; return def.rig.thigh * Math.cos(MathUtils.degToRad(thigh)) + def.rig.shin * Math.cos(MathUtils.degToRad(thigh - knee)); };
+      // Within 2 mm the authored stance stands as is (so the approved neutral renders stay pixel-identical)
+      const grounded = def.rig.hipY - def.rig.ankle - Math.max(reach('F'), reach('B'));
+      if (Math.abs(grounded - (pose.hipDrop - bob)) > 2) pose.hipDrop = grounded; else pose.hipDrop -= bob;
+      bob = 0;
     }
 
     // Push contact: two-bone IK puts both hands on the prop's visible edge, solved in the character plane

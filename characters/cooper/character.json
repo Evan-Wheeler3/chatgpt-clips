@@ -1,9 +1,17 @@
 {
   "version": 1,
   "id": "cooper",
-  "name": "Cooper (approved)",
+  "name": "Cooper",
   "description": "The approved Hold Up cooper, reconstructed as a vector rig from characters/references/cooper-reference.png (3/4 view).",
-  "reference": "characters/references/cooper-reference.png",
+  "design": {
+    "version": "1.0.0",
+    "status": "approved-master",
+    "approvedOn": "2026-11-14",
+    "approvedFrom": "Phase 5.3 stills and five-second rig test (commit 4a2fcb4)",
+    "record": "characters/cooper/approved/",
+    "note": "Final design. Changing any visual field needs a new design version and human approval; see characters/cooper/README.md."
+  },
+  "reference": "characters/cooper/reference.png",
   "heightM": 1.4,
   "render": {
     "mode": "vector-2d",
