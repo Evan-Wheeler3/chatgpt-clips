@@ -10,6 +10,7 @@ import { narrate } from '../../tools/narration/narrate.mjs';
 import { compileStory } from '../../tools/storyboard/compile.mjs';
 import { validatePlan } from '../../tools/storyboard/validate.mjs';
 import { renderAnimatic } from '../../tools/storyboard/animatic.mjs';
+import { renderQA } from '../../tools/render/qa.mjs';
 
 const run = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -18,7 +19,7 @@ const enabled = process.env.HOLDUP_INTEGRATION === '1';
 // Real demo: macOS TTS, whisper.cpp alignment, catalog GLBs (run assets:convert/register first), Chrome render
 test('barrel-bilge: narrate, align, compile, validate and render the animatic', {skip:!enabled && 'set HOLDUP_INTEGRATION=1 (npm run test:integration)', timeout:600000}, async () => {
   const story = JSON.parse(await readFile(join(root, 'stories/barrel-bilge/story.json'), 'utf8'));
-  for (const id of ['polyhaven-wine-barrel-01', 'polyhaven-wooden-crate-01', 'polyhaven-wooden-bucket-01']) {
+  for (const id of ['polyhaven-wine-barrel-01', 'polyhaven-wooden-crate-01', 'polyhaven-wooden-bucket-01', 'polyhaven-wooden-lantern-01', 'polyhaven-woodentable-01', 'polyhaven-wooden-ladder-02']) {
     await access(join(root, `assets/library/${id}.glb`)).catch(() => assert.fail(`${id}.glb is not in assets/library; convert and register it first`));
   }
   const dir = await mkdtemp(join(tmpdir(), 'hold-up-demo-'));
@@ -45,5 +46,14 @@ test('barrel-bilge: narrate, align, compile, validate and render the animatic', 
     const {stdout} = await run('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', result.video]);
     assert.deepEqual(stdout.trim().split('\n').sort(), ['audio', 'video']);
     assert.equal(result.loadedProps, 3);
+    assert.equal(result.characters, 1);
+
+    // Phase 5: the styled preview builds the environment and character without load errors and within budget
+    assert.equal(plan.environment.id, 'cooperage-storehouse');
+    assert.deepEqual(plan.environment.missing, []);
+    const qa = await renderQA(plan, {quality:'preview'});
+    assert.notEqual(qa.status, 'failed', JSON.stringify(qa.errors));
+    assert.ok(qa.summary.maxTriangles <= qa.summary.budget.triangles && qa.summary.maxDrawCalls <= qa.summary.budget.drawCalls, JSON.stringify(qa.summary));
+    assert.ok(qa.summary.lumaMin > 0.12, `darkest sampled frame ${qa.summary.lumaMin}`);
   } finally { await rm(dir, {recursive:true, force:true}); }
 });

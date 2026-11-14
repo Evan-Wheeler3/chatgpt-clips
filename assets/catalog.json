@@ -208,6 +208,160 @@
           "Khronos glTF validator reported 3 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
         ]
       }
+    },
+    {
+      "id": "polyhaven-wooden-ladder-02",
+      "name": "Wooden Ladder 02",
+      "description": "Free 8K model of a worn wooden step ladder with weathered grain, rusted hinges, and detailed screws, featuring an A-frame and scuffed wide steps.",
+      "tags": [
+        "wooden",
+        "step-ladder",
+        "vintage",
+        "traditional",
+        "folding",
+        "garage",
+        "freestanding",
+        "tools & equipment",
+        "workshop equipment",
+        "ladders"
+      ],
+      "style": "realistic",
+      "localPath": "assets/library/polyhaven-wooden-ladder-02.glb",
+      "sourceUrl": "https://polyhaven.com/a/wooden_ladder_02",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "JN_3DPRINTINGNERD",
+      "provider": {
+        "name": "polyhaven",
+        "id": "wooden_ladder_02",
+        "version": "e84aca254b2d7b286a44bbe4a51b04954f10e394",
+        "resolution": "1k"
+      },
+      "sha256": "3d1265f2bfa3a7fef48e08ddee750cb263e360e9425762b504ad4dc154ce075d",
+      "bytes": 2336008,
+      "dimensionsM": [
+        0.98951,
+        1.72218,
+        0.61814
+      ],
+      "triangles": 6126,
+      "conversion": {
+        "key": "1a5b7033c92d3d8c",
+        "converterVersion": 1,
+        "report": "assets/converted/polyhaven/wooden_ladder_02/1a5b7033c92d3d8c/report.json"
+      },
+      "review": {
+        "approvedBy": "Claude Code (preview review, pending human confirmation)",
+        "approvedAt": "2026-11-14T07:06:14.283Z",
+        "warnings": [
+          "Khronos glTF validator reported 1 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+        ]
+      }
+    },
+    {
+      "id": "polyhaven-wooden-lantern-01",
+      "name": "Wooden Lantern 01",
+      "description": "Free 8K wooden lantern model - worn colonial/maritime farmhouse style with glass panels, metal top and handle; candle prop. Vintage farmhouse/colonial maritime prop from the Smugglers Cove collection.",
+      "tags": [
+        "lantern",
+        "wooden",
+        "wood",
+        "old",
+        "worn",
+        "farmhouse",
+        "maritime",
+        "colonial",
+        "cove",
+        "prop",
+        "vintage",
+        "candle",
+        "lighting",
+        "portable",
+        "lanterns"
+      ],
+      "style": "realistic",
+      "localPath": "assets/library/polyhaven-wooden-lantern-01.glb",
+      "sourceUrl": "https://polyhaven.com/a/wooden_lantern_01",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "James Ray Cock",
+      "provider": {
+        "name": "polyhaven",
+        "id": "wooden_lantern_01",
+        "version": "3bbe436bb3d4b7c1a53e679a3ba3c509009996ac",
+        "resolution": "1k"
+      },
+      "sha256": "b2d885489c509255877054732ff65fa00046252c865c2744102e6dd94e9322b7",
+      "bytes": 3765072,
+      "dimensionsM": [
+        0.22105,
+        0.53014,
+        0.23472
+      ],
+      "triangles": 8321,
+      "conversion": {
+        "key": "1626a4880f172059",
+        "converterVersion": 1,
+        "report": "assets/converted/polyhaven/wooden_lantern_01/1626a4880f172059/report.json"
+      },
+      "review": {
+        "approvedBy": "Claude Code (preview review, pending human confirmation)",
+        "approvedAt": "2026-11-14T07:06:13.972Z",
+        "warnings": [
+          "Khronos glTF validator reported 5 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+          "Model base is -0.01138 m from y=0; it will not rest on the ground without an offset"
+        ]
+      }
+    },
+    {
+      "id": "polyhaven-woodentable-01",
+      "name": "Wooden Table 01",
+      "description": "Free 4K model: vintage wooden coffee table with warm worn patina, visible grain, rounded corners, stretcher base and scuffed edges.",
+      "tags": [
+        "vintage",
+        "wood",
+        "prop",
+        "table",
+        "school",
+        "desk",
+        "old",
+        "worn",
+        "furniture",
+        "tables",
+        "coffee tables"
+      ],
+      "style": "realistic",
+      "localPath": "assets/library/polyhaven-woodentable-01.glb",
+      "sourceUrl": "https://polyhaven.com/a/WoodenTable_01",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "Ethan Place",
+      "provider": {
+        "name": "polyhaven",
+        "id": "WoodenTable_01",
+        "version": "acee43a6468dd85f1da716a4c6d77793e6c7c02f",
+        "resolution": "1k"
+      },
+      "sha256": "aaa2a72c33bbfbe20c3a15b6d2ff9ae49ee68eb371cdaa4980ed68422e33efd3",
+      "bytes": 553776,
+      "dimensionsM": [
+        1.79965,
+        0.54885,
+        0.65717
+      ],
+      "triangles": 952,
+      "conversion": {
+        "key": "2d97b2643d2e568c",
+        "converterVersion": 1,
+        "report": "assets/converted/polyhaven/WoodenTable_01/2d97b2643d2e568c/report.json"
+      },
+      "review": {
+        "approvedBy": "Claude Code (preview review, pending human confirmation)",
+        "approvedAt": "2026-11-14T07:06:14.128Z",
+        "warnings": [
+          "Khronos glTF validator reported 1 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+        ]
+      }
     }
   ]
 }

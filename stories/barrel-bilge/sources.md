@@ -27,5 +27,23 @@ All are Poly Haven, CC0, and registered in `assets/catalog.json`. Approval is re
 
 Poly Haven's `Barrel_01` was considered and rejected: it is a red steel oil drum with a hazard label, which contradicts "wooden barrels".
 
+### Phase 5 environment (`environments/cooperage-storehouse.json`)
+All are Poly Haven, CC0, and approved by Claude Code's preview review, pending human confirmation.
+- **Models:**
+  - `polyhaven-wooden-lantern-01`: wooden_lantern_01
+  - `polyhaven-woodentable-01`: WoodenTable_01
+  - `polyhaven-wooden-ladder-02`: wooden_ladder_02
+- **Textures:**
+  - `polyhaven-cobblestone-floor-08` and `polyhaven-medieval-red-brick`, by Rob Tuytel
+  - `polyhaven-rough-wood`, by Rob Tuytel
+  - `polyhaven-dark-wooden-planks`, by Amal Kumar
+- **Rejected as anachronistic or off-palette for an 1850s storehouse:**
+  - wooden_hammer_01, a modern steel claw hammer
+  - jug_01, a floral porcelain jug
+  - wooden_broom, a blue-handled push broom
+
+### Character
+Bram, the cooper's apprentice (`characters/bram.json`), is an original design drawn from vector paths. No image generation or reference character was used.
+
 ## Voice
 macOS `say`, voice Samantha, rate 165, with embedded pauses. This is a placeholder voice for pacing review, not a final performance.

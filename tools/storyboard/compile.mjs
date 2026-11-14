@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
+export { readGlbShape } from './shape.mjs';
 import { readFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { NodeIO, Logger } from '@gltf-transform/core';
-import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { getBounds } from '@gltf-transform/functions';
+import { readGlbShape, cachedShape } from './shape.mjs';
+import { compileEnvironment, loadStyle } from '../environment/compile.mjs';
+import { CHARACTER_ACTIONS, INSTANT_CHARACTER_ACTIONS, POSE_PRESETS } from './character.mjs';
 import { resolveAssets } from '../asset-resolver.mjs';
 import { resolveAnchor } from './anchors.mjs';
 import { BEHAVIORS, FRAMING, FRAMING_ORDER, LENSES } from './camera.mjs';
@@ -15,40 +16,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const TIMING_DEFAULTS = {cutLeadSec:0.1, eventLeadSec:0.07, tailSec:0.6, minShotSec:0.5, maxShotSec:4.5};
 const TRANSITIONS = ['cut', 'whip'];
 const sha256 = data => createHash('sha256').update(data).digest('hex');
-
-// Bounds plus the model's extreme vertices in 2048 directions: a silhouette proxy that frames and grounds
-// round objects correctly from any angle, where an axis-aligned box would overestimate them. 96 directions
-// let a rolling barrel sink up to 17 mm into the floor; 2048 keeps the error near 0.1 mm
-export async function readGlbShape(path, directions = 2048) {
-  const document = await new NodeIO().registerExtensions(ALL_EXTENSIONS).setLogger(new Logger(Logger.Verbosity.ERROR)).read(path);
-  const scene = document.getRoot().getDefaultScene() ?? document.getRoot().listScenes()[0];
-  const {min, max} = getBounds(scene);
-  const vertices = [];
-  scene.traverse(node => {
-    const mesh = node.getMesh();
-    if (!mesh) return;
-    const m = node.getWorldMatrix();
-    for (const prim of mesh.listPrimitives()) {
-      const position = prim.getAttribute('POSITION');
-      if (!position) continue;
-      for (let i = 0, p = [0, 0, 0]; i < position.getCount(); i++) {
-        position.getElement(i, p);
-        vertices.push([m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13], m[2] * p[0] + m[6] * p[1] + m[10] * p[2] + m[14]]);
-      }
-    }
-  });
-  const picked = new Set();
-  const golden = Math.PI * (3 - Math.sqrt(5));
-  for (let k = 0; k < directions; k++) {
-    const y = 1 - (k + 0.5) * 2 / directions, r = Math.sqrt(1 - y * y);
-    const d = [Math.cos(golden * k) * r, y, Math.sin(golden * k) * r];
-    let best = 0, bestDot = -Infinity;
-    vertices.forEach((v, i) => { const dot = v[0] * d[0] + v[1] * d[1] + v[2] * d[2]; if (dot > bestDot) { bestDot = dot; best = i; } });
-    picked.add(best);
-  }
-  const round = value => Math.round(value * 1e4) / 1e4;
-  return {min, max, points:[...picked].sort((a, b) => a - b).map(i => vertices[i].map(round))};
-}
 
 function tighter(framing, steps) {
   const index = FRAMING_ORDER.indexOf(framing) + steps;
@@ -71,7 +38,9 @@ function compileCamera(camera, behavior) {
   return {from, to};
 }
 
-export async function compileStory(story, wordsDoc, {catalogPath = resolve(root, 'assets/catalog.json'), rootDir = root, shapeOf = readGlbShape, storyBytes, wordsBytes} = {}) {
+export async function compileStory(story, wordsDoc, {catalogPath = resolve(root, 'assets/catalog.json'), rootDir = root, shapeOf, storyBytes, wordsBytes} = {}) {
+  // Default: silhouettes cached by GLB hash; tests may inject their own
+  const shapeFor = (path, sha) => shapeOf ? shapeOf(path) : sha ? cachedShape(path, sha) : readGlbShape(path);
   if (story?.version !== 1) throw new Error('story.version must be 1');
   const fps = story.fps ?? 30;
   const timing = {...TIMING_DEFAULTS, ...(story.timing ?? {})};
@@ -96,12 +65,29 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
     props.push({
       id:prop.id, query:prop.asset.query, missing:!asset, sizeHint:prop.sizeHint ?? null,
       asset:asset && {id:asset.id, name:asset.name, localPath:asset.localPath, sha256:asset.sha256 ?? null, license:asset.license, creator:asset.creator, sourceUrl:asset.sourceUrl},
-      ...(asset ? await shapeOf(resolve(rootDir, asset.localPath)).then(({min, max, points}) => ({bounds:{min, max}, points})) : {bounds:null, points:null}),
+      ...(asset ? await shapeFor(resolve(rootDir, asset.localPath), asset.sha256).then(({min, max, points}) => ({bounds:{min, max}, points})) : {bounds:null, points:null}),
       base:{position:prop.position ?? [0, 0, 0], rotation:prop.rotation ?? [0, 0, 0], scale:prop.scale ?? 1, visible:prop.visible ?? true, grounded:prop.grounded ?? true},
       actions:[]
     });
   }
   const propById = new Map(props.map(prop => [prop.id, prop]));
+
+  // Look and place: channel style with story palette overrides, and an optional reusable environment
+  const style = await loadStyle(story.style?.id ?? 'hold-up', story.style ?? {});
+  // Catalogs and the build cache live under the same root as the story's assets
+  const environment = story.environment ? await compileEnvironment(story.environment.id, {style, catalogPath, rootDir,
+    textureCatalogPath:resolve(rootDir, 'assets/texture-catalog.json'), cacheDir:resolve(rootDir, '.cache/environments')}) : null;
+
+  // Cast: original 2D characters; definitions are fixed per character so appearance is consistent across shots
+  const cast = [];
+  for (const member of story.cast ?? []) {
+    if (!/^[a-z][a-z0-9-]*$/.test(member.id ?? '') || propById.has(member.id)) throw new Error(`Invalid or duplicate cast id: ${member.id}`);
+    const definition = JSON.parse(await readFile(resolve(rootDir, 'characters', `${member.character}.json`), 'utf8'));
+    if (definition.version !== 1 || definition.id !== member.character) throw new Error(`Character ${member.character}: bad definition`);
+    if (!Array.isArray(member.start?.position)) throw new Error(`Cast ${member.id}: needs start.position [x, z]`);
+    cast.push({id:member.id, character:member.character, definition, start:member.start, actions:[]});
+  }
+  const castById = new Map(cast.map(member => [member.id, member]));
 
   const shots = [];
   for (const beat of story.beats ?? []) {
@@ -139,6 +125,22 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
 
     // Events become prop actions on the global timeline, so continuity carries across cuts
     for (const event of shot.events) {
+      if (event.character) {
+        const member = castById.get(event.character);
+        if (!member) throw new Error(`Shot ${shot.id}: event targets unknown cast member "${event.character}"`);
+        if (!CHARACTER_ACTIONS.includes(event.do)) throw new Error(`Shot ${shot.id}: unknown character action "${event.do}"`);
+        if (event.do === 'pose' && !POSE_PRESETS[event.params?.preset]) throw new Error(`Shot ${shot.id}: unknown pose preset "${event.params?.preset}"`);
+        if (event.do === 'push' && !propById.has(event.params?.prop)) throw new Error(`Shot ${shot.id}: push needs params.prop`);
+        const at = event.at === 'shot-start' || event.at === undefined ? {frame:shot.startFrame, word:null, wordIndex:null} : anchor(event.at, timing.eventLeadSec);
+        let endFrame = at.frame;
+        if (event.until) endFrame = anchor(typeof event.until === 'string' ? {at:event.until, edge:'end'} : event.until).frame;
+        else if (event.duration) endFrame = at.frame + Math.round(event.duration * fps);
+        else if (event.do === 'walk') throw new Error(`Shot ${shot.id}: walk needs "until" or "duration"`);
+        else if (event.do === 'push') endFrame = at.frame + Math.round(0.35 * fps);
+        member.actions.push({type:event.do, startFrame:at.frame, endFrame:Math.max(at.frame, endFrame), params:event.params ?? {},
+          anchor:at.word ? {word:at.word, wordIndex:at.wordIndex, wordFrame:words[at.wordIndex].startFrame} : null, shot:shot.id, instant:INSTANT_CHARACTER_ACTIONS.has(event.do)});
+        continue;
+      }
       const prop = propById.get(event.prop);
       if (!prop) throw new Error(`Shot ${shot.id}: event targets unknown prop "${event.prop}"`);
       if (!ACTION_TYPES.includes(event.do)) throw new Error(`Shot ${shot.id}: unknown action "${event.do}"`);
@@ -157,11 +159,12 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
     delete shot.events;
   }
   for (const prop of props) prop.actions.sort((a, b) => a.startFrame - b.startFrame);
+  for (const member of cast) member.actions.sort((a, b) => a.startFrame - b.startFrame);
 
   return {
     version:1, slug:story.slug, title:story.title ?? story.slug, fps, size:story.size ?? {width:1080, height:1920}, durationFrames, timing,
     audio:{file:wordsDoc.audio?.file ?? null, sha256:wordsDoc.audio?.sha256 ?? null, durationSec:wordsDoc.audio?.durationSec ?? null},
-    words, stage:story.stage ?? {}, props, shots, missingAssets,
+    words, stage:story.stage ?? {}, props, shots, missingAssets, style, environment, cast,
     sources:{story:storyBytes ? sha256(storyBytes) : null, words:wordsBytes ? sha256(wordsBytes) : null, narration:wordsDoc.source ?? null, aligner:wordsDoc.aligner ?? null}
   };
 }

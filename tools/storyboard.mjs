@@ -5,13 +5,15 @@ import { narrate } from './narration/narrate.mjs';
 import { compileFiles } from './storyboard/compile.mjs';
 import { validatePlan } from './storyboard/validate.mjs';
 import { renderAnimatic } from './storyboard/animatic.mjs';
+import { renderQA } from './render/qa.mjs';
+import { compareRenders } from './render/compare.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const exists = path => access(path).then(() => true, () => false);
 
 // Voice first: narrate once, then iterate on story.json (cuts, moves, events) and re-run without touching models
 async function main(args) {
-  let storyPath, audioPath, narrateNow = false, render = false, scale = 1 / 3, strict = false;
+  let storyPath, audioPath, narrateNow = false, render = false, scale, strict = false, quality = 'animatic', qa = false, compare = null;
   for (let i=0; i<args.length; i++) {
     if (args[i] === '--story') storyPath=args[++i];
     else if (args[i] === '--narrate') narrateNow=true;
@@ -19,6 +21,9 @@ async function main(args) {
     else if (args[i] === '--render') render=true;
     else if (args[i] === '--scale') scale=Number(args[++i]);
     else if (args[i] === '--strict') strict=true;
+    else if (args[i] === '--quality') quality=args[++i];
+    else if (args[i] === '--qa') qa=true;
+    else if (args[i] === '--compare') compare=args[++i].split(',');
     else throw new Error(`Unknown argument: ${args[i]}`);
   }
   if (!storyPath) throw new Error('Provide --story stories/<slug>/story.json');
@@ -37,10 +42,17 @@ async function main(args) {
   await writeFile(join(outDir, 'validation.json'), JSON.stringify(validation, null, 2) + '\n');
   let animatic = null;
   if (render) {
-    animatic = await renderAnimatic(plan, {outDir, audioPath:join(outDir, 'narration.wav'), scale, issues:[...validation.errors, ...validation.warnings],
+    animatic = await renderAnimatic(plan, {outDir, audioPath:join(outDir, 'narration.wav'), scale, quality, issues:[...validation.errors, ...validation.warnings],
       onProgress:(done, total) => process.stderr.write(`\rrendering ${done}/${total}`)});
     process.stderr.write('\n');
   }
+  let qaReport = null;
+  if (qa) {
+    qaReport = await renderQA(plan, {quality:quality === 'animatic' ? 'preview' : quality});
+    await writeFile(join(outDir, `qa-${qaReport.quality}.json`), JSON.stringify(qaReport, null, 2) + '\n');
+  }
+  let comparison = null;
+  if (compare) comparison = await compareRenders(plan, {outDir, videos:compare});
   const rel = path => relative(process.cwd(), path);
   process.stdout.write(JSON.stringify({
     status:validation.status, stats:validation.stats,
@@ -48,7 +60,12 @@ async function main(args) {
     warnings:validation.warnings.map(w => `${w.code} ${w.shot ?? w.prop ?? ''}${w.frames ? ` f${w.frames.join('-')}` : ''}: ${w.message}`),
     missingAssets:plan.missingAssets,
     shots:plan.shots.map(s => `${s.id} ${(s.startFrame / plan.fps).toFixed(2)}-${(s.endFrame / plan.fps).toFixed(2)}s ${s.transition.type}->${s.camera.behavior} move f${s.camera.window.join('-')}`),
-    outputs:{plan:rel(join(outDir, 'shots.json')), validation:rel(join(outDir, 'validation.json')), ...(animatic && {animatic:rel(animatic.video), storyboard:rel(animatic.sheet), size:animatic.size, renderMs:animatic.renderMs})}
+    environment:plan.environment && {id:plan.environment.id, cache:plan.environment.cache, budget:plan.environment.budget, missing:plan.environment.missing},
+    cast:(plan.cast ?? []).map(member => member.id),
+    qa:qaReport && {status:qaReport.status, summary:qaReport.summary, warnings:qaReport.warnings.map(w => `${w.code} ${w.shot ?? ''}: ${w.message}`), ms:qaReport.ms},
+    outputs:{plan:rel(join(outDir, 'shots.json')), validation:rel(join(outDir, 'validation.json')),
+      ...(animatic && {video:rel(animatic.video), storyboard:rel(animatic.sheet), quality:animatic.quality, gpu:animatic.gpu, size:animatic.size, renderMs:animatic.renderMs}),
+      ...(comparison && {comparisonVideo:rel(comparison.video), comparisonStills:rel(comparison.stills)})}
   }, null, 2) + '\n');
   if (strict && validation.status !== 'pass') process.exitCode = 1;
 }

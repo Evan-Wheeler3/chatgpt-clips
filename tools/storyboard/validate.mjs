@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Vector3, Ray, MathUtils } from 'three';
+import { PerspectiveCamera, Vector3, Ray, MathUtils, Box3 } from 'three';
 import { samplePlan } from './sample.mjs';
 import { propWorldBox, INSTANT_ACTIONS } from './actions.mjs';
 import { FRAMING, focusPoint, moveProgress } from './camera.mjs';
@@ -16,6 +16,9 @@ const MIN_SUBJECT_HEIGHT = 0.12, MAX_FOG_DEPTH = 0.7;
 const CUT_SCALE_RATIO = 2.0, CUT_SHIFT_NDC = 0.6;
 const CUT_SOFT = {scale:1.6, shift:0.35, viewDeg:60, pitchDeg:8};
 const DEAD_START_FRAMES = 12;
+// Characters: body column for clipping, the largest believable frame-to-frame step, and push reach tolerance
+const BODY_RADIUS_M = 0.14, CHARACTER_STEP_M = 0.15, CONTACT_TOLERANCE_M = 0.03, PUSH_SYNC_FRAMES = [-3, 6];
+const CAPTION_BAND_TOP = SAFE_AREA.bottom;
 
 // The point the shot is about: the subject's framed focus, interpolated along the move
 function shotFocus(shot, box, frame) {
@@ -236,6 +239,8 @@ export function validatePlan(plan) {
     }
   }
 
+  validateWorld(plan, samples, aspect, {errors, warnings, perFrameErrors, perFrameWarnings, propById});
+
   errors.push(...rangeIssues(perFrameErrors));
   warnings.push(...rangeIssues(perFrameWarnings));
   const lengths = plan.shots.map(shot => (shot.endFrame - shot.startFrame) / fps);
@@ -246,4 +251,85 @@ export function validatePlan(plan) {
       behaviors:Object.fromEntries([...new Set(plan.shots.map(shot => shot.camera.behavior))].map(b => [b, plan.shots.filter(shot => shot.camera.behavior === b).length])),
       transitions:Object.fromEntries(['cut', 'whip'].map(t => [t, plan.shots.slice(1).filter(shot => shot.transition.type === t).length]))}
   };
+}
+
+const boxOf = b => new Box3(new Vector3(...b.min), new Vector3(...b.max));
+
+// Environment and character checks: these only run when the plan has an environment or a cast
+function validateWorld(plan, samples, aspect, {errors, warnings, perFrameErrors, perFrameWarnings, propById}) {
+  const env = plan.environment;
+  const envBoxes = env ? [...env.instances.map(i => ({id:`${i.asset}@${i.position.map(v => v.toFixed(1)).join(',')}`, layer:i.layer, box:boxOf(i.box)})),
+    ...env.boxes.map(b => ({id:b.id, layer:'architecture', box:boxOf(b)}))] : [];
+  if (env) {
+    for (const miss of env.missing) errors.push({code:miss.kind === 'texture' ? 'ENV_MISSING_TEXTURE' : 'ENV_MISSING_ASSET', message:`Environment ${env.id} needs ${miss.kind} "${miss.id}", which is not in the local catalog; nothing was substituted`});
+    for (const item of env.intrusions) warnings.push({code:'ENV_INTRUSION', message:`${item.asset} at ${item.position.join(', ')} sits inside the story action area`});
+  }
+  const cuts = new Set([0, ...plan.shots.map(shot => shot.startFrame)]);
+
+  for (const member of plan.cast ?? []) for (const action of member.actions) {
+    if (action.type === 'place' && !cuts.has(action.startFrame)) errors.push({code:'PLACE_NOT_ON_CUT', shot:action.shot, message:`${member.id} is placed at frame ${action.startFrame}, which is not a cut; the viewer would see a teleport`});
+    if (action.type === 'push') {
+      const propAction = propById.get(action.params.prop)?.actions.find(a => !INSTANT_ACTIONS.has(a.type) && a.startFrame >= action.startFrame + PUSH_SYNC_FRAMES[0]);
+      const delta = propAction ? propAction.startFrame - action.startFrame : null;
+      if (delta === null || delta > PUSH_SYNC_FRAMES[1]) warnings.push({code:'PUSH_NOT_SYNCED', shot:action.shot, message:`${member.id} pushes ${action.params.prop} at frame ${action.startFrame} but it ${delta === null ? 'never moves' : `only moves ${delta} frames later`}`});
+    }
+  }
+
+  for (let frame = 0; frame < plan.durationFrames; frame++) {
+    const {camera, shot, characters} = samples[frame];
+    const issue = (list, code, message, subject) => list.push({code, shot:shot.id, frame, message, subject});
+    if (env) {
+      const [minX, , minZ] = env.bounds.min, [maxX, , maxZ] = env.bounds.max;
+      const p = camera.position;
+      if (p.x < minX + 0.1 || p.x > maxX - 0.1 || p.z < minZ + 0.1 || p.z > maxZ - 0.1) issue(perFrameErrors, 'CAMERA_OUTSIDE_ROOM', `Camera is outside ${env.id}`);
+      for (const item of envBoxes) if (item.box.clone().expandByScalar(CAMERA_MARGIN_M).containsPoint(p)) issue(perFrameErrors, 'CAMERA_COLLISION', `Camera is inside ${item.id}`, item.id);
+      const subject = propById.get(shot.subject);
+      const box = subject && propWorldBox(subject, frame);
+      if (box && !camera.whip) {
+        const focus = box.getCenter(new Vector3());
+        const ray = new Ray(p.clone(), focus.clone().sub(p).normalize()), reach = p.distanceTo(focus);
+        for (const item of envBoxes) {
+          if (item.layer === 'foreground') continue;
+          const hit = ray.intersectBox(item.box, new Vector3());
+          if (hit && p.distanceTo(hit) < reach - 0.2) issue(perFrameWarnings, 'SUBJECT_OCCLUDED', `${item.id} blocks the view of ${shot.subject}`, item.id);
+        }
+      }
+    }
+    for (const c of characters) {
+      const pos = new Vector3(...c.position);
+      const body = new Box3(new Vector3(pos.x - BODY_RADIUS_M, 0.05, pos.z - BODY_RADIUS_M), new Vector3(pos.x + BODY_RADIUS_M, c.heightM * 0.8, pos.z + BODY_RADIUS_M));
+      for (const prop of plan.props) {
+        const box = propWorldBox(prop, frame);
+        if (box && box.intersectsBox(body)) issue(perFrameErrors, 'CHARACTER_CLIPPING', `${c.id} passes through ${prop.id}`, c.id);
+      }
+      for (const item of envBoxes) if (item.box.intersectsBox(body)) issue(perFrameErrors, 'CHARACTER_CLIPPING', `${c.id} passes through ${item.id}`, c.id);
+      if (Math.abs(c.position[1]) > 1e-6) issue(perFrameErrors, 'CHARACTER_FLOATING', `${c.id} feet are ${c.position[1].toFixed(2)} m off the ground`, c.id);
+      if (c.contact && c.contact.shortfallM > CONTACT_TOLERANCE_M) issue(perFrameErrors, 'CHARACTER_NO_CONTACT', `${c.id}'s hands fall ${(c.contact.shortfallM * 100).toFixed(0)} cm short of ${c.contact.prop}`, c.id);
+      if (c.pose.squash < 0.85 || c.pose.squash > 1.15) issue(perFrameWarnings, 'CHARACTER_OFF_MODEL', `${c.id} squash ${c.pose.squash.toFixed(2)} distorts the design`, c.id);
+      const previous = frame > 0 ? samples[frame - 1].characters.find(o => o.id === c.id) : null;
+      if (previous && !cuts.has(frame) && pos.distanceTo(new Vector3(...previous.position)) > CHARACTER_STEP_M) issue(perFrameErrors, 'CHARACTER_POP', `${c.id} jumps within a shot`, c.id);
+      // Face position for captions: the head should stay out of the bottom caption band when it is prominent
+      const head = projectPoint(camera, aspect, pos.clone().setY(c.heightM * 0.8));
+      const feet = projectPoint(camera, aspect, pos.clone());
+      const onScreenHeight = (head.y - feet.y) / 2;
+      if (onScreen(head) && onScreenHeight > 0.25 && head.y < CAPTION_BAND_TOP) issue(perFrameWarnings, 'CHARACTER_FACE_IN_CAPTION_ZONE', `${c.id}'s face is in the caption band`, c.id);
+      // The character should not block the subject unless the shot declares it as foreground
+      const subject = propById.get(shot.subject);
+      const box = subject && propWorldBox(subject, frame);
+      if (box && !shot.foreground.includes(c.id) && !camera.whip) {
+        const focus = box.getCenter(new Vector3());
+        const hit = new Ray(camera.position.clone(), focus.clone().sub(camera.position).normalize()).intersectBox(body, new Vector3());
+        if (hit && camera.position.distanceTo(hit) < camera.position.distanceTo(focus) - 0.2) issue(perFrameWarnings, 'CHARACTER_OCCLUDES_SUBJECT', `${c.id} blocks the view of ${shot.subject}`, c.id);
+      }
+    }
+  }
+
+  // Character actions should start where the viewer can see them
+  for (const member of plan.cast ?? []) for (const action of member.actions) {
+    if (!['pose', 'push', 'walk'].includes(action.type)) continue;
+    const sample = samples[Math.min(action.startFrame, samples.length - 1)];
+    const c = sample.characters.find(o => o.id === member.id);
+    const v = projectPoint(sample.camera, aspect, new Vector3(...c.position).setY(c.heightM * 0.55));
+    if (!onScreen(v)) warnings.push({code:'CHARACTER_ACTION_OFF_SCREEN', shot:action.shot, message:`${member.id}'s ${action.type}${action.params.preset ? ` (${action.params.preset})` : ''} starts while ${member.id} is off screen`});
+  }
 }

@@ -388,3 +388,13 @@ test('whip-in transitions pan (never tilt) 45-90 degrees and are fastest on the 
     assert.ok(steps[0] > 10, 'already moving fast on the first frame after the cut');
   } finally { await rm(dir, {recursive:true, force:true}); }
 });
+
+test('pivot turns a prop about its own centre, not its model origin', () => {
+  // A 1 m long prop whose model origin is at one end (like a barrel laid on its side)
+  const points = [[-0.2, 0, 0], [0.2, 0, 0], [-0.2, 0.4, 0], [0.2, 0.4, 0], [-0.2, 0, 1], [0.2, 0, 1], [-0.2, 0.4, 1], [0.2, 0.4, 1]];
+  const prop = {bounds:{min:[-0.2, 0, 0], max:[0.2, 0.4, 1]}, points, base:{position:[0, 0, 0]}, actions:[{type:'pivot', startFrame:0, endFrame:10, params:{degrees:90}, ease:'linear'}]};
+  const before = propWorldBox(prop, 0).getCenter(new Vector3()), after = propWorldBox(prop, 10).getCenter(new Vector3());
+  assert.ok(before.distanceTo(after) < 1e-6, `centre moved ${before.distanceTo(after)}`);
+  const size = propWorldBox(prop, 10).getSize(new Vector3());
+  assert.ok(Math.abs(size.x - 1) < 1e-6 && Math.abs(size.z - 0.4) < 1e-6, 'long axis swung from z to x');
+});

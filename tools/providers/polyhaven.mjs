@@ -13,7 +13,9 @@ const API_HOSTS = ['api.polyhaven.com'];
 const DOWNLOAD_HOSTS = ['dl.polyhaven.org'];
 const MAX_REDIRECTS = 5;
 const INDEX_TTL_MS = 12 * 3600 * 1000; // Matches the API's cache-control max-age
-const MODEL_TYPE = 2;
+const MODEL_TYPE = 2, TEXTURE_TYPE = 1;
+// Texture maps the stylized renderer uses: colour, OpenGL-convention normal, and packed AO/roughness/metalness
+export const TEXTURE_MAPS = ['Diffuse', 'nor_gl', 'arm'];
 // The API has no per-asset license field; this site-wide statement is the license evidence
 export const LICENSE = {id:'CC0-1.0', evidenceUrl:'https://polyhaven.com/license'};
 // API ToS 2.5 requires surfacing where content comes from when served via the live API
@@ -117,8 +119,8 @@ export function createPolyHavenProvider({
     return indexPromise;
   }
 
-  function unavailable(id, model, lockedIds) {
-    if (model.type !== MODEL_TYPE) return 'not a model';
+  function unavailable(id, model, lockedIds, type = MODEL_TYPE) {
+    if (model.type !== type) return type === MODEL_TYPE ? 'not a model' : 'not a texture';
     if (lockedIds.includes(id)) return 'in a locked Poly Haven vault';
     if (model.date_published * 1000 > now()) return 'not yet published';
     return null;
@@ -202,6 +204,11 @@ export function createPolyHavenProvider({
     const total = list.reduce((sum, file) => sum + file.size, 0);
     if (total > maxBytes) throw new Error(`${id} at ${resolution} is ${total} bytes, over the ${maxBytes} byte limit`);
 
+    return fetchVerified(id, info, list, resolution, {format:'gltf', entry:main.path});
+  }
+
+  // Shared verified download: cache revalidation, sequential streaming downloads, atomic install, provenance
+  async function fetchVerified(id, info, list, resolution, extra) {
     const dest = join(providerDir, id, info.files_hash, resolution);
     const cached = await stat(dest).then(() => true, () => false);
     const repaired = cached ? await cacheProblem(dest, list) : null;
@@ -216,8 +223,8 @@ export function createPolyHavenProvider({
       const provenance = {
         version:1, provider:'polyhaven', id, name:info.name,
         sourceUrl:candidate.sourceUrl, license:LICENSE.id, licenseEvidence:LICENSE.evidenceUrl,
-        creator:candidate.creator, filesHash:info.files_hash, resolution, format:'gltf',
-        entry:main.path, retrievedAt:new Date(now()).toISOString(),
+        creator:candidate.creator, filesHash:info.files_hash, resolution, ...extra,
+        retrievedAt:new Date(now()).toISOString(),
         apiTerms:TERMS_URL, apiCredit:CREDIT, warnings:candidate.warnings, files:downloaded
       };
       await writeFile(join(partial, 'provenance.json'), JSON.stringify(provenance, null, 2) + '\n');
@@ -229,6 +236,24 @@ export function createPolyHavenProvider({
       await rm(partial, {recursive:true, force:true});
       throw err;
     }
+  }
+
+  // Texture sets: colour/normal/ARM JPEGs plus the real-world size Poly Haven publishes, used for true-scale tiling
+  async function fetchTexture(id, {resolution = '1k', maps = TEXTURE_MAPS, maxBytes = 64 * 1024 * 1024} = {}) {
+    if (!/^[A-Za-z0-9_-]+$/.test(String(id))) throw new Error(`Invalid Poly Haven asset id: ${id}`);
+    const [info, files, {lockedIds}] = await Promise.all([getJson(`/info/${id}`), getJson(`/files/${id}`), index()]);
+    const reason = unavailable(id, info, lockedIds, TEXTURE_TYPE);
+    if (reason) throw new Error(`Poly Haven asset ${id} is ${reason}`);
+    const list = maps.map(map => {
+      const file = files[map]?.[resolution]?.jpg;
+      if (!file) throw new Error(`No ${map} JPEG at ${resolution} for ${id}; available maps: ${Object.keys(files).join(', ')}`);
+      return {path:`${map}.jpg`, url:file.url, size:file.size, md5:file.md5};
+    });
+    const total = list.reduce((sum, file) => sum + file.size, 0);
+    if (total > maxBytes) throw new Error(`${id} at ${resolution} is ${total} bytes, over the ${maxBytes} byte limit`);
+    // Poly Haven texture dimensions are the real-world width/height in millimetres
+    const dims = Array.isArray(info.dimensions) && info.dimensions.length >= 2 ? info.dimensions.slice(0, 2).map(mm => mm / 1000) : null;
+    return fetchVerified(id, info, list, resolution, {format:'texture', maps:Object.fromEntries(maps.map(map => [map, `${map}.jpg`])), realSizeM:dims, category:info.category ?? null, tags:info.tags ?? []});
   }
 
   // Fetches (or revalidates) a model and describes it in the provider-agnostic conversion source contract
@@ -250,5 +275,5 @@ export function createPolyHavenProvider({
     };
   }
 
-  return {name:'polyhaven', credit:CREDIT, search, fetchModel, conversionSource};
+  return {name:'polyhaven', credit:CREDIT, search, fetchModel, fetchTexture, conversionSource};
 }

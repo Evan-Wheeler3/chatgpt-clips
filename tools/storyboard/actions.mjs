@@ -63,9 +63,13 @@ const APPLY = {
     out.quaternion.premultiply(new Quaternion().setFromAxisAngle(axis, distance / radius));
     return out;
   },
-  pivot:(state, p, params) => {
+  // Turns about the prop's own centre ("on the spot"), not its model origin, which may sit at one end
+  pivot:(state, p, params, shape) => {
     const out = clone(state);
-    out.quaternion.premultiply(new Quaternion().setFromAxisAngle(UP, MathUtils.degToRad(params.degrees * p)));
+    const q = new Quaternion().setFromAxisAngle(UP, MathUtils.degToRad(params.degrees * p));
+    const center = shape?.bounds ? worldBox(shape, withoutWobble(state)).getCenter(new Vector3()) : state.position.clone();
+    out.position.sub(center).applyQuaternion(q).add(center);
+    out.quaternion.premultiply(q);
     return out;
   },
   // Damped rocking after an impact or a stop; it decays to rest by the end of the action

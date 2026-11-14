@@ -1,0 +1,208 @@
+{
+  "version": 1,
+  "textures": [
+    {
+      "id": "polyhaven-cobblestone-floor-08",
+      "name": "Cobblestone Floor 08",
+      "provider": {
+        "name": "polyhaven",
+        "id": "cobblestone_floor_08",
+        "version": "85bbc0135f89f1d31303c43f7ce640d4d81f4d68",
+        "resolution": "1k"
+      },
+      "sourceUrl": "https://polyhaven.com/a/cobblestone_floor_08",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "Rob Tuytel",
+      "realSizeM": [
+        2,
+        2
+      ],
+      "tags": [
+        "cobblestone",
+        "smooth",
+        "old",
+        "moss",
+        "pavement"
+      ],
+      "maps": {
+        "color": {
+          "localPath": "assets/library/textures/polyhaven-cobblestone-floor-08/color.jpg",
+          "sha256": "ec131f7a99a1e7f9df25d4725609c55a6dad1df487630685e9a66ecbf41ec33a",
+          "bytes": 585727
+        },
+        "normal": {
+          "localPath": "assets/library/textures/polyhaven-cobblestone-floor-08/normal.jpg",
+          "sha256": "26bfff70b266a4e86983814c7e56a9b48daf93cd34dcdc16a5db13e4fabcfbb6",
+          "bytes": 1002410
+        },
+        "arm": {
+          "localPath": "assets/library/textures/polyhaven-cobblestone-floor-08/arm.jpg",
+          "sha256": "4b2548135784852f07befc3bb0abb7c83738a3c022997c30527a15d5caa7a389",
+          "bytes": 198270
+        }
+      },
+      "review": {
+        "approvedBy": "Claude Code (swatch review, pending human confirmation)",
+        "approvedAt": "2026-11-14T06:51:02.504Z"
+      }
+    },
+    {
+      "id": "polyhaven-dark-wooden-planks",
+      "name": "Dark Wooden Planks",
+      "provider": {
+        "name": "polyhaven",
+        "id": "dark_wooden_planks",
+        "version": "42512df3eee6d0b71aa081d3f64ba6497b7f60d7",
+        "resolution": "1k"
+      },
+      "sourceUrl": "https://polyhaven.com/a/dark_wooden_planks",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "Amal Kumar",
+      "realSizeM": [
+        2,
+        2
+      ],
+      "tags": [
+        "rough",
+        "old",
+        "weathered",
+        "cracked",
+        "damaged",
+        "brown",
+        "wood",
+        "wooden",
+        "floor",
+        "planks",
+        "scratched",
+        "worn",
+        "chipped"
+      ],
+      "maps": {
+        "color": {
+          "localPath": "assets/library/textures/polyhaven-dark-wooden-planks/color.jpg",
+          "sha256": "e8216baa6b2d701b5523fcb904d45570acf7b96d160ef815e96e2dbfa82bdd9b",
+          "bytes": 701221
+        },
+        "normal": {
+          "localPath": "assets/library/textures/polyhaven-dark-wooden-planks/normal.jpg",
+          "sha256": "87a7b26bc674477865d4589c6589200bfa649a6461422bf56f5600c05a470206",
+          "bytes": 658444
+        },
+        "arm": {
+          "localPath": "assets/library/textures/polyhaven-dark-wooden-planks/arm.jpg",
+          "sha256": "8cb87b3d886d26a3baf72a829e4fb3f0e2b97b5f43dad44bdd7fd7fe4d4ea762",
+          "bytes": 777830
+        }
+      },
+      "review": {
+        "approvedBy": "Claude Code (swatch review, pending human confirmation)",
+        "approvedAt": "2026-11-14T06:51:03.526Z"
+      }
+    },
+    {
+      "id": "polyhaven-medieval-red-brick",
+      "name": "Medieval Red Brick",
+      "provider": {
+        "name": "polyhaven",
+        "id": "medieval_red_brick",
+        "version": "0c85fc4d6307962d24b467ac6266c8cbce5a353f",
+        "resolution": "1k"
+      },
+      "sourceUrl": "https://polyhaven.com/a/medieval_red_brick",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "Rob Tuytel",
+      "realSizeM": [
+        2,
+        2
+      ],
+      "tags": [
+        "concrete",
+        "medieval",
+        "red",
+        "brick",
+        "bricks",
+        "red brick",
+        "walling",
+        "building material",
+        "structural",
+        "textured",
+        "fired brick"
+      ],
+      "maps": {
+        "color": {
+          "localPath": "assets/library/textures/polyhaven-medieval-red-brick/color.jpg",
+          "sha256": "72f9d1c0479ca5872b04e2c52cfb2074fa53f0e524c1a49afa7a033fee571d1d",
+          "bytes": 872053
+        },
+        "normal": {
+          "localPath": "assets/library/textures/polyhaven-medieval-red-brick/normal.jpg",
+          "sha256": "52e91425bd3fca954e492dc3b0993848df83286e1fcecfc031cba41e0a83fb1a",
+          "bytes": 1186400
+        },
+        "arm": {
+          "localPath": "assets/library/textures/polyhaven-medieval-red-brick/arm.jpg",
+          "sha256": "dd18c17306a8fc90fbc3b4c8d4721f619e568df95cb54e0df615b02510bb9dc3",
+          "bytes": 741039
+        }
+      },
+      "review": {
+        "approvedBy": "Claude Code (swatch review, pending human confirmation)",
+        "approvedAt": "2026-11-14T06:51:02.892Z"
+      }
+    },
+    {
+      "id": "polyhaven-rough-wood",
+      "name": "Rough Wood",
+      "provider": {
+        "name": "polyhaven",
+        "id": "rough_wood",
+        "version": "2d89c64601e620069e9caaf3ede0d7494d430138",
+        "resolution": "1k"
+      },
+      "sourceUrl": "https://polyhaven.com/a/rough_wood",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "Rob Tuytel",
+      "realSizeM": [
+        0.5,
+        0.5
+      ],
+      "tags": [
+        "rough",
+        "weathered",
+        "old",
+        "uneven",
+        "aged",
+        "cracked",
+        "natural grain",
+        "natural wood",
+        "natural",
+        "timber"
+      ],
+      "maps": {
+        "color": {
+          "localPath": "assets/library/textures/polyhaven-rough-wood/color.jpg",
+          "sha256": "abc46d8e3163d911220f4ec3a4043b68d2b0c6d750513f80871211acfefb2a98",
+          "bytes": 567074
+        },
+        "normal": {
+          "localPath": "assets/library/textures/polyhaven-rough-wood/normal.jpg",
+          "sha256": "3d1c6f098b66d93e52071b41834dd14a424d8cd2f7c4130c62dc062acfa65011",
+          "bytes": 790334
+        },
+        "arm": {
+          "localPath": "assets/library/textures/polyhaven-rough-wood/arm.jpg",
+          "sha256": "3d64915bf2898e6068fa4a55f9ffdd3361170265b47e145852eb3ef5e6196560",
+          "bytes": 137749
+        }
+      },
+      "review": {
+        "approvedBy": "Claude Code (swatch review, pending human confirmation)",
+        "approvedAt": "2026-11-14T06:51:03.215Z"
+      }
+    }
+  ]
+}

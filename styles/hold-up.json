@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "id": "hold-up",
+  "name": "Hold Up channel look",
+  "description": "Warm cinematic key light against cool shadows, softened textures with gentle cel banding, warm-brown ink outlines, rim light for readable silhouettes, light haze, filmic grade and vignette.",
+  "palette": {
+    "key": "#ffc27a",
+    "fill": "#6f8fc0",
+    "ambientSky": "#8a9ab8",
+    "ambientGround": "#4a3020",
+    "outline": "#1f140d",
+    "rim": "#ffd6a0",
+    "fog": "#3a2a20",
+    "shadowTint": "#2c3a5c",
+    "highlightTint": "#ffcf8f",
+    "accent": "#e2683c"
+  },
+  "materials": {
+    "hero":         {"mapBias": 0.5, "tint": 0.06, "saturation": 1.05, "bands": 4, "bandMix": 0.3,  "rim": 0.45, "outline": 0.008, "roughnessMin": 0.5, "metalScale": 0.5},
+    "set":          {"mapBias": 1.2, "tint": 0.18, "saturation": 0.92, "bands": 4, "bandMix": 0.3,  "rim": 0.2,  "outline": 0.006, "roughnessMin": 0.6, "metalScale": 0.4},
+    "architecture": {"mapBias": 0.8, "tint": 0.22, "saturation": 0.9,  "bands": 4, "bandMix": 0.22, "rim": 0.0,  "outline": 0,     "roughnessMin": 0.8, "metalScale": 0.3}
+  },
+  "grade": {
+    "exposure": 1.3, "contrast": 1.1, "saturation": 1.08,
+    "shadowTintAmount": 0.16, "highlightTintAmount": 0.1,
+    "vignette": 0.38, "grain": 0.03,
+    "bloom": {"strength": 0.45, "radius": 0.45, "threshold": 1.05}
+  },
+  "character": {"selfLight": 0.22, "contactShadow": 0.6}
+}

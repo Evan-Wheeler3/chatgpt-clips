@@ -61,7 +61,7 @@ All are deterministic functions of the frame, shared by Node (validation) and th
 Easings (`easing.mjs`): `dolly`, `settle` (soft start, overshoot, settle), `cubic`, `sine`, `quint`, `in`, `out` (full-speed start, for moves that begin on a cut), `expo`, `anticipate`, `whip`, `whipIn`, `linear`.
 
 ## Prop actions (`actions.mjs`)
-`set` (instant, must be on a cut), `move`, `roll` (rotation = distance / radius, stays grounded), `pivot` (about vertical), `wobble` (damped rocking), `appear`, `hide`. Actions live on a global timeline, so state carries across cuts. Grounded props rest on y=0 by their silhouette, so a barrel on its side rolls on its bilge without bobbing.
+`set` (instant, must be on a cut), `move`, `roll` (rotation = distance / radius, stays grounded), `pivot` (about the vertical through the prop's own centre; before Phase 5 it used the model origin, which for a barrel on its side is one end), `wobble` (damped rocking), `appear`, `hide`. Actions live on a global timeline, so state carries across cuts. Grounded props rest on y=0 by their silhouette, so a barrel on its side rolls on its bilge without bobbing.
 
 ## Validation (`validate.mjs`)
 **Errors** block scene construction; **warnings** need a director's judgement.
@@ -115,6 +115,9 @@ Visual notes still open (not defects of the shot plan):
 - The hoops detail leaves the right half of the frame as dark wall: the cost of matching the profile's silhouette edge.
 - At 360×640 the first whip frames still show faint stepped copies of the crate. This should vanish at final resolution with more samples.
 - The burned-in caption covers the lower barrel in the hoops detail. It's a review overlay only, not final captions.
+
+## Phase 5
+Environments, art direction, 2D characters, character events and preview and production quality are documented in `docs/VISUALS.md`.
 
 ## Not in scope yet
 Final-resolution rendering, Remotion composition, SFX and music, characters and rigs, environment construction beyond the plain stage, and final voice performance.

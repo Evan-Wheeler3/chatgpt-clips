@@ -15,7 +15,8 @@ Original `SKILL.md` is a detailed instruction set for a particular bridge short.
 2. External provider adapters with explicit license/provenance checks and download cache. (done: Poly Haven)
 3. Asset converter/validator: deterministic glTF → GLB, Khronos + scale/orientation validation, Three.js previews, approved catalog registration. (done; Blender path for other formats/repairs still open)
 4. Voice-first storyboard: measured narration timing, shot-plan compiler, reusable camera/action library, validation and low-res animatic. (done; see `docs/STORYBOARD.md`)
-5. Detailed scene construction, Remotion composition, SFX/score and audio QA.
+5. Environments, art direction, 2D characters in 3D, animation presets, preview and production quality with pixel QA. (done; see `docs/VISUALS.md`)
+6. Final voice, captions, sound design and audio QA; Remotion composition.
 6. Benchmarked end-to-end sample and iteration.
 
 ## Data contracts

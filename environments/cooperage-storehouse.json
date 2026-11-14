@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "id": "cooperage-storehouse",
+  "name": "Cooperage storehouse",
+  "period": "mid-19th century",
+  "location": "Brick-walled, timber-roofed cooperage storehouse with racked barrels and a sunlit work floor",
+  "bounds": {"min": [-5.5, 0, -7], "max": [7.5, 4.6, 6]},
+  "keepClear": [{"center": [0.2, 0, 0], "radius": 2.3, "note": "Action area for stories: no dressing here"}],
+  "materials": {
+    "floor":  {"texture": "polyhaven-cobblestone-floor-08", "tint": "#a39482", "role": "architecture"},
+    "brick":  {"texture": "polyhaven-medieval-red-brick", "tint": "#c58a68", "role": "architecture"},
+    "timber": {"texture": "polyhaven-rough-wood", "tint": "#9a6a42", "role": "architecture"},
+    "planks": {"texture": "polyhaven-dark-wooden-planks", "tint": "#8a6440", "role": "architecture"},
+    "iron":   {"color": "#3a3632", "roughness": 0.6, "metalness": 0.6, "role": "architecture"}
+  },
+  "architecture": [
+    {"type": "floor", "material": "floor"},
+    {"type": "walls", "material": "brick", "height": 4.6, "sides": ["back", "left", "right", "front"],
+     "openings": [
+       {"side": "back", "type": "window", "center": [-0.2, 2.7], "size": [1.1, 1.8]},
+       {"side": "back", "type": "window", "center": [3.4, 2.7], "size": [1.1, 1.8]},
+       {"side": "right", "type": "door", "center": [-3.2, 1.25], "size": [1.5, 2.5], "material": "planks"}
+     ]},
+    {"type": "plinth", "material": "timber", "height": 0.18, "depth": 0.06},
+    {"type": "piers", "material": "brick", "side": "left", "positions": [-4.5, -1.5, 1.5, 4.5], "width": 0.55, "depth": 0.3},
+    {"type": "piers", "material": "brick", "side": "back", "positions": [-3.0, 1.6, 5.4], "width": 0.55, "depth": 0.3},
+    {"type": "piers", "material": "brick", "side": "right", "positions": [-5.5, -0.8, 2.5], "width": 0.55, "depth": 0.3},
+    {"type": "trusses", "material": "timber", "z": [-6.2, -3.1, 0, 3.1], "tieHeight": 4.6, "ridgeHeight": 6.4, "beam": [0.22, 0.26]},
+    {"type": "roof", "material": "planks", "ridgeHeight": 6.5, "eaveHeight": 4.7},
+    {"type": "rack", "material": "timber", "from": [-4.85, -6.3], "to": [-4.85, 4.2], "axis": "x",
+     "load": {"asset": "polyhaven-wine-barrel-01", "spacing": 0.82, "tiers": 2, "skip": [0.6, 2.2]}},
+    {"type": "rack", "material": "timber", "from": [-3.8, -6.35], "to": [5.2, -6.35], "axis": "z",
+     "load": {"asset": "polyhaven-wine-barrel-01", "spacing": 0.82, "tiers": 2, "skip": [-2.1, -1.1, 2.1, 3.1]}}
+  ],
+  "dressing": [
+    {"asset": "polyhaven-woodentable-01", "position": [6.75, 0, 1.0], "rotation": [0, 90, 0], "layer": "background"},
+    {"asset": "polyhaven-wooden-lantern-01", "position": [6.7, 0.55, 0.3], "rotation": [0, 30, 0], "layer": "background"},
+    {"asset": "polyhaven-wooden-crate-01", "position": [6.85, 0.55, 1.6], "rotation": [0, 84, 0], "layer": "background"},
+    {"asset": "polyhaven-wooden-ladder-02", "position": [-3.6, 0, 2.9], "rotation": [0, 70, 0], "layer": "midground"},
+    {"asset": "polyhaven-wooden-crate-01", "position": [3.4, 0, -4.4], "rotation": [0, 12, 0], "layer": "midground"},
+    {"asset": "polyhaven-wooden-crate-01", "position": [3.5, 0.35, -4.35], "rotation": [0, -8, 0], "layer": "midground"},
+    {"asset": "polyhaven-wooden-crate-01", "position": [4.4, 0, -4.6], "rotation": [0, 70, 0], "layer": "midground"},
+    {"asset": "polyhaven-wooden-bucket-01", "position": [-3.3, 0, -2.6], "rotation": [0, 40, 0], "layer": "midground"},
+    {"asset": "polyhaven-wooden-bucket-01", "position": [5.9, 0, -2.2], "rotation": [0, -20, 0], "layer": "midground"},
+    {"asset": "polyhaven-wine-barrel-01", "position": [-2.9, 0, -4.4], "rotation": [0, 30, 0], "layer": "midground"},
+    {"asset": "polyhaven-wine-barrel-01", "position": [-2.6, 0.87, -4.3], "rotation": [0, 70, 0], "layer": "midground"},
+    {"asset": "polyhaven-wine-barrel-01", "position": [-2.0, 0, -4.7], "rotation": [0, 10, 0], "layer": "midground"},
+    {"asset": "polyhaven-wine-barrel-01", "position": [5.6, 0, 3.4], "rotation": [0, 20, 0], "layer": "background"},
+    {"asset": "polyhaven-wine-barrel-01", "position": [6.4, 0, 4.1], "rotation": [0, 60, 0], "layer": "background"}
+  ],
+  "lighting": {
+    "key": {"type": "sun", "through": "back windows", "direction": [0.15, -0.4, 0.9], "color": "key", "intensity": 3.4, "shadow": true},
+    "practicals": [
+      {"position": [6.7, 0.85, 0.3], "color": "#ffae5c", "intensity": 5, "distance": 5.5, "flicker": 0.06, "glow": 0.07},
+      {"position": [-3.2, 3.3, -0.4], "color": "#ffae5c", "intensity": 7, "distance": 7, "flicker": 0.05, "glow": 0.08, "hang": {"asset": "polyhaven-wooden-lantern-01", "ropeTo": 4.6}},
+      {"position": [2.4, 3.2, -1.6], "color": "#ffae5c", "intensity": 6, "distance": 7, "flicker": 0.05, "glow": 0.08, "hang": {"asset": "polyhaven-wooden-lantern-01", "ropeTo": 4.6}}
+    ],
+    "ambient": {"sky": "ambientSky", "ground": "ambientGround", "intensity": 1.25},
+    "fill": {"color": "fill", "intensity": 1.1, "direction": [-0.6, -0.3, -0.4]},
+    "environment": 0.45
+  },
+  "atmosphere": {
+    "fog": {"color": "fog", "density": 0.032},
+    "shafts": [
+      {"window": 0, "length": 7.5, "radius": [0.5, 1.4], "opacity": 0.16},
+      {"window": 1, "length": 7.5, "radius": [0.5, 1.4], "opacity": 0.16}
+    ],
+    "dust": {"min": [-3.5, 0.2, -6.5], "max": [4.5, 4.2, 2.5], "size": 0.012}
+  }
+}

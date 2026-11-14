@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "id": "bram",
+  "name": "Bram",
+  "description": "Original Hold Up character: a cheerful cooper's apprentice with a flat cap, leather apron and rolled sleeves. Big head, compact body.",
+  "heightM": 1.12,
+  "palette": {
+    "skin": "#f1bf96", "skinShade": "#d7966f", "blush": "#e7857a",
+    "hair": "#c8642e", "hairShade": "#9a4a21",
+    "cap": "#56653f", "capShade": "#3d4a2e",
+    "shirt": "#efe3c6", "shirtShade": "#cbbb98",
+    "apron": "#8d5731", "apronShade": "#6a3f22",
+    "trousers": "#3f4b60", "trousersShade": "#2e374a",
+    "boots": "#3b2618", "bootShade": "#27180e",
+    "eyeWhite": "#efe6d4", "pupil": "#2a1a12", "mouth": "#6e2622", "tongue": "#d9675e", "teeth": "#fffaf0"
+  },
+  "outlineMm": 7,
+  "rig": {
+    "heightMm": 1120, "hipY": 410, "neckHeight": 322, "headCenter": 175, "shoulderHeight": 292,
+    "shoulderF": [24, 0], "shoulderB": [-28, 0], "hipF": [16, 0], "hipB": [-22, 0],
+    "upperArm": 165, "forearm": 145, "hand": 70, "thigh": 196, "shin": 166
+  },
+  "parts": {
+    "torso": {"bone": "torso", "z": 0, "shapes": [
+      {"path": "M -26 -296 L 30 -296 L 26 -338 L -22 -338 Z", "fill": "skin"},
+      {"path": "M -108 12 C -120 -90 -132 -220 -104 -300 Q 0 -338 104 -300 C 132 -220 120 -90 108 12 Q 0 30 -108 12 Z", "fill": "shirt"},
+      {"path": "M -108 12 C -120 -90 -132 -220 -104 -300 Q -80 -312 -60 -318 C -84 -220 -86 -90 -70 22 Q -90 18 -108 12 Z", "fill": "shirtShade", "line": false},
+      {"path": "M -78 30 L -70 -205 Q 10 -222 92 -205 L 104 30 Q 14 46 -78 30 Z", "fill": "apron"},
+      {"path": "M -78 30 L -70 -205 Q -52 -210 -38 -212 L -48 36 Q -64 34 -78 30 Z", "fill": "apronShade", "line": false},
+      {"path": "M -62 -204 L -86 -300", "stroke": "apronShade", "width": 16},
+      {"path": "M 80 -204 L 94 -298", "stroke": "apronShade", "width": 16},
+      {"path": "M -8 -112 L 62 -112 L 58 -60 Q 26 -50 -4 -60 Z", "fill": "apronShade"},
+      {"path": "M -60 -300 Q 4 -270 64 -300 Q 4 -318 -60 -300 Z", "fill": "shirtShade"}
+    ]},
+    "head": {"bone": "head", "z": 12, "shapes": [
+      {"path": "M -158 -168 Q -184 -146 -166 -122 Q -178 -104 -150 -98 Q -146 -126 -146 -160 Z", "fill": "hair"},
+      {"ellipse": [-112, -168, 30, 40], "fill": "skin"},
+      {"ellipse": [-110, -166, 14, 22], "fill": "skinShade", "line": false},
+      {"ellipse": [15, -175, 172, 160], "fill": "skin"},
+      {"path": "M -150 -110 Q -120 -30 10 -16 Q -90 -60 -112 -170 Z", "fill": "skinShade", "line": false},
+      {"path": "M -92 -228 Q -108 -186 -90 -150 Q -80 -186 -72 -226 Z", "fill": "hair"},
+      {"ellipse": [100, -110, 30, 18], "fill": "blush", "alpha": 0.55, "line": false},
+      {"ellipse": [158, -150, 36, 31], "fill": "skin"},
+      {"ellipse": [150, -140, 20, 14], "fill": "skinShade", "line": false, "alpha": 0.7}
+    ]},
+    "cap": {"bone": "cap", "z": 18, "shapes": [
+      {"path": "M 40 -262 Q 70 -236 98 -256 Q 78 -222 50 -230 Q 34 -224 20 -252 Z", "fill": "hair"},
+      {"path": "M -180 -228 Q -172 -374 18 -374 Q 178 -368 188 -246 Q 20 -268 -180 -228 Z", "fill": "cap"},
+      {"path": "M -180 -228 Q -174 -332 -92 -362 Q -132 -300 -122 -238 Z", "fill": "capShade", "line": false},
+      {"ellipse": [10, -374, 14, 12], "fill": "capShade"},
+      {"path": "M 96 -258 Q 212 -278 264 -238 Q 216 -212 110 -232 Z", "fill": "capShade"}
+    ]},
+    "eyes": {"bone": "eyes", "z": 14, "shapes": [
+      {"ellipse": [28, 0, 32, 40], "fill": "eyeWhite", "lineScale": 0.55},
+      {"ellipse": [-42, 2, 25, 37], "fill": "eyeWhite", "lineScale": 0.55}
+    ]},
+    "pupils": {"bone": "pupils", "z": 15, "shapes": [
+      {"ellipse": [30, 6, 19, 22], "fill": "pupil", "line": false},
+      {"ellipse": [-38, 8, 15, 19], "fill": "pupil", "line": false},
+      {"ellipse": [36, -1, 6, 6], "fill": "eyeWhite", "line": false},
+      {"ellipse": [-33, 1, 5, 5], "fill": "eyeWhite", "line": false}
+    ]},
+    "brows": {"bone": "brows", "z": 16, "shapes": [
+      {"path": "M 0 0 Q 30 -16 62 -6", "stroke": "hairShade", "width": 15},
+      {"path": "M -78 2 Q -56 -12 -32 -6", "stroke": "hairShade", "width": 15}
+    ]},
+    "mouth:neutral": {"bone": "mouth", "z": 16, "shapes": [{"path": "M -28 0 Q 2 8 30 -2", "stroke": "mouth", "width": 9}]},
+    "mouth:smile": {"bone": "mouth", "z": 16, "shapes": [
+      {"path": "M -40 -8 Q 0 36 42 -10 Q 2 8 -40 -8 Z", "fill": "mouth"},
+      {"path": "M -16 14 Q 4 26 20 12 Q 2 8 -16 14 Z", "fill": "tongue", "line": false}
+    ]},
+    "mouth:grin": {"bone": "mouth", "z": 16, "shapes": [
+      {"path": "M -44 -12 Q 0 44 46 -14 Q 2 2 -44 -12 Z", "fill": "mouth"},
+      {"path": "M -36 -9 Q 2 -2 40 -11 L 36 0 Q 2 6 -32 2 Z", "fill": "teeth", "line": false}
+    ]},
+    "mouth:oh": {"bone": "mouth", "z": 16, "shapes": [
+      {"ellipse": [2, 6, 20, 26], "fill": "mouth"},
+      {"ellipse": [2, 20, 12, 8], "fill": "tongue", "line": false}
+    ]},
+    "mouth:grit": {"bone": "mouth", "z": 16, "shapes": [
+      {"path": "M -38 -12 L 40 -12 Q 46 6 38 18 L -36 18 Q -44 4 -38 -12 Z", "fill": "teeth"},
+      {"path": "M -36 3 L 38 3", "stroke": "mouth", "width": 4}
+    ]},
+    "mouth:hmm": {"bone": "mouth", "z": 16, "shapes": [{"path": "M -26 6 Q 0 -4 30 4", "stroke": "mouth", "width": 9}]},
+    "upperArmF": {"bone": "upperArmF", "z": 30, "shapes": [
+      {"path": "M -34 -14 Q 0 -32 34 -14 L 30 160 Q 0 176 -30 160 Z", "fill": "shirt"},
+      {"path": "M -34 -14 Q -20 -24 -8 -26 L -10 168 Q -22 166 -30 160 Z", "fill": "shirtShade", "line": false},
+      {"path": "M -32 132 L 32 132 L 30 168 Q 0 180 -30 168 Z", "fill": "shirtShade"}
+    ]},
+    "forearmF": {"bone": "forearmF", "z": 29, "shapes": [
+      {"path": "M -23 -6 L 23 -6 L 19 145 Q 0 156 -19 145 Z", "fill": "skin"},
+      {"path": "M -23 -6 L -8 -6 L -6 150 Q -14 150 -19 145 Z", "fill": "skinShade", "line": false}
+    ]},
+    "hand:open": {"bone": "hand", "z": 31, "shapes": [
+      {"path": "M -26 0 Q -34 40 -18 64 Q 0 80 20 64 Q 34 40 26 0 Z", "fill": "skin"},
+      {"path": "M 22 14 Q 46 20 44 42 Q 30 40 20 32 Z", "fill": "skin"},
+      {"path": "M -8 52 L -8 70 M 6 54 L 6 72", "stroke": "outline", "width": 4}
+    ]},
+    "hand:fist": {"bone": "hand", "z": 31, "shapes": [
+      {"ellipse": [0, 30, 30, 30], "fill": "skin"},
+      {"path": "M -16 46 Q 0 54 16 46", "stroke": "outline", "width": 4}
+    ]},
+    "hand:point": {"bone": "hand", "z": 31, "shapes": [
+      {"path": "M 4 40 L 6 104 Q 14 112 22 102 L 20 42 Z", "fill": "skin"},
+      {"ellipse": [0, 30, 30, 30], "fill": "skin"}
+    ]},
+    "hand:thumbs": {"bone": "hand", "z": 31, "shapes": [
+      {"ellipse": [0, 30, 30, 30], "fill": "skin"},
+      {"path": "M 18 22 Q 30 -26 46 -22 Q 50 0 30 34 Z", "fill": "skin"}
+    ]},
+    "upperArmB": {"bone": "upperArmB", "z": -30, "shapes": [
+      {"path": "M -34 -14 Q 0 -32 34 -14 L 30 160 Q 0 176 -30 160 Z", "fill": "shirtShade"},
+      {"path": "M -32 132 L 32 132 L 30 168 Q 0 180 -30 168 Z", "fill": "shirtShade"}
+    ]},
+    "forearmB": {"bone": "forearmB", "z": -31, "shapes": [{"path": "M -23 -6 L 23 -6 L 19 145 Q 0 156 -19 145 Z", "fill": "skinShade"}]},
+    "handB:open": {"bone": "handB", "z": -29, "shapes": [
+      {"path": "M -26 0 Q -34 40 -18 64 Q 0 80 20 64 Q 34 40 26 0 Z", "fill": "skinShade"},
+      {"path": "M 22 14 Q 46 20 44 42 Q 30 40 20 32 Z", "fill": "skinShade"}
+    ]},
+    "handB:fist": {"bone": "handB", "z": -29, "shapes": [{"ellipse": [0, 30, 30, 30], "fill": "skinShade"}]},
+    "thighF": {"bone": "thighF", "z": -10, "shapes": [
+      {"path": "M -44 -10 L 44 -10 L 38 196 Q 0 206 -38 196 Z", "fill": "trousers"},
+      {"path": "M -44 -10 L -24 -10 L -20 200 Q -30 200 -38 196 Z", "fill": "trousersShade", "line": false}
+    ]},
+    "shinF": {"bone": "shinF", "z": -11, "shapes": [{"path": "M -38 -6 L 38 -6 L 35 160 L -35 160 Z", "fill": "trousers"}]},
+    "bootF": {"bone": "bootF", "z": -9, "shapes": [
+      {"path": "M -40 -18 L 38 -18 Q 98 0 96 40 L -44 40 Q -54 12 -40 -18 Z", "fill": "boots"},
+      {"path": "M -44 32 L 96 32 L 96 42 L -44 42 Z", "fill": "bootShade", "line": false}
+    ]},
+    "thighB": {"bone": "thighB", "z": -20, "shapes": [{"path": "M -44 -10 L 44 -10 L 38 196 Q 0 206 -38 196 Z", "fill": "trousersShade"}]},
+    "shinB": {"bone": "shinB", "z": -21, "shapes": [{"path": "M -38 -6 L 38 -6 L 35 160 L -35 160 Z", "fill": "trousersShade"}]},
+    "bootB": {"bone": "bootB", "z": -19, "shapes": [{"path": "M -40 -18 L 38 -18 Q 98 0 96 40 L -44 40 Q -54 12 -40 -18 Z", "fill": "bootShade"}]}
+  },
+  "anchors": {
+    "head": [5, 0], "eyes": [90, -185], "pupils": [90, -185], "brows": [90, -240], "mouth": [98, -92], "cap": [0, 0]
+  }
+}

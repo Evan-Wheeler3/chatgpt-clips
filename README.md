@@ -15,7 +15,9 @@ Improve pacing, voice performance, camera direction and environment quality whil
 - [ ] Additional provider adapters
 - [ ] Add Blender batch conversion for formats/repairs gltf-transform cannot handle, and optional MCP fallback
 - [x] Narration-timed storyboard: measured word timing (whisper.cpp), word-anchored shot plans, reusable camera behaviors, validation and a low-res vertical animatic (`stories/barrel-bilge` demo); see `docs/STORYBOARD.md`
-- [ ] End-to-end render, QA, and comparison against baseline
+- [x] Environments, Hold Up art direction, original 2D characters in 3D, animation presets, preview/production quality and pixel QA (see `docs/VISUALS.md`)
+- [ ] Final voice, captions and sound design (Phase 6)
+- [ ] End-to-end 60–70 s production and comparison against baseline
 
 ## Current pipeline
 ```text
@@ -38,6 +40,7 @@ npm run assets:fetch -- --provider polyhaven --id wooden_stool_01 --resolution 1
 npm run assets:convert -- --provider polyhaven --id painted_wooden_stool
 npm run assets:register -- --report assets/converted/polyhaven/painted_wooden_stool/<key>/report.json --approve --approved-by "<you>"
 npm run storyboard -- --story stories/barrel-bilge/story.json --narrate --render
+npm run storyboard -- --story stories/barrel-bilge/story.json --render --quality production --qa
 npm run test:integration
 ```
 

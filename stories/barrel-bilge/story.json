@@ -3,21 +3,94 @@
   "slug": "barrel-bilge",
   "title": "Why barrels bulge",
   "fps": 30,
-  "size": {"width": 1080, "height": 1920},
+  "size": {
+    "width": 1080,
+    "height": 1920
+  },
   "narration": {
     "script": "Why do wooden barrels bulge in the middle? [[slnc 350]] That curve has a name: [[slnc 150]] the [[emph +]] bilge. [[slnc 350]] Iron hoops squeeze the bent staves tight. [[slnc 250]] And the bulge makes a heavy barrel easy to roll [[slnc 150]] and easy to turn, right on the spot.",
-    "voice": {"engine": "macos-say", "voice": "Samantha", "rate": 165}
+    "voice": {
+      "engine": "macos-say",
+      "voice": "Samantha",
+      "rate": 165
+    }
   },
   "stage": {
     "background": "#2a231c",
-    "fog": {"near": 5, "far": 14},
-    "ground": {"color": "#6b5440"},
-    "light": {"key": "#ffdcae", "keyIntensity": 3.2, "keyPosition": [2.2, 3.6, 2.8], "sky": "#d3dcea", "bounce": "#5a4430", "ambient": 0.9, "environment": 0.6, "exposure": 1.25}
+    "fog": {
+      "near": 5,
+      "far": 14
+    },
+    "ground": {
+      "color": "#6b5440"
+    },
+    "light": {
+      "key": "#ffdcae",
+      "keyIntensity": 3.2,
+      "keyPosition": [
+        2.2,
+        3.6,
+        2.8
+      ],
+      "sky": "#d3dcea",
+      "bounce": "#5a4430",
+      "ambient": 0.9,
+      "environment": 0.6,
+      "exposure": 1.25
+    }
   },
   "props": [
-    {"id": "barrel", "asset": {"query": "wooden barrel", "style": "realistic"}, "position": [0, 0, 0], "rotation": [0, 15, 0]},
-    {"id": "bucket", "asset": {"query": "wooden bucket", "style": "realistic"}, "position": [0.95, 0, -0.95], "rotation": [0, -30, 0]},
-    {"id": "crate", "asset": {"query": "wooden crate", "style": "realistic"}, "position": [-1.3, 0, -1.0], "rotation": [0, 25, 0]}
+    {
+      "id": "barrel",
+      "asset": {
+        "query": "wooden barrel",
+        "style": "realistic"
+      },
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        15,
+        0
+      ]
+    },
+    {
+      "id": "bucket",
+      "asset": {
+        "query": "wooden bucket",
+        "style": "realistic"
+      },
+      "position": [
+        0.95,
+        0,
+        -0.95
+      ],
+      "rotation": [
+        0,
+        -30,
+        0
+      ]
+    },
+    {
+      "id": "crate",
+      "asset": {
+        "query": "wooden crate",
+        "style": "realistic"
+      },
+      "position": [
+        -1.3,
+        0,
+        -1.0
+      ],
+      "rotation": [
+        0,
+        25,
+        0
+      ]
+    }
   ],
   "beats": [
     {
@@ -26,12 +99,52 @@
       "shots": [
         {
           "id": "reveal",
-          "purpose": "Rise from floor level so the barrel's silhouette builds up and its widest point arrives on 'bulge'",
+          "purpose": "Rise from floor level so the barrel's silhouette builds up and its widest point arrives on 'bulge'; Bram puzzles over the barrel behind it, voicing the question with his pose",
           "subject": "barrel",
-          "camera": {"move": "reveal", "framing": "medium", "azimuth": 28, "elevation": 9,
-                     "from": {"framing": "detail", "azimuth": 18, "elevation": 3, "focus": [0, -0.35, 0]},
-                     "during": {"from": "Why", "to": "bulge#1"}, "ease": "dolly"},
-          "focus": ["bulge#1"]
+          "camera": {
+            "move": "reveal",
+            "framing": "medium",
+            "azimuth": 28,
+            "elevation": 9,
+            "from": {
+              "framing": "detail",
+              "azimuth": 18,
+              "elevation": 3,
+              "focus": [
+                0,
+                -0.35,
+                0
+              ]
+            },
+            "during": {
+              "from": "Why",
+              "to": "bulge#1"
+            },
+            "ease": "dolly"
+          },
+          "focus": [
+            "bulge#1"
+          ],
+          "events": [
+            {
+              "character": "bram",
+              "at": "Why",
+              "do": "pose",
+              "params": {
+                "preset": "shrug",
+                "target": "barrel"
+              }
+            },
+            {
+              "character": "bram",
+              "at": "middle",
+              "do": "pose",
+              "params": {
+                "preset": "think",
+                "target": "barrel"
+              }
+            }
+          ]
         }
       ]
     },
@@ -42,12 +155,58 @@
         {
           "id": "profile",
           "start": "That",
-          "purpose": "Drop to eye level on the barrel's outer edge and swing round so the bulging curve becomes a silhouette against the dark wall as it is named",
+          "purpose": "Drop to eye level on the barrel's outer edge and swing round so the bulging curve becomes a silhouette against the dark wall as it is named; Bram fills the empty half of the frame and points at the curve on 'bilge'",
           "subject": "barrel",
-          "transition": {"type": "cut", "motivation": "New information (the name) gets a new view: from the whole barrel to its curving edge"},
-          "camera": {"move": "orbit", "framing": "close", "azimuth": -40, "elevation": 0, "focus": [0, 0, 0.45], "to": {"azimuth": -88},
-                     "during": {"from": "That", "to": "bilge"}, "ease": "settle"},
-          "focus": ["bilge"]
+          "transition": {
+            "type": "cut",
+            "motivation": "New information (the name) gets a new view: from the whole barrel to its curving edge"
+          },
+          "camera": {
+            "move": "orbit",
+            "framing": "close",
+            "azimuth": -40,
+            "elevation": 0,
+            "focus": [
+              0,
+              0,
+              0.45
+            ],
+            "to": {
+              "azimuth": -88
+            },
+            "during": {
+              "from": "That",
+              "to": "bilge"
+            },
+            "ease": "settle"
+          },
+          "focus": [
+            "bilge"
+          ],
+          "events": [
+            {
+              "character": "bram",
+              "at": "shot-start",
+              "do": "place",
+              "params": {
+                "position": [
+                  0.9,
+                  1.0
+                ],
+                "face": "barrel"
+              }
+            },
+            {
+              "character": "bram",
+              "at": "bilge",
+              "do": "pose",
+              "params": {
+                "preset": "point",
+                "target": "barrel"
+              },
+              "duration": 1.0
+            }
+          ]
         }
       ]
     },
@@ -60,10 +219,35 @@
           "start": "Iron",
           "purpose": "Cut in on the same side of the barrel, keeping its curving edge where the eye already is, then slide along the hoops and staves as they are named",
           "subject": "barrel",
-          "transition": {"type": "cut", "motivation": "The narration names physical parts, so cut in to detail; the silhouette edge stays put across the cut"},
-          "camera": {"move": "track", "framing": "detail", "azimuth": -60, "elevation": 6, "focus": [0, 0.3, 0.45], "lens": "tele",
-                     "params": {"distance": 0.25, "direction": "left"}, "during": {"from": "Iron", "to": "tight"}, "ease": "dolly"},
-          "focus": ["hoops", "staves"]
+          "transition": {
+            "type": "cut",
+            "motivation": "The narration names physical parts, so cut in to detail; the silhouette edge stays put across the cut"
+          },
+          "camera": {
+            "move": "track",
+            "framing": "detail",
+            "azimuth": -60,
+            "elevation": 6,
+            "focus": [
+              0,
+              0.3,
+              0.45
+            ],
+            "lens": "tele",
+            "params": {
+              "distance": 0.25,
+              "direction": "left"
+            },
+            "during": {
+              "from": "Iron",
+              "to": "tight"
+            },
+            "ease": "dolly"
+          },
+          "focus": [
+            "hoops",
+            "staves"
+          ]
         }
       ]
     },
@@ -74,39 +258,233 @@
         {
           "id": "contact",
           "start": "And#1",
-          "purpose": "Whip to the barrel lying on its side; push in low to show it touches the floor only at the bulge",
+          "purpose": "Whip to the barrel lying on its side; push in low to show it touches the floor only at the bulge; Bram crouches behind it, winding up for the shove",
           "subject": "barrel",
-          "transition": {"type": "whip"},
-          "camera": {"move": "push-in", "framing": "medium", "azimuth": 100, "elevation": 2, "focus": [0, -0.2, 0], "to": {"framing": "close"},
-                     "during": {"from": "bulge#2", "to": "heavy"}, "ease": "dolly"},
-          "events": [{"at": "shot-start", "prop": "barrel", "do": "set", "params": {"position": [-0.8, 0, 0.1], "rotation": [90, 330, 0]}}],
-          "focus": ["bulge#2"]
+          "transition": {
+            "type": "whip"
+          },
+          "camera": {
+            "move": "push-in",
+            "framing": "medium",
+            "azimuth": 100,
+            "elevation": 2,
+            "focus": [
+              0,
+              -0.2,
+              0
+            ],
+            "to": {
+              "framing": "close"
+            },
+            "during": {
+              "from": "bulge#2",
+              "to": "heavy"
+            },
+            "ease": "dolly"
+          },
+          "events": [
+            {
+              "at": "shot-start",
+              "prop": "barrel",
+              "do": "set",
+              "params": {
+                "position": [
+                  -0.8,
+                  0,
+                  0.1
+                ],
+                "rotation": [
+                  90,
+                  330,
+                  0
+                ]
+              }
+            },
+            {
+              "character": "bram",
+              "at": "shot-start",
+              "do": "place",
+              "params": {
+                "position": [
+                  -1.5,
+                  0.7
+                ],
+                "face": "barrel"
+              }
+            },
+            {
+              "character": "bram",
+              "at": "bulge#2",
+              "do": "pose",
+              "params": {
+                "preset": "ready",
+                "target": "barrel"
+              }
+            }
+          ],
+          "focus": [
+            "bulge#2"
+          ]
         },
         {
           "id": "roll",
           "start": "heavy",
-          "purpose": "Cut on the shove: the barrel is already rolling on the first frame, and the camera follows at the same height and focus so the eye stays on it, so 'easy to roll' is felt, not just heard",
+          "purpose": "Cut on Bram's shove: the barrel is already rolling on the first frame, and the camera follows at the same height and focus so the eye stays on it, so 'easy to roll' is felt, not just heard",
           "subject": "barrel",
-          "transition": {"type": "cut", "motivation": "Cut on action: the roll starts on the cut, and a 50-degree swing turns the barrel's motion across the frame"},
-          "camera": {"move": "follow", "framing": "medium", "azimuth": 50, "elevation": 5, "focus": [0, -0.2, 0], "params": {"lag": 0.15}},
-          "events": [{"at": "shot-start", "prop": "barrel", "do": "roll", "until": "roll", "params": {"distance": 1.3, "direction": [1, 0, 0]}, "ease": "out"}],
-          "focus": ["roll"]
+          "transition": {
+            "type": "cut",
+            "motivation": "Cut on action: the roll starts on the cut, and a 50-degree swing turns the barrel's motion across the frame"
+          },
+          "camera": {
+            "move": "follow",
+            "framing": "medium",
+            "azimuth": 50,
+            "elevation": 5,
+            "focus": [
+              0,
+              -0.2,
+              0
+            ],
+            "params": {
+              "lag": 0.15
+            }
+          },
+          "events": [
+            {
+              "at": "shot-start",
+              "prop": "barrel",
+              "do": "roll",
+              "until": "roll",
+              "params": {
+                "distance": 1.3,
+                "direction": [
+                  1,
+                  0,
+                  0
+                ]
+              },
+              "ease": "out"
+            },
+            {
+              "character": "bram",
+              "at": "shot-start",
+              "do": "push",
+              "params": {
+                "prop": "barrel"
+              },
+              "duration": 0.35
+            },
+            {
+              "character": "bram",
+              "at": "barrel",
+              "do": "walk",
+              "params": {
+                "to": [
+                  0.1,
+                  -0.35
+                ]
+              },
+              "until": "and#2"
+            }
+          ],
+          "focus": [
+            "roll"
+          ]
         },
         {
           "id": "turn",
           "start": "easy#2",
-          "purpose": "Rise and pull back as the barrel pivots on its bulge from the first frame, revealing how little floor it needs to turn",
+          "purpose": "Rise and pull back as the barrel pivots on its bulge from the first frame, revealing how little floor it needs to turn; Bram, behind it, presents the turn and gives a proud thumbs-up on 'spot'",
           "subject": "barrel",
-          "transition": {"type": "cut", "motivation": "Cut on action: the pivot starts on the cut as 'easy to turn' begins; a higher, wider view makes it readable"},
-          "camera": {"move": "pullback", "framing": "close", "azimuth": 40, "elevation": 16, "to": {"framing": "wide", "azimuth": 52, "elevation": 34},
-                     "during": {"to": "spot"}, "ease": "settle"},
+          "transition": {
+            "type": "cut",
+            "motivation": "Cut on action: the pivot starts on the cut as 'easy to turn' begins; a higher, wider view makes it readable"
+          },
+          "camera": {
+            "move": "pullback",
+            "framing": "close",
+            "azimuth": 40,
+            "elevation": 16,
+            "to": {
+              "framing": "wide",
+              "azimuth": 52,
+              "elevation": 34
+            },
+            "during": {
+              "to": "spot"
+            },
+            "ease": "settle"
+          },
           "events": [
-            {"at": "shot-start", "prop": "barrel", "do": "pivot", "until": "right", "params": {"degrees": 80}, "ease": "cubic"},
-            {"at": "spot", "prop": "barrel", "do": "wobble", "duration": 0.6, "params": {"degrees": 5, "axis": [0, 1, 0], "cycles": 2}}
+            {
+              "at": "shot-start",
+              "prop": "barrel",
+              "do": "pivot",
+              "until": "right",
+              "params": {
+                "degrees": 80
+              },
+              "ease": "cubic"
+            },
+            {
+              "at": "spot",
+              "prop": "barrel",
+              "do": "wobble",
+              "duration": 0.6,
+              "params": {
+                "degrees": 5,
+                "axis": [
+                  0,
+                  1,
+                  0
+                ],
+                "cycles": 2
+              }
+            },
+            {
+              "character": "bram",
+              "at": "shot-start",
+              "do": "pose",
+              "params": {
+                "preset": "present",
+                "target": "barrel"
+              },
+              "until": "right"
+            },
+            {
+              "character": "bram",
+              "at": "spot",
+              "do": "pose",
+              "params": {
+                "preset": "thumbs-up",
+                "target": "camera"
+              }
+            }
           ],
-          "focus": ["spot"]
+          "focus": [
+            "spot"
+          ]
         }
       ]
+    }
+  ],
+  "environment": {
+    "id": "cooperage-storehouse"
+  },
+  "style": {
+    "id": "hold-up"
+  },
+  "cast": [
+    {
+      "id": "bram",
+      "character": "bram",
+      "start": {
+        "position": [
+          0.05,
+          -1.15
+        ],
+        "face": "barrel"
+      }
     }
   ]
 }
