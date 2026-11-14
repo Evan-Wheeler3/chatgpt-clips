@@ -21,7 +21,32 @@ function bounds(part) {
 }
 const covers = (b, [x, y], margin = 2) => b && x >= b[0] - margin && x <= b[2] + margin && y >= b[1] - margin && y <= b[3] + margin;
 
+// Hybrid definitions (3D body forms + 2D face) have forms instead of drawn parts
+function validateHybrid(def) {
+  const errors = [], warnings = [];
+  const F = def.forms ?? {}, R = def.rig ?? {}, pal = def.palette ?? {};
+  for (const key of ['torso', 'head', 'neck', 'face', 'arm', 'leg', 'boot']) if (!F[key]) errors.push({code:'MISSING_FORM', message:`${def.id} has no ${key} form`});
+  for (const key of ['skin', 'shirt', 'trousers', 'boots', 'line']) if (!pal[key]) errors.push({code:'UNKNOWN_COLOR', message:`${def.id} palette lacks ${key}`});
+  if (errors.length) return {status:'failed', errors, warnings, metrics:{}};
+  // Joints stay closed when limb capsule radii exceed half the gap between neighbouring pivots (always true for spheres on pivots)
+  if (F.shoulderSpan / 2 - F.arm.upper > F.torso.width / 2) errors.push({code:'JOINT_GAP', message:`${def.id}: arms hang clear of the torso`});
+  const clothing = new Set(['shirt', 'apron', 'trousers', 'cap', 'boots', 'vest', 'coat'].filter(k => pal[k]).map(k => pal[k].toLowerCase()));
+  if (clothing.size > 3) warnings.push({code:'TOO_MANY_COLORS', message:`${def.id} uses ${clothing.size} clothing colours (limit 3 for this experiment)`});
+  const maxSat = Math.max(0, ...[...clothing].map(saturation));
+  if (maxSat > LIMITS.maxClothingSaturation) warnings.push({code:'SATURATED_COLOR', message:`${def.id}: clothing saturation ${maxSat.toFixed(2)}`});
+  for (const [a, b] of [['skin', 'shirt'], ['shirt', 'apron'], ['apron', 'trousers']]) {
+    if (pal[a] && pal[b] && Math.abs(luma(pal[a]) - luma(pal[b])) < LIMITS.minValueSeparation) warnings.push({code:'LOW_VALUE_SEPARATION', message:`${def.id}: ${a} and ${b} are too close in value`});
+  }
+  const headRatio = R.heightMm / F.head.height;
+  if (headRatio < LIMITS.minAdultHeadRatio) warnings.push({code:'CHILDLIKE_PROPORTIONS', message:`${def.id}: ${headRatio.toFixed(1)} heads tall`});
+  const eyeShare = F.face.eyes.height / F.head.height;
+  if (eyeShare < 0.06) warnings.push({code:'FEATURES_TOO_SMALL', message:`${def.id}: eyes are ${(eyeShare * 100).toFixed(1)}% of head height`});
+  return {status:errors.length ? 'failed' : warnings.length ? 'review' : 'pass', errors, warnings,
+    metrics:{headRatio:Math.round(headRatio * 10) / 10, clothingColors:clothing.size, maxClothingSaturation:Math.round(maxSat * 100) / 100, eyeShare:Math.round(eyeShare * 1000) / 1000}};
+}
+
 export function validateDefinition(def) {
+  if (def.render?.mode === 'hybrid-3d') return validateHybrid(def);
   const errors = [], warnings = [];
   for (const name of REQUIRED_PARTS) if (!def.parts?.[name]) errors.push({code:'MISSING_PART', message:`${def.id} has no ${name}`});
   for (const [name, part] of Object.entries(def.parts ?? {})) for (const s of part.shapes) for (const key of [s.fill, s.stroke].filter(Boolean)) {

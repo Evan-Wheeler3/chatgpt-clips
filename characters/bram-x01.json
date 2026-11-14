@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "id": "bram-x01",
+  "name": "Bram (experiment 01)",
+  "description": "Experiment 01 redesign of Bram as an adult 1850s cooper: hybrid of simple 3D body forms and a sparse 2D face; pale warm-cream head; three muted clothing colours; one dark contour.",
+  "heightM": 1.42,
+  "expressionScale": 0.85,
+  "render": {
+    "mode": "hybrid-3d",
+    "outlinePx": 3.2,
+    "outlineColor": "#16120f",
+    "shade": 0.84,
+    "headTowardCamera": 0.55
+  },
+  "palette": {
+    "skin": "#f1e6d2",
+    "shirt": "#9aa7b0",
+    "apron": "#7d5a40",
+    "trousers": "#2f3338",
+    "cap": "#2f3338",
+    "boots": "#2f3338",
+    "line": "#16120f",
+    "ink": "#1a1512",
+    "skinShade": "#cdb99c"
+  },
+  "forms": {
+    "torso": {
+      "depth": 230,
+      "width": 330,
+      "radius": 62,
+      "waist": 0.88
+    },
+    "apron": {
+      "top": 330,
+      "top0": 40,
+      "bottom": -250,
+      "width": 250,
+      "edge": 5,
+      "flare": 1.18
+    },
+    "neck": {
+      "radius": 50,
+      "length": 80
+    },
+    "head": {
+      "width": 232,
+      "height": 300,
+      "depth": 252,
+      "jawTaper": 0.12
+    },
+    "cap": {
+      "scale": 1.1,
+      "height": 0.36,
+      "seat": 0.37,
+      "tilt": 8,
+      "brimLength": 150,
+      "brimThickness": 24
+    },
+    "face": {
+      "eyes": {
+        "azimuths": [
+          -23,
+          23
+        ],
+        "elevation": 6,
+        "width": 17,
+        "height": 26
+      },
+      "brows": {
+        "width": 54,
+        "elevation": 15
+      },
+      "nose": {
+        "elevation": -6,
+        "size": 16,
+        "azimuth": 6
+      },
+      "mouth": {
+        "elevation": -22,
+        "width": 50
+      }
+    },
+    "shoulderSpan": 380,
+    "hipSpan": 150,
+    "arm": {
+      "upper": 44,
+      "fore": 42,
+      "hand": 46,
+      "rolled": true
+    },
+    "leg": {
+      "thigh": 72,
+      "shin": 62
+    },
+    "boot": {
+      "length": 150,
+      "height": 70,
+      "width": 102
+    }
+  },
+  "rig": {
+    "heightMm": 1420,
+    "hipY": 600,
+    "neckHeight": 450,
+    "headCenter": 165,
+    "shoulderHeight": 388,
+    "shoulderF": [
+      0,
+      0
+    ],
+    "shoulderB": [
+      0,
+      0
+    ],
+    "hipF": [
+      0,
+      0
+    ],
+    "hipB": [
+      0,
+      0
+    ],
+    "upperArm": 230,
+    "forearm": 200,
+    "hand": 70,
+    "thigh": 290,
+    "shin": 262
+  },
+  "parts": {},
+  "anchors": {}
+}

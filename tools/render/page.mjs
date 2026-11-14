@@ -8,6 +8,7 @@ import { stylizeObject } from './stylize.mjs';
 import { createPost } from './post.mjs';
 import { buildEnvironment } from './environment.mjs';
 import { buildCharacter } from './character-rig.mjs';
+import { buildHybridCharacter } from './character-hybrid.mjs';
 
 let plan, quality, renderer, scene, camera, out, ctx, post, env = null, W, H, issues = [], keyLight;
 const groups = new Map(), shadows = new Map(), characters = new Map();
@@ -82,7 +83,10 @@ window.setup = async (planJson, size, issueList, qualityName) => {
     if (prop.base.grounded !== false) shadows.set(prop.id, [contactLayer(0.35), contactLayer(0.7)]);
   }
   for (const member of plan.cast ?? []) {
-    const rig = buildCharacter(member.definition, {style, quality, maxAnisotropy:renderer.capabilities.getMaxAnisotropy(), outputHeight:H});
+    // Hybrid definitions (3D body forms + 2D face) and cutout definitions share the same rig and pose data
+    const rig = member.definition.render?.mode === 'hybrid-3d'
+      ? buildHybridCharacter(member.definition, {quality, outputWidth:W, outputHeight:H})
+      : buildCharacter(member.definition, {style, quality, maxAnisotropy:renderer.capabilities.getMaxAnisotropy(), outputHeight:H});
     scene.add(rig.group, rig.shadowGroup);
     // Each character also lives on its own layer (1, 2, ...) so QA can render its silhouette mask alone
     const layer = characters.size + 1;
@@ -357,8 +361,8 @@ window.characterMetrics = frames => frames.map(frame => {
     inLab = inLab.map(v => v / Math.max(1, inN)); ringLab = ringLab.map(v => v / Math.max(1, ringN));
     // Face size on a phone: head height projected, converted to points on a 390-pt-wide portrait screen
     const def = entry.definition, units = def.heightM / def.rig.heightMm;
-    const headBounds = def.parts.head.shapes.reduce((a, sh) => { const b = sh.ellipse ? [sh.ellipse[1] - sh.ellipse[3], sh.ellipse[1] + sh.ellipse[3]] : (() => { const n = sh.path.match(/-?\d+(\.\d+)?/g).map(Number).filter((_, k) => k % 2 === 1); return [Math.min(...n), Math.max(...n)]; })(); return [Math.min(a[0], b[0]), Math.max(a[1], b[1])]; }, [Infinity, -Infinity]);
-    const headMm = headBounds[1] - headBounds[0];
+    const headBounds = (def.parts.head?.shapes ?? []).reduce((a, sh) => { const b = sh.ellipse ? [sh.ellipse[1] - sh.ellipse[3], sh.ellipse[1] + sh.ellipse[3]] : (() => { const n = sh.path.match(/-?\d+(\.\d+)?/g).map(Number).filter((_, k) => k % 2 === 1); return [Math.min(...n), Math.max(...n)]; })(); return [Math.min(a[0], b[0]), Math.max(a[1], b[1])]; }, [Infinity, -Infinity]);
+    const headMm = def.forms?.head?.height ?? headBounds[1] - headBounds[0];
     const center = new THREE.Vector3(...c.position).setY((def.rig.hipY - c.pose.hipDrop + def.rig.neckHeight + def.rig.headCenter) * units);
     const top = center.clone().setY(center.y + headMm * units / 2).project(camera), bottom = center.clone().setY(center.y - headMm * units / 2).project(camera);
     const headPx = Math.abs(top.y - bottom.y) / 2 * H;

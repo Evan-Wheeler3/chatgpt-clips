@@ -13,6 +13,7 @@ import { castTracks } from '../tools/storyboard/sample.mjs';
 import { openRenderer } from '../tools/storyboard/animatic.mjs';
 import { findChrome } from '../tools/convert/preview.mjs';
 import { labStory } from '../tools/character-lab.mjs';
+import { studioStory } from '../tools/character-experiment.mjs';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const specs = async () => Promise.all((await readdir(join(repo, 'characters/specs'))).map(async f => JSON.parse(await readFile(join(repo, 'characters/specs', f), 'utf8'))));
@@ -101,6 +102,26 @@ test('a flat-tinted candidate renders in one piece with a readable silhouette an
       assert.equal(s.maxPieces, 1);
       assert.ok(s.edgeContrast > 0.2, `edge ${s.edgeContrast}`);
       assert.ok(s.colorDriftBetweenShots < 10, `drift ${s.colorDriftBetweenShots}`);
+      assert.deepEqual(r.problems, []);
+    } finally { await r.close(); }
+  } finally { if (gpu === undefined) delete process.env.HOLDUP_GPU; else process.env.HOLDUP_GPU = gpu; }
+});
+
+test('the hybrid experiment (3D body, 2D face) validates and renders in one piece', async t => {
+  const def = JSON.parse(await readFile(join(repo, 'characters/bram-x01.json'), 'utf8'));
+  assert.equal(validateDefinition(def).status, 'pass');
+  const broken = structuredClone(def); delete broken.forms.head;
+  assert.ok(validateDefinition(broken).errors.some(e => e.code === 'MISSING_FORM'));
+  if (!await findChrome()) return t.skip('No Chrome/Chromium available; set CHROME_PATH');
+  const gpu = process.env.HOLDUP_GPU;
+  process.env.HOLDUP_GPU = gpu ?? 'swiftshader';
+  try {
+    const plan = await compileStory(studioStory('bram-x01'), {words:Array.from({length:24}, (_, i) => ({i, text:`t${i}`, start:i * 0.25, end:i * 0.25 + 0.2})), audio:{durationSec:6}});
+    const r = await openRenderer(plan, {quality:'preview'});
+    try {
+      const s = judgeCharacterMetrics(await r.page.evaluate(() => window.characterMetrics([20, 110]))).summary.lead;
+      assert.equal(s.maxPieces, 1);
+      assert.ok(s.edgeContrast > 0.2, `edge ${s.edgeContrast}`);
       assert.deepEqual(r.problems, []);
     } finally { await r.close(); }
   } finally { if (gpu === undefined) delete process.env.HOLDUP_GPU; else process.env.HOLDUP_GPU = gpu; }
