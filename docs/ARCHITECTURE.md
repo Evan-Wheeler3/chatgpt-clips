@@ -20,6 +20,7 @@ Original `SKILL.md` is a detailed instruction set for a particular bridge short.
    5.4 The cooper is locked as the master character (`characters/cooper/`, versioned, with visual regression) and stars in barrel-bilge; Bram is legacy. Production approved.
    5.5 Character library, resolver, image-first intake, approval gates and rig attachments: see `docs/CHARACTER-LIBRARY.md` and `docs/CHARACTER-STYLE-GUIDE.md`.
 6. Final voice, captions, sound design and audio QA; Remotion composition.
+   6.1 Narration engine: provider interface (ElevenLabs, macOS say fallback, recordings), voice profiles, delivery markup, spending safeguards, provider or whisper word timing, and narration sync reports. Narrator audition prepared, awaiting the owner's key, spending approval and choice. See `docs/NARRATION.md`.
 6. Benchmarked end-to-end sample and iteration.
 
 ## Data contracts

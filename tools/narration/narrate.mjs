@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFile, writeFile, mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, mkdtemp, rm, copyFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFile } from 'node:child_process';
@@ -7,6 +7,8 @@ import { promisify } from 'node:util';
 import { alignWords, spokenText } from './align.mjs';
 import { transcribeIslands } from './whisper.mjs';
 import { speechIslands } from './vad.mjs';
+import { markedPauses } from './markup.mjs';
+import { createProvider, narratorFor, synthesize } from './tts.mjs';
 
 const run = promisify(execFile);
 
@@ -15,42 +17,71 @@ export async function audioDuration(path) {
   return Number(stdout.trim());
 }
 
-// macOS `say` is a real local TTS engine; its embedded commands ([[slnc 250]], [[emph +]]) shape pauses and stress
-async function synthesizeSay(script, {voice = 'Samantha', rate = 170}, outAiff) {
-  if (process.platform !== 'darwin') throw new Error('The macos-say narration engine needs macOS; provide recorded audio with --audio instead');
-  await run('say', ['-v', voice, '-r', String(rate), '-o', outAiff, script]);
+export async function whisperWords(wav16) {
+  const {stdout:pcm} = await run('ffmpeg', ['-loglevel', 'error', '-i', wav16, '-f', 's16le', '-ac', '1', '-ar', '16000', '-'], {encoding:'buffer', maxBuffer:512 * 1024 * 1024});
+  const {islands, threshold} = speechIslands(new Int16Array(pcm.buffer, pcm.byteOffset, pcm.length / 2), 16000);
+  if (!islands.length) throw new Error('No speech found in the narration audio');
+  const {words, engine} = await transcribeIslands(wav16, islands, {durationSec:await audioDuration(wav16)});
+  return {words, engine, islands, threshold};
 }
 
-// Produces narration.wav (48 kHz mono) and words.json with measured word timing; never estimates timing from text
-export async function narrate({slug, narration, outDir, audioPath = null}) {
+// Mean absolute difference between two word timelines over the words both aligned exactly (seconds)
+export function timingAgreement(a, b) {
+  const pairs = a.map((w, i) => [w, b[i]]).filter(([x, y]) => x?.match === 'exact' && y?.match === 'exact');
+  const diffs = pairs.flatMap(([x, y]) => [Math.abs(x.start - y.start), Math.abs(x.end - y.end)]);
+  return {words:pairs.length, meanAbsSec:diffs.length ? diffs.reduce((s, d) => s + d, 0) / diffs.length : null, maxAbsSec:diffs.length ? Math.max(...diffs) : null};
+}
+
+// How much of each intentionally marked pause survived delivery (measured silence between the two words)
+export function pauseReport(script, words) {
+  return markedPauses(script).filter(p => words[p.afterWord + 1]).map(p => ({after:words[p.afterWord].text, markedMs:p.ms, measuredMs:Math.round((words[p.afterWord + 1].start - words[p.afterWord].end) * 1000)}));
+}
+
+/*
+ * One narration take: synthesize (or import) audio, measure word timing, and make it the story's active narration.
+ * Writes production/<slug>/takes/<take>/{narration.wav, words.json} and copies both to production/<slug>/ (active).
+ * Timing is always measured: the provider's alignment when it returns one, otherwise whisper.cpp; never estimated from text.
+ */
+export async function narrate({slug, narration, outDir, audioPath = null, profile = null, authorization = null, verifyAlignment = false, take = null}) {
   await mkdir(outDir, {recursive:true});
   const work = await mkdtemp(join(tmpdir(), 'hold-up-narrate-'));
   try {
-    let input = audioPath, source;
-    if (!input) {
-      if (narration.voice?.engine !== 'macos-say') throw new Error(`Unsupported narration engine: ${narration.voice?.engine}; provide recorded audio with --audio`);
-      input = join(work, 'say.aiff');
-      await synthesizeSay(narration.script, narration.voice, input);
-      const {stdout} = await run('sw_vers', ['-productVersion']).catch(() => ({stdout:''}));
-      source = {engine:'macos-say', voice:narration.voice.voice ?? 'Samantha', rate:narration.voice.rate ?? 170, macos:stdout.trim() || null};
-    } else source = {engine:'provided', file:audioPath};
-    const wav = join(outDir, 'narration.wav');
-    const wav16 = join(work, 'narration-16k.wav');
+    const voice = audioPath ? {profile:{id:'recording', provider:'recorded', file:audioPath, delivery:{}}, reason:'supplied recording'} : profile ? {profile, reason:'requested profile'} : await narratorFor(narration);
+    const provider = await createProvider(voice.profile.provider);
+    const synth = await synthesize({provider, profile:voice.profile, script:narration.script}, {authorization});
+    const input = synth.audioPath;
+    const takeId = take ?? `${voice.profile.id}-${synth.key.slice(0, 8)}`;
+    const takeDir = join(outDir, 'takes', takeId);
+    await mkdir(takeDir, {recursive:true});
+    const wav = join(takeDir, 'narration.wav'), wav16 = join(work, 'narration-16k.wav');
     await run('ffmpeg', ['-loglevel', 'error', '-y', '-i', input, '-ac', '1', '-ar', '48000', '-c:a', 'pcm_s16le', wav]);
     await run('ffmpeg', ['-loglevel', 'error', '-y', '-i', input, '-ac', '1', '-ar', '16000', '-c:a', 'pcm_s16le', wav16]);
-    const {stdout:pcm} = await run('ffmpeg', ['-loglevel', 'error', '-i', wav16, '-f', 's16le', '-ac', '1', '-ar', '16000', '-'], {encoding:'buffer', maxBuffer:512 * 1024 * 1024});
-    const {islands, threshold} = speechIslands(new Int16Array(pcm.buffer, pcm.byteOffset, pcm.length / 2), 16000);
-    if (!islands.length) throw new Error('No speech found in the narration audio');
-    const durationSec = await audioDuration(wav16);
-    const {words:recognized, engine} = await transcribeIslands(wav16, islands, {durationSec});
-    const {words, quality} = alignWords(narration.script, recognized);
+
+    let words, quality, aligner, islands = null, recognized;
+    let whisper = null;
+    if (synth.words?.length) {
+      recognized = synth.words;
+      ({words, quality} = alignWords(narration.script, recognized));
+      aligner = {engine:`${provider.id}-alignment`, note:'character timestamps returned with the audio'};
+      if (verifyAlignment) whisper = await whisperWords(wav16);
+    } else {
+      whisper = await whisperWords(wav16);
+      recognized = whisper.words; islands = whisper.islands;
+      ({words, quality} = alignWords(narration.script, recognized));
+      aligner = {...whisper.engine, silenceThreshold:Math.round(whisper.threshold)};
+    }
+    const crossCheck = whisper && synth.words?.length ? timingAgreement(words, alignWords(narration.script, whisper.words).words) : null;
     const data = await readFile(wav);
     const result = {
-      version:1, slug, script:spokenText(narration.script).replace(/\s+/g, ' ').trim(),
+      version:1, slug, take:takeId, script:spokenText(narration.script).replace(/\s+/g, ' ').trim(),
       audio:{file:'narration.wav', sha256:createHash('sha256').update(data).digest('hex'), durationSec:await audioDuration(wav), sampleRate:48000},
-      source, aligner:{...engine, silenceThreshold:Math.round(threshold)}, quality, islands, recognized, words
+      source:{engine:provider.id, profile:voice.profile.id, reason:voice.reason, voiceId:voice.profile.voiceId ?? null, modelId:voice.profile.modelId ?? null, settings:voice.profile.settings ?? null,
+        renderedText:synth.renderedText, cached:synth.cached, costUsd:synth.costUsd, cacheKey:synth.key},
+      aligner, alignmentCrossCheck:crossCheck, quality, pauses:pauseReport(narration.script, words), islands, recognized, words
     };
-    await writeFile(join(outDir, 'words.json'), JSON.stringify(result, null, 2) + '\n');
+    await writeFile(join(takeDir, 'words.json'), JSON.stringify(result, null, 2) + '\n');
+    await copyFile(wav, join(outDir, 'narration.wav'));
+    await copyFile(join(takeDir, 'words.json'), join(outDir, 'words.json'));
     return result;
   } finally { await rm(work, {recursive:true, force:true}); }
 }

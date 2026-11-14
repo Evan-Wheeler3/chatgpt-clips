@@ -26,6 +26,7 @@ Outputs go to `production/<slug>/` (gitignored): `narration.wav`, `words.json`, 
 - macOS for the built-in `macos-say` voice. On other systems, pass a recording with `--audio`.
 
 ## Narration and timing (`tools/narration/`)
+*Phase 6.1:* voices, providers (ElevenLabs), delivery markup, spending safeguards, takes and narration sync reports are described in `docs/NARRATION.md`. The measured-timing rules below still hold for every provider.
 - **Voice:** `narrate.mjs` synthesizes with macOS `say` (story `narration.voice`; `[[slnc 300]]` and `[[emph +]]` shape pauses and stress) or takes any recording via `--audio`. `say` is a real but basic TTS voice: fine for pacing, not final performance. A better TTS vendor or a human read plugs in as audio.
 - **Measured timing:** `vad.mjs` finds speech islands from the audio's energy (≥150 ms silences). `whisper.mjs` runs whisper.cpp with DTW word timestamps **separately on each island**, and words are clamped inside their island. This was necessary: on the full clip, whisper's word times drifted after pauses ("Iron" placed 0.43 s early, inside a silence).
 - **Alignment:** `align.mjs` aligns the authored script to the recognised words (edit distance). Exact and substituted words take measured timing. A script word whisper missed gets the measured gap between its neighbours and is flagged `bounded-by-neighbours`. More than 10% unaligned fails. Nothing is estimated from text length or words-per-second.
