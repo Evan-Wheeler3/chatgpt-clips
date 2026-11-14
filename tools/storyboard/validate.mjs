@@ -1,0 +1,192 @@
+import { PerspectiveCamera, Vector3, Ray } from 'three';
+import { samplePlan } from './sample.mjs';
+import { propWorldBox, INSTANT_ACTIONS } from './actions.mjs';
+import { FRAMING, focusPoint, moveProgress } from './camera.mjs';
+
+// Vertical-short safe area in NDC: the bottom band carries captions and platform UI, the top band platform chrome
+export const SAFE_AREA = {left:-0.8, right:0.8, bottom:-0.5, top:0.76};
+const CAMERA_MARGIN_M = 0.05;
+// A pop is an isolated spike; a jerk is a sudden change of camera speed (e.g. a move starting at full speed from a hold)
+const POP_STEP_M = 0.3, POP_RATIO = 4, JERK_M_PER_FRAME = 0.12;
+const SYNC_LEAD_FRAMES = 8, SYNC_LAG_FRAMES = 2;
+const STATIC_SHOT_SEC = 2.0, DRIFT_FRACTION = 0.9;
+// The subject should be at least this fraction of frame height, and closer than this share of the fog's far plane
+const MIN_SUBJECT_HEIGHT = 0.12, MAX_FOG_DEPTH = 0.7;
+
+// The point the shot is about: the subject's framed focus, interpolated along the move
+function shotFocus(shot, box, frame) {
+  const u = moveProgress(shot.camera, frame);
+  const from = shot.camera.from.focus ?? [0, 0, 0], to = shot.camera.to.focus ?? [0, 0, 0];
+  return focusPoint(box, from.map((value, i) => value + (to[i] - value) * u));
+}
+
+function projectPoint(cameraState, aspect, point) {
+  const camera = new PerspectiveCamera(cameraState.fov, aspect, 0.02, 200);
+  camera.position.copy(cameraState.position);
+  camera.lookAt(cameraState.target);
+  camera.updateMatrixWorld();
+  camera.updateProjectionMatrix();
+  return point.clone().project(camera);
+}
+
+function project(cameraState, aspect, box) {
+  const camera = new PerspectiveCamera(cameraState.fov, aspect, 0.02, 200);
+  camera.position.copy(cameraState.position);
+  camera.lookAt(cameraState.target);
+  camera.updateMatrixWorld();
+  camera.updateProjectionMatrix();
+  const points = [];
+  for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+    const local = new Vector3(x, y, z).applyMatrix4(camera.matrixWorldInverse);
+    points.push({behind:local.z > -0.02, ndc:new Vector3(x, y, z).project(camera)});
+  }
+  const center = box.getCenter(new Vector3()).project(camera);
+  const front = points.filter(point => !point.behind).map(point => point.ndc);
+  const xs = front.map(p => p.x), ys = front.map(p => p.y);
+  return {center, behind:front.length === 0, minX:Math.min(...xs), maxX:Math.max(...xs), minY:Math.min(...ys), maxY:Math.max(...ys)};
+}
+
+const inside = (point, area) => point.x >= area.left && point.x <= area.right && point.y >= area.bottom && point.y <= area.top;
+const onScreen = point => Math.abs(point.x) <= 1 && Math.abs(point.y) <= 1 && point.z < 1;
+
+// Collapses per-frame findings into frame ranges so a reviewer sees "frames 120-134" rather than 15 copies
+function rangeIssues(list) {
+  const out = [];
+  for (const issue of list) {
+    const last = out.at(-1);
+    if (last && last.code === issue.code && last.shot === issue.shot && last.subject === issue.subject && last.frames[1] === issue.frame - 1) last.frames[1] = issue.frame;
+    else out.push({code:issue.code, shot:issue.shot, subject:issue.subject, frames:[issue.frame, issue.frame], message:issue.message});
+  }
+  return out;
+}
+
+export function validatePlan(plan) {
+  const errors = [], warnings = [];
+  const perFrameErrors = [], perFrameWarnings = [];
+  const aspect = plan.size.width / plan.size.height;
+  const fps = plan.fps;
+  const propById = new Map(plan.props.map(prop => [prop.id, prop]));
+
+  // Assets
+  for (const miss of plan.missingAssets) errors.push({code:'MISSING_ASSET', prop:miss.prop, message:`No catalog asset for "${miss.query}" (prop ${miss.prop}); nothing was substituted`});
+
+  // Timing and direction
+  plan.shots.forEach((shot, i) => {
+    const seconds = (shot.endFrame - shot.startFrame) / fps;
+    if (i === 0 && shot.startFrame !== 0) errors.push({code:'TIMING_GAP', shot:shot.id, message:'First shot must start at frame 0'});
+    if (i > 0 && shot.startFrame !== plan.shots[i - 1].endFrame) errors.push({code:'TIMING_GAP', shot:shot.id, message:'Shots must be contiguous'});
+    if (seconds < plan.timing.minShotSec) errors.push({code:'SHOT_TOO_SHORT', shot:shot.id, message:`${seconds.toFixed(2)} s is shorter than ${plan.timing.minShotSec} s`});
+    if (seconds > plan.timing.maxShotSec) warnings.push({code:'SHOT_LONG', shot:shot.id, message:`${seconds.toFixed(2)} s; consider a cut or a motivated move`});
+    if (!shot.purpose.trim()) errors.push({code:'NO_PURPOSE', shot:shot.id, message:'Every shot needs a stated visual purpose'});
+    if (i > 0 && shot.transition.type === 'cut' && !shot.transition.motivation) errors.push({code:'UNMOTIVATED_CUT', shot:shot.id, message:'Hard cuts need a motivation (new information, action, reveal or perspective change)'});
+    const c = shot.camera;
+    const moveFrames = c.window[1] - c.window[0];
+    const hasEvents = plan.props.some(prop => prop.actions.some(action => action.shot === shot.id && !INSTANT_ACTIONS.has(action.type)));
+    if (c.behavior === 'hold' && seconds > STATIC_SHOT_SEC && !hasEvents) warnings.push({code:'STATIC_SHOT', shot:shot.id, message:`${seconds.toFixed(1)} s still frame with no action; make sure the stillness is the point`});
+    if (c.behavior !== 'hold' && c.behavior !== 'follow' && c.ease === 'linear' && moveFrames >= (shot.endFrame - shot.startFrame) * DRIFT_FRACTION) {
+      warnings.push({code:'MECHANICAL_DRIFT', shot:shot.id, message:'Constant-speed move across the whole shot; anchor it to words with "during" or use an eased curve'});
+    }
+    if (c.behavior === 'push-in' && FRAMING[c.to.framing] <= FRAMING[c.from.framing]) errors.push({code:'MOVE_DIRECTION', shot:shot.id, message:'push-in must end tighter than it starts'});
+    if (c.behavior === 'pullback' && FRAMING[c.to.framing] >= FRAMING[c.from.framing]) errors.push({code:'MOVE_DIRECTION', shot:shot.id, message:'pullback must end wider than it starts'});
+    if (c.behavior === 'orbit' && Math.abs(c.to.azimuth - c.from.azimuth) < 10) errors.push({code:'MOVE_DIRECTION', shot:shot.id, message:'orbit needs at least 10 degrees of travel'});
+    if (c.behavior === 'track' && !(c.params.distance > 0)) errors.push({code:'MOVE_DIRECTION', shot:shot.id, message:'track needs params.distance > 0'});
+    if (c.behavior === 'whip-pan' && !propById.has(c.params.from)) errors.push({code:'MOVE_DIRECTION', shot:shot.id, message:'whip-pan needs params.from (a prop id)'});
+    if (i >= 2 && [0, 1, 2].every(k => plan.shots[i - k].camera.behavior === 'push-in')) warnings.push({code:'PERPETUAL_ZOOM', shot:shot.id, message:'Three push-ins in a row; vary the coverage'});
+  });
+
+  // Continuity across cuts: same subject, same framing and nearly the same angle is a jump cut
+  for (let i = 1; i < plan.shots.length; i++) {
+    const a = plan.shots[i - 1], b = plan.shots[i];
+    if (a.subject !== b.subject || b.transition.type === 'whip') continue;
+    const end = a.camera.to, start = b.camera.from;
+    let delta = Math.abs(end.azimuth - start.azimuth) % 360;
+    delta = Math.min(delta, 360 - delta);
+    if (end.framing === start.framing && delta < 25 && Math.abs(end.elevation - start.elevation) < 15) warnings.push({code:'JUMP_CUT', shot:b.id, message:`Cut from ${a.id} keeps the same framing and angle (${delta.toFixed(0)} degrees apart)`});
+  }
+
+  // Instant prop changes must hide behind a cut, or the viewer sees a pop
+  const cutFrames = new Set(plan.shots.map(shot => shot.startFrame));
+  for (const prop of plan.props) for (const action of prop.actions) {
+    if (INSTANT_ACTIONS.has(action.type) && !cutFrames.has(action.startFrame)) errors.push({code:'CONTINUITY_POP', prop:prop.id, shot:action.shot, message:`"${action.type}" at frame ${action.startFrame} is not on a cut`});
+  }
+  for (const prop of plan.props) for (let i = 1; i < prop.actions.length; i++) {
+    const a = prop.actions[i - 1], b = prop.actions[i];
+    if (b.startFrame < a.endFrame && !INSTANT_ACTIONS.has(a.type)) errors.push({code:'ACTION_OVERLAP', prop:prop.id, shot:b.shot, message:`${b.type} starts before ${a.type} ends`});
+  }
+
+  // Sync: visible actions start on (or just before) their word
+  for (const prop of plan.props) for (const action of prop.actions) {
+    if (!action.anchor) continue;
+    const delta = action.anchor.wordFrame - action.startFrame;
+    if (delta > SYNC_LEAD_FRAMES) warnings.push({code:'SYNC_EARLY', prop:prop.id, shot:action.shot, message:`${action.type} starts ${delta} frames before "${action.anchor.word}"`});
+    if (delta < -SYNC_LAG_FRAMES) warnings.push({code:'SYNC_LATE', prop:prop.id, shot:action.shot, message:`${action.type} starts ${-delta} frames after "${action.anchor.word}"`});
+  }
+
+  // Per-frame camera, collision and framing checks
+  const samples = Array.from({length:plan.durationFrames}, (_, frame) => samplePlan(plan, frame));
+  const step = frame => frame > 0 && samples[frame - 1].shot.id === samples[frame].shot.id && !samples[frame].camera.whip && !samples[frame - 1].camera.whip
+    ? samples[frame].camera.position.distanceTo(samples[frame - 1].camera.position) : null;
+  for (let frame = 0; frame < plan.durationFrames; frame++) {
+    const sample = samples[frame];
+    const {camera, shot} = sample;
+    const issue = (list, code, message, subject) => list.push({code, shot:shot.id, frame, message, subject});
+    if (camera.position.y < CAMERA_MARGIN_M) issue(perFrameErrors, 'CAMERA_BELOW_GROUND', 'Camera is below or on the ground plane');
+    for (const prop of plan.props) {
+      const box = propWorldBox(prop, frame);
+      if (box && box.clone().expandByScalar(CAMERA_MARGIN_M).containsPoint(camera.position)) issue(perFrameErrors, 'CAMERA_COLLISION', `Camera is inside ${prop.id}`, prop.id);
+    }
+    const here = step(frame), before = step(frame - 1), after = frame + 1 < plan.durationFrames ? step(frame + 1) : null;
+    if (here !== null && here > POP_STEP_M && here > POP_RATIO * Math.max(before ?? 0, after ?? 0, 0.01)) issue(perFrameErrors, 'CAMERA_POP', 'Camera jumps within a shot');
+    else if (here !== null && before !== null && Math.abs(here - before) > JERK_M_PER_FRAME) issue(perFrameErrors, 'CAMERA_JERK', `Camera speed changes by ${Math.abs(here - before).toFixed(2)} m/frame in one frame; ease into and out of the move`);
+
+    const subject = propById.get(shot.subject);
+    const box = propWorldBox(subject, frame);
+    if (!box || camera.whip) continue;
+    const view = project(camera, aspect, box);
+    const focus = shotFocus(shot, box, frame);
+    const focusView = projectPoint(camera, aspect, focus);
+    if (view.behind || !onScreen(focusView)) issue(perFrameErrors, 'SUBJECT_OFF_SCREEN', `${shot.subject} is not in frame`, shot.subject);
+    if (!view.behind && (Math.min(view.maxY, 1) - Math.max(view.minY, -1)) / 2 < MIN_SUBJECT_HEIGHT) issue(perFrameErrors, 'SUBJECT_TOO_SMALL', `${shot.subject} fills less than ${MIN_SUBJECT_HEIGHT * 100}% of the frame height`, shot.subject);
+    if (plan.stage.fog && camera.position.distanceTo(focus) > plan.stage.fog.far * MAX_FOG_DEPTH) issue(perFrameErrors, 'SUBJECT_IN_FOG', `${shot.subject} is ${camera.position.distanceTo(focus).toFixed(1)} m away, deep in fog that is opaque at ${plan.stage.fog.far} m`, shot.subject);
+    else if (!inside(focusView, SAFE_AREA)) issue(perFrameWarnings, 'SUBJECT_OUTSIDE_SAFE_AREA', `${shot.subject} focus is outside the vertical safe area`, shot.subject);
+    // Other props blocking the line of sight to the subject's focus, unless the shot declares them as foreground
+    const ray = new Ray(camera.position.clone(), focus.clone().sub(camera.position).normalize());
+    const reach = camera.position.distanceTo(focus);
+    for (const other of plan.props) {
+      if (other.id === shot.subject || shot.foreground.includes(other.id)) continue;
+      const otherBox = propWorldBox(other, frame);
+      const hit = otherBox && ray.intersectBox(otherBox, new Vector3());
+      if (hit && camera.position.distanceTo(hit) < reach) issue(perFrameWarnings, 'SUBJECT_OCCLUDED', `${other.id} blocks the view of ${shot.subject}`, other.id);
+    }
+  }
+
+  // Focus words: the subject must be clearly framed when its key word is spoken
+  for (const shot of plan.shots) for (const focus of shot.focus) {
+    if (focus.frame < shot.startFrame || focus.frame >= shot.endFrame) {
+      errors.push({code:'FOCUS_OUTSIDE_SHOT', shot:shot.id, message:`Focus word "${focus.word}" (frame ${focus.frame}) is outside the shot`});
+      continue;
+    }
+    const sample = samples[focus.frame];
+    const box = propWorldBox(propById.get(shot.subject), focus.frame);
+    if (box && !inside(projectPoint(sample.camera, aspect, shotFocus(shot, box, focus.frame)), SAFE_AREA)) errors.push({code:'FOCUS_NOT_FRAMED', shot:shot.id, message:`${shot.subject} is not in the safe area on "${focus.word}"`});
+  }
+
+  // Actions should happen where the viewer can see them
+  for (const prop of plan.props) for (const action of prop.actions) {
+    if (INSTANT_ACTIONS.has(action.type) || prop.missing) continue;
+    const sample = samples[Math.min(action.startFrame, samples.length - 1)];
+    const box = propWorldBox(prop, action.startFrame);
+    if (box && !onScreen(project(sample.camera, aspect, box).center)) warnings.push({code:'ACTION_OFF_SCREEN', prop:prop.id, shot:action.shot, message:`${action.type} starts while ${prop.id} is off screen`});
+  }
+
+  errors.push(...rangeIssues(perFrameErrors));
+  warnings.push(...rangeIssues(perFrameWarnings));
+  const lengths = plan.shots.map(shot => (shot.endFrame - shot.startFrame) / fps);
+  return {
+    status:errors.length ? 'needs-revision' : 'pass', errors, warnings,
+    stats:{shots:plan.shots.length, durationSec:plan.durationFrames / fps, averageShotSec:Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length * 100) / 100,
+      shortestShotSec:Math.min(...lengths), longestShotSec:Math.max(...lengths),
+      behaviors:Object.fromEntries([...new Set(plan.shots.map(shot => shot.camera.behavior))].map(b => [b, plan.shots.filter(shot => shot.camera.behavior === b).length])),
+      transitions:Object.fromEntries(['cut', 'whip'].map(t => [t, plan.shots.slice(1).filter(shot => shot.transition.type === t).length]))}
+  };
+}

@@ -28,13 +28,22 @@ export function validateCatalog(catalog, rootDir = root) {
   return catalog;
 }
 
+const stem = word => word.length > 4 && word.endsWith('s') && !word.endsWith('ss') ? word.slice(0, -1) : word;
+const stems = value => new Set(tokens(value).map(stem));
+
 export function scoreAsset(request, asset) {
-  const wanted = tokens([request.query, ...(request.tags ?? [])].join(' '));
-  const title = new Set(tokens(asset.name));
-  const tags = new Set(tokens((asset.tags ?? []).join(' ')));
-  const description = new Set(tokens(asset.description));
+  const query = stems(request.query);
+  const wanted = new Set([...query, ...stems((request.tags ?? []).join(' '))]);
+  const title = stems(asset.name);
+  const tags = stems((asset.tags ?? []).join(' '));
+  const description = stems(asset.description);
   let score = 0;
-  for (const word of wanted) score += title.has(word) ? 4 : tags.has(word) ? 3 : description.has(word) ? 1 : 0;
+  for (const word of wanted) {
+    const points = title.has(word) ? 4 : tags.has(word) ? 3 : description.has(word) ? 1 : 0;
+    // Every query word must match: one shared word ("wooden") must never pass a stool off as a crate
+    if (!points && query.has(word)) return 0;
+    score += points;
+  }
   if (score === 0) return 0; // Style alone must never match an unrelated model
   if (request.style && asset.style === request.style) score += 3;
   if (request.style && asset.style !== request.style) score -= 6;

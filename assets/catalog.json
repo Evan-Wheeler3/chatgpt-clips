@@ -52,6 +52,162 @@
           "Khronos glTF validator reported 1 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
         ]
       }
+    },
+    {
+      "id": "polyhaven-wine-barrel-01",
+      "name": "Wine Barrel 01",
+      "description": "Free 8K wine barrel model with worn oak staves, weathered metal hoops and bung hole - high-detail farmhouse/cellar prop perfect for rustic farm scenes.",
+      "tags": [
+        "barrel",
+        "wine",
+        "celler",
+        "old",
+        "worn",
+        "grape",
+        "farmhouse",
+        "farm",
+        "containers & storage",
+        "barrels & drums",
+        "wooden barrels"
+      ],
+      "style": "realistic",
+      "localPath": "assets/library/polyhaven-wine-barrel-01.glb",
+      "sourceUrl": "https://polyhaven.com/a/wine_barrel_01",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "James Ray Cock",
+      "provider": {
+        "name": "polyhaven",
+        "id": "wine_barrel_01",
+        "version": "943d486d1d003b1f56157522fd5382e24ab4bf07",
+        "resolution": "1k"
+      },
+      "sha256": "3d19d3563381cd37e049b94653dd8155ab3a228bf956f9a2bf1787e37fc566c4",
+      "bytes": 922288,
+      "dimensionsM": [
+        0.7419,
+        0.87126,
+        0.75604
+      ],
+      "triangles": 10820,
+      "conversion": {
+        "key": "3ac87ea0f1682ff7",
+        "converterVersion": 1,
+        "report": "assets/converted/polyhaven/wine_barrel_01/3ac87ea0f1682ff7/report.json"
+      },
+      "review": {
+        "approvedBy": "Claude Code (preview review, pending human confirmation)",
+        "approvedAt": "2026-11-14T05:49:39.573Z",
+        "warnings": [
+          "Khronos glTF validator reported 4 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+        ]
+      }
+    },
+    {
+      "id": "polyhaven-wooden-bucket-01",
+      "name": "Wooden Bucket 01",
+      "description": "Free 8K model of a worn wooden bucket with metal bands and an iron handle - rustic, weathered prop container. Vintage farmhouse/colonial maritime prop from the Smugglers Cove collection.",
+      "tags": [
+        "wooden",
+        "bucket",
+        "old",
+        "worn",
+        "wood",
+        "prop",
+        "container",
+        "containers & storage",
+        "baskets & buckets",
+        "buckets"
+      ],
+      "style": "realistic",
+      "localPath": "assets/library/polyhaven-wooden-bucket-01.glb",
+      "sourceUrl": "https://polyhaven.com/a/wooden_bucket_01",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "James Ray Cock",
+      "provider": {
+        "name": "polyhaven",
+        "id": "wooden_bucket_01",
+        "version": "8d260ae5188bca1ef50676560a2c7a4160c82100",
+        "resolution": "1k"
+      },
+      "sha256": "9f65b1b44e664b36615cf4634299f5f4c04af2894828be386743b13bcd4cb937",
+      "bytes": 2330380,
+      "dimensionsM": [
+        0.36697,
+        0.54986,
+        0.34222
+      ],
+      "triangles": 5116,
+      "conversion": {
+        "key": "8b54cb53661436c4",
+        "converterVersion": 1,
+        "report": "assets/converted/polyhaven/wooden_bucket_01/8b54cb53661436c4/report.json"
+      },
+      "review": {
+        "approvedBy": "Claude Code (preview review, pending human confirmation)",
+        "approvedAt": "2026-11-14T05:49:39.876Z",
+        "warnings": [
+          "Khronos glTF validator reported 2 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+        ]
+      }
+    },
+    {
+      "id": "polyhaven-wooden-crate-01",
+      "name": "Wooden Crate 01",
+      "description": "Free 8K model of a vintage wooden crate - weathered colonial chest with rope handles, metal rivets and latch; ideal as maritime, farmhouse or prop container.",
+      "tags": [
+        "vintage",
+        "wood",
+        "old",
+        "wooden",
+        "fancy",
+        "colonial",
+        "chest",
+        "box",
+        "prop",
+        "antique",
+        "farmhouse",
+        "crate",
+        "maritime",
+        "commercial",
+        "container",
+        "containers & storage",
+        "boxes & crates",
+        "wooden crates"
+      ],
+      "style": "realistic",
+      "localPath": "assets/library/polyhaven-wooden-crate-01.glb",
+      "sourceUrl": "https://polyhaven.com/a/wooden_crate_01",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "James Ray Cock",
+      "provider": {
+        "name": "polyhaven",
+        "id": "wooden_crate_01",
+        "version": "1ac5d053ce4c72e3fbb4c3065e7979522bf1908e",
+        "resolution": "1k"
+      },
+      "sha256": "b4e87e969717b0e9ff95d8443dd42a30fd67c938227069ae8f782b719df6e447",
+      "bytes": 2275032,
+      "dimensionsM": [
+        0.82527,
+        0.34962,
+        0.40895
+      ],
+      "triangles": 6576,
+      "conversion": {
+        "key": "07ffd1319f102532",
+        "converterVersion": 1,
+        "report": "assets/converted/polyhaven/wooden_crate_01/07ffd1319f102532/report.json"
+      },
+      "review": {
+        "approvedBy": "Claude Code (preview review, pending human confirmation)",
+        "approvedAt": "2026-11-14T05:49:39.724Z",
+        "warnings": [
+          "Khronos glTF validator reported 3 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+        ]
+      }
     }
   ]
 }

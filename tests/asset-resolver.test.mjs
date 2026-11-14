@@ -32,3 +32,10 @@ test('catalog entries without actual GLB files yield not_found',async ()=>{
     assert.deepEqual(result.candidates,[]);
   } finally {await rm(dir,{recursive:true,force:true});}
 });
+
+test('every query word must match so a shared word never substitutes an unrelated asset', ()=>{
+  assert.equal(scoreAsset({query:'wooden crate'}, validAsset), 0);
+  assert.equal(scoreAsset({query:'three legged counter'}, validAsset), 0);
+  assert.ok(scoreAsset({query:'wooden counters'}, validAsset) > 0);
+  assert.ok(scoreAsset({query:'saloon counter', tags:['unrelated']}, validAsset) > 0);
+});

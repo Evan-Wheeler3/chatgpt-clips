@@ -12,3 +12,5 @@ description: Plan legible and meaningful 3D camera work for vertical narrated vi
 - Preview on a phone-sized vertical viewport: faces, objects and actions must read.
 - Record camera positions and target trajectories in deterministic frame-based scene metadata, not free-form prose only.
 - Track every shot's entrance, exit, reveal target and transition mechanism.
+- In `story.json`, write a `purpose` for every shot and a `motivation` for every hard cut. Anchor moves to words with `during`, and declare intended foreground props. Use semantic framing (`wide`/`medium`/`close`/`detail`) and the behaviors in `docs/STORYBOARD.md` rather than raw coordinates.
+- Symmetrical subjects look the same from many angles: change framing, height or focus, not only azimuth, or the cut reads as a jump cut.

@@ -14,15 +14,15 @@ Original `SKILL.md` is a detailed instruction set for a particular bridge short.
 1. Baseline repo audit and local asset registry/resolver. (done)
 2. External provider adapters with explicit license/provenance checks and download cache. (done: Poly Haven)
 3. Asset converter/validator: deterministic glTF → GLB, Khronos + scale/orientation validation, Three.js previews, approved catalog registration. (done; Blender path for other formats/repairs still open)
-4. Voice-first storyboard and shot-plan compiler.
-5. Reusable camera/action library, Remotion scene test harness, audio QA.
+4. Voice-first storyboard: measured narration timing, shot-plan compiler, reusable camera/action library, validation and low-res animatic. (done; see `docs/STORYBOARD.md`)
+5. Detailed scene construction, Remotion composition, SFX/score and audio QA.
 6. Benchmarked end-to-end sample and iteration.
 
 ## Data contracts
 - Catalog: `assets/catalog.json`.
 - Request: `examples/asset-requests.json`.
 - Resolver output: status `found` or `not_found`; chosen asset must include `license`, `sourceUrl` and `localPath`.
-- Future shot plan: voice-synchronized frames, scene assets, camera intent and expected action.
+- Story: `stories/<slug>/story.json` (beats, shots, word anchors, props, events). Shot plan: `production/<slug>/shots.json`, frame-exact and generated from measured `words.json`. See `docs/STORYBOARD.md`.
 - No provider adapter may return a downloaded asset without source and license evidence.
 
 ## Decision gates

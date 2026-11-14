@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "slug": "barrel-bilge",
+  "title": "Why barrels bulge",
+  "fps": 30,
+  "size": {"width": 1080, "height": 1920},
+  "narration": {
+    "script": "Why do wooden barrels bulge in the middle? [[slnc 350]] That curve has a name: [[slnc 150]] the [[emph +]] bilge. [[slnc 350]] Iron hoops squeeze the bent staves tight. [[slnc 250]] And the bulge makes a heavy barrel easy to roll [[slnc 150]] and easy to turn, right on the spot.",
+    "voice": {"engine": "macos-say", "voice": "Samantha", "rate": 165}
+  },
+  "stage": {
+    "background": "#2a231c",
+    "fog": {"near": 5, "far": 14},
+    "ground": {"color": "#6b5440"},
+    "light": {"key": "#ffdcae", "keyIntensity": 3.2, "keyPosition": [2.2, 3.6, 2.8], "sky": "#d3dcea", "bounce": "#5a4430", "ambient": 0.9, "environment": 0.6, "exposure": 1.25}
+  },
+  "props": [
+    {"id": "barrel", "asset": {"query": "wooden barrel", "style": "realistic"}, "position": [0, 0, 0], "rotation": [0, 15, 0]},
+    {"id": "bucket", "asset": {"query": "wooden bucket", "style": "realistic"}, "position": [0.95, 0, -0.95], "rotation": [0, -30, 0]},
+    {"id": "crate", "asset": {"query": "wooden crate", "style": "realistic"}, "position": [-1.3, 0, -1.0], "rotation": [0, 25, 0]}
+  ],
+  "beats": [
+    {
+      "id": "hook",
+      "purpose": "Pose the question while the viewer discovers the barrel's shape",
+      "shots": [
+        {
+          "id": "reveal",
+          "purpose": "Rise from floor level so the barrel's silhouette builds up and its widest point arrives on 'bulge'",
+          "subject": "barrel",
+          "camera": {"move": "reveal", "framing": "medium", "azimuth": 28, "elevation": 9,
+                     "from": {"framing": "detail", "azimuth": 18, "elevation": 3, "focus": [0, -0.35, 0]},
+                     "during": {"from": "Why", "to": "bulge#1"}, "ease": "dolly"},
+          "focus": ["bulge#1"]
+        }
+      ]
+    },
+    {
+      "id": "name",
+      "purpose": "Give the shape its name",
+      "shots": [
+        {
+          "id": "profile",
+          "start": "That",
+          "purpose": "Drop to eye level on the barrel's outer edge and swing round so the bulging curve becomes a silhouette against the dark wall as it is named",
+          "subject": "barrel",
+          "transition": {"type": "cut", "motivation": "New information (the name) gets a new view: from the whole barrel to its curving edge"},
+          "camera": {"move": "orbit", "framing": "close", "azimuth": -40, "elevation": 0, "focus": [0, 0, 0.45], "to": {"azimuth": -88},
+                     "during": {"from": "That", "to": "bilge"}, "ease": "settle"},
+          "focus": ["bilge"]
+        }
+      ]
+    },
+    {
+      "id": "mechanism",
+      "purpose": "Show what holds the curve: hoops compressing bent staves",
+      "shots": [
+        {
+          "id": "hoops",
+          "start": "Iron",
+          "purpose": "Slide along the hoops and staves in close detail as they are named, so the viewer sees what holds the curve",
+          "subject": "barrel",
+          "transition": {"type": "cut", "motivation": "The narration names physical parts, so cut in to detail"},
+          "camera": {"move": "track", "framing": "detail", "azimuth": 20, "elevation": 6, "focus": [0, 0.3, 0.5], "lens": "tele",
+                     "params": {"distance": 0.25}, "during": {"from": "Iron", "to": "tight"}, "ease": "dolly"},
+          "focus": ["hoops", "staves"]
+        }
+      ]
+    },
+    {
+      "id": "payoff",
+      "purpose": "Pay off the question: the bulge makes the barrel easy to roll and to turn",
+      "shots": [
+        {
+          "id": "contact",
+          "start": "And#1",
+          "purpose": "Whip to the barrel lying on its side; push in low to show it touches the floor only at the bulge",
+          "subject": "barrel",
+          "transition": {"type": "whip"},
+          "camera": {"move": "push-in", "framing": "medium", "azimuth": 100, "elevation": 2, "focus": [0, -0.2, 0], "to": {"framing": "close"},
+                     "during": {"from": "bulge#2", "to": "heavy"}, "ease": "dolly"},
+          "events": [{"at": "shot-start", "prop": "barrel", "do": "set", "params": {"position": [-0.8, 0, 0.1], "rotation": [90, 0, 0]}}],
+          "focus": ["bulge#2"]
+        },
+        {
+          "id": "roll",
+          "start": "heavy",
+          "purpose": "Follow the barrel as one push sends it rolling, so 'easy to roll' is felt, not just heard",
+          "subject": "barrel",
+          "transition": {"type": "cut", "motivation": "Action starts: cut wider to give the roll room to travel"},
+          "camera": {"move": "follow", "framing": "wide", "azimuth": 22, "elevation": 12, "params": {"lag": 0.15}},
+          "events": [{"at": "easy#1", "prop": "barrel", "do": "roll", "until": "roll", "params": {"distance": 1.3, "direction": [1, 0, 0]}, "ease": "cubic"}],
+          "focus": ["roll"]
+        },
+        {
+          "id": "turn",
+          "start": "and#2",
+          "purpose": "Rise and pull back as the barrel pivots on its bulge, revealing how little floor it needs to turn",
+          "subject": "barrel",
+          "transition": {"type": "cut", "motivation": "The action changes from travelling to turning; a higher, wider view makes the pivot readable"},
+          "camera": {"move": "pullback", "framing": "close", "azimuth": 40, "elevation": 16, "to": {"framing": "wide", "azimuth": 52, "elevation": 34},
+                     "during": {"from": "turn", "to": "spot"}, "ease": "settle"},
+          "events": [
+            {"at": "turn", "prop": "barrel", "do": "pivot", "until": "right", "params": {"degrees": 80}, "ease": "cubic"},
+            {"at": "spot", "prop": "barrel", "do": "wobble", "duration": 0.6, "params": {"degrees": 5, "axis": [0, 1, 0], "cycles": 2}}
+          ],
+          "focus": ["spot"]
+        }
+      ]
+    }
+  ]
+}

@@ -11,3 +11,4 @@ description: Build expressive original narration and timing-first edit plans.
 - Edit script for clarity on first listening, and allow meaningful pauses at reveals rather than blindly maximizing WPM.
 - TTS vendor is configurable; do not claim a vendor is connected until verified.
 - Review the actual WAV/MP3 alongside a timeline before composing detailed shots.
+- `npm run storyboard -- --story <story.json> --narrate` uses macOS `say` (placeholder quality) or `--audio <recording>`. Timing comes from whisper.cpp run per measured speech island and aligned to the script. Check `words.json` `quality` (unaligned words fail) before directing to it.
