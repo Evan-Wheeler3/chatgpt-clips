@@ -110,6 +110,7 @@ export function validatePlan(plan) {
     if (c.behavior === 'pullback' && FRAMING[c.to.framing] >= FRAMING[c.from.framing]) errors.push({code:'MOVE_DIRECTION', shot:shot.id, message:'pullback must end wider than it starts'});
     if (c.behavior === 'orbit' && Math.abs(c.to.azimuth - c.from.azimuth) < 10) errors.push({code:'MOVE_DIRECTION', shot:shot.id, message:'orbit needs at least 10 degrees of travel'});
     if (c.behavior === 'track' && !(c.params.distance > 0)) errors.push({code:'MOVE_DIRECTION', shot:shot.id, message:'track needs params.distance > 0'});
+    if (c.behavior === 'track' && c.params.direction !== undefined && !['left', 'right'].includes(c.params.direction)) errors.push({code:'MOVE_DIRECTION', shot:shot.id, message:'track direction must be "left" or "right"'});
     if (c.behavior === 'whip-pan' && !propById.has(c.params.from)) errors.push({code:'MOVE_DIRECTION', shot:shot.id, message:'whip-pan needs params.from (a prop id)'});
     if (i >= 2 && [0, 1, 2].every(k => plan.shots[i - k].camera.behavior === 'push-in')) warnings.push({code:'PERPETUAL_ZOOM', shot:shot.id, message:'Three push-ins in a row; vary the coverage'});
   });

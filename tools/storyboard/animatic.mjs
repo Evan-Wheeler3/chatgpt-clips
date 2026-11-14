@@ -171,8 +171,11 @@ function compose(frame) {
   const s = draw(frame);
   ctx.globalAlpha = 1; ctx.drawImage(renderer.domElement, 0, 0);
   if (s.camera.whip) {
-    // Whip pans get real motion blur: average sub-frame renders across the shutter
-    const n = 6;
+    // Whip pans get real motion blur: average sub-frame renders across the shutter, with enough samples
+    // (about one per 3 degrees of rotation) that fast swings smear instead of showing stepped copies
+    const look = c => c.target.clone().sub(c.position).normalize();
+    const degrees = THREE.MathUtils.radToDeg(look(s.camera).angleTo(look(samplePlan(plan, frame + 1).camera)));
+    const n = Math.min(16, Math.max(6, Math.ceil(degrees / 3)));
     for (let k = 1; k < n; k++) { draw(frame + k / n); ctx.globalAlpha = 1 / (k + 1); ctx.drawImage(renderer.domElement, 0, 0); }
     ctx.globalAlpha = 1; draw(frame);
   }

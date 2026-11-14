@@ -330,3 +330,61 @@ test('silhouette sampling grounds a rolling round mesh within a millimetre', asy
     assert.ok(worst < 0.001, `mesh leaves or sinks into the floor by ${(worst * 1000).toFixed(2)} mm`);
   } finally { await rm(dir, {recursive:true, force:true}); }
 });
+
+test('cutting from frame-left to frame-right is a position jump; keeping the subject on the same side is not', async () => {
+  const dir = await catalogDir();
+  try {
+    const twoHolds = (fa, fb) => ({...baseStory(), beats:[{id:'a', purpose:'p', shots:[
+      {id:'one', purpose:'Subject on one side', subject:'crate', camera:{move:'hold', framing:'close', azimuth:0, elevation:5, focus:[fa, 0, 0]}},
+      {id:'two', start:'It', purpose:'Cut in', subject:'crate', transition:{type:'cut', motivation:'Detail'}, camera:{move:'hold', framing:'close', azimuth:30, elevation:5, focus:[fb, 0, 0]}}]}]});
+    const flipped = validatePlan(await compile(twoHolds(-0.45, 0.45), dir));
+    assert.ok(flipped.warnings.some(w => w.code === 'CUT_POSITION_JUMP' && w.shot === 'two'));
+    const sameSide = validatePlan(await compile(twoHolds(-0.45, -0.45), dir));
+    assert.ok(!sameSide.warnings.some(w => w.code === 'CUT_POSITION_JUMP'));
+    assert.ok(sameSide.cuts[0].shiftNdc < flipped.cuts[0].shiftNdc / 2);
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});
+
+test('track direction "left" slides the subject the opposite way on screen to "right"', async () => {
+  const dir = await catalogDir();
+  try {
+    const screenX = async direction => {
+      const story = baseStory();
+      story.beats[0].shots[0].camera = {move:'track', framing:'medium', azimuth:0, elevation:5, params:{distance:0.6, direction}, during:{from:'Look', to:'crate.'}};
+      const plan = await compile(story, dir);
+      const [a, b] = plan.shots[0].camera.window;
+      const x = frame => { const c = samplePlan(plan, frame).camera; const cam = new PerspectiveCamera(c.fov, 9 / 16, 0.02, 100); cam.position.copy(c.position); cam.lookAt(c.target); cam.updateMatrixWorld(); return new Vector3(0, 0.3, 0).project(cam).x; };
+      return x(b) - x(a);
+    };
+    const right = await screenX('right'), left = await screenX('left');
+    assert.ok(right < -0.05 && left > 0.05, `right ${right}, left ${left}`);
+    const story = baseStory();
+    story.beats[0].shots[0].camera = {move:'track', framing:'medium', params:{distance:0.5, direction:'up'}};
+    assert.ok(validatePlan(await compile(story, dir)).errors.some(e => e.code === 'MOVE_DIRECTION'));
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});
+
+test('whip-in transitions pan (never tilt) 45-90 degrees and are fastest on the cut', async () => {
+  const {whipStartDirection} = await import('../tools/storyboard/camera.mjs');
+  const to = new Vector3(0, -0.1, -1).normalize();
+  for (const from of [new Vector3(1, -0.6, 0).normalize(), new Vector3(-0.2, 0.3, -1).normalize(), to.clone()]) {
+    const start = whipStartDirection(from, to);
+    assert.ok(Math.abs(start.y - to.y) < 1e-9, 'yaw only: pitch is unchanged');
+    const flat = v => new Vector3(v.x, 0, v.z).normalize();
+    const degrees = MathUtils.radToDeg(flat(start).angleTo(flat(to))); // Heading change, measured in the ground plane
+    assert.ok(degrees >= 44.9 && degrees <= 90.1, `swing ${degrees}`);
+  }
+  const dir = await catalogDir(['crate', 'wall']);
+  try {
+    const story = baseStory();
+    story.props.push({id:'wall', asset:{query:'wooden wall'}, position:[-2.5, 0, -1.5]});
+    story.beats[0].shots[0].subject = 'wall';
+    story.beats[1].shots[0].transition = {type:'whip'};
+    const plan = await compile(story, dir);
+    const start = plan.shots[1].startFrame;
+    const look = frame => { const c = samplePlan(plan, frame).camera; return c.target.clone().sub(c.position).normalize(); };
+    const steps = Array.from({length:7}, (_, k) => MathUtils.radToDeg(look(start + k).angleTo(look(start + k + 1))));
+    assert.ok(steps.every((step, k) => k === 0 || step <= steps[k - 1] + 1e-6), `decelerating: ${steps.map(s => s.toFixed(1))}`);
+    assert.ok(steps[0] > 10, 'already moving fast on the first frame after the cut');
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});

@@ -32,6 +32,13 @@ test('barrel-bilge: narrate, align, compile, validate and render the animatic', 
     const plan = await compileStory(story, words);
     const validation = validatePlan(plan);
     assert.equal(validation.status, 'pass', JSON.stringify(validation.errors));
+    // Regressions from the animatic reviews: no cut jumps (contact->roll, profile->hoops) and no dead starts (roll, turn)
+    assert.deepEqual(validation.warnings.map(w => `${w.code}:${w.shot}`), []);
+    for (const cut of validation.cuts) assert.ok(cut.scaleRatio <= 1.5 && cut.shiftNdc <= 0.35, JSON.stringify(cut));
+    for (const id of ['roll', 'turn']) {
+      const shot = plan.shots.find(s => s.id === id);
+      assert.equal(plan.props[0].actions.find(a => a.shot === id && a.type !== 'set').startFrame, shot.startFrame, `${id} action starts on its cut`);
+    }
     assert.deepEqual(plan.missingAssets, []);
 
     const result = await renderAnimatic(plan, {outDir:dir, audioPath:join(dir, 'narration.wav'), scale:1 / 6});

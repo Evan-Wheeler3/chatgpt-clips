@@ -52,13 +52,13 @@ All are deterministic functions of the frame, shared by Node (validation) and th
 | `hold` | still composed frame | the stillness is the point; validation warns past 2 s without action |
 | `push-in` / `pullback` | spherical dolly between framings (must tighten / widen) | emphasis on a word / reveal context |
 | `orbit` | azimuth sweep at solved distance | change perspective, show form |
-| `track` | parallel truck (`params.distance`), or pan-track (`pan:true`) | slide along detail, parallax |
+| `track` | parallel truck (`params.distance`, `params.direction` `right`/`left`), or pan-track (`pan:true`) | slide along detail, parallax |
 | `follow` | critically damped spring on the moving subject (`lag`) | moving action |
 | `reveal` | rises from a low or tight start (or another prop via `from.prop`) to the subject | discovery, hook |
 | `whip-pan` | fast look-direction swing from `params.from` prop | energetic re-target |
-| transition `whip` | first 8 frames swing from the previous shot's target, with sub-frame motion blur | energy shift between beats |
+| transition `whip` | first 8 frames pan in (yaw only, 45–90°) from the direction the previous shot was looking, fastest on the cut (`whipIn` ease) and decelerating onto the subject, with motion blur that adds sub-frames as the pan speeds up (6–16, about one per 3°) | energy shift between beats |
 
-Easings (`easing.mjs`): `dolly`, `settle` (soft start, overshoot, settle), `cubic`, `sine`, `quint`, `in`, `out` (full-speed start, for moves that begin on a cut), `expo`, `anticipate`, `whip`, `linear`.
+Easings (`easing.mjs`): `dolly`, `settle` (soft start, overshoot, settle), `cubic`, `sine`, `quint`, `in`, `out` (full-speed start, for moves that begin on a cut), `expo`, `anticipate`, `whip`, `whipIn`, `linear`.
 
 ## Prop actions (`actions.mjs`)
 `set` (instant, must be on a cut), `move`, `roll` (rotation = distance / radius, stays grounded), `pivot` (about vertical), `wobble` (damped rocking), `appear`, `hide`. Actions live on a global timeline, so state carries across cuts. Grounded props rest on y=0 by their silhouette, so a barrel on its side rolls on its bilge without bobbing.
@@ -103,9 +103,18 @@ The revision cuts on action instead:
 
 The new cut checks would have flagged the original (`CUT_DISORIENTING`, `CUT_DEAD_START`).
 
-They also flag two cuts outside that fix, which are left as review notes:
-- `profile → hoops`: the barrel moves from frame-left to frame-right;
-- `turn`: holds 20 frames before its pivot starts.
+A second review fixed the two cuts they then flagged, plus a defect found by watching the frames:
+- **`profile → hoops`** (frame-left to frame-right, 0.61 NDC): the hoops detail now cuts in on the same side of the barrel (azimuth −60, 33° from the profile), keeping the silhouette edge where the eye already is, and tracks `left` along the hoops. Shift is now 0.32, scale 1.22×.
+- **`turn`** (20 dead frames): the cut moved to "easy" in "easy to turn", and the pivot starts on the cut and runs through "turn, right" with the camera's pull-back. The decelerating roll settles in the 5 frames the roll shot gained.
+- **Whip into `contact`:** it only swung about 8°, because it rotated between target *points* that happened to lie in the same direction from the new camera. Its first frame was also crisp and off-target. It now pans in from the previous look direction (see behaviors above), and the blur adds sub-frames as the pan speeds up.
+
+The demo now validates with 0 errors and 0 warnings, and the integration test fails on any regression of these cuts.
+
+Visual notes still open (not defects of the shot plan):
+- The plain stage floor has no texture, so travel speed in the follow shot is read mainly from the barrel's turning head and the crate passing. Environment detail is Phase 5.
+- The hoops detail leaves the right half of the frame as dark wall: the cost of matching the profile's silhouette edge.
+- At 360×640 the first whip frames still show faint stepped copies of the crate. This should vanish at final resolution with more samples.
+- The burned-in caption covers the lower barrel in the hoops detail. It's a review overlay only, not final captions.
 
 ## Not in scope yet
 Final-resolution rendering, Remotion composition, SFX and music, characters and rigs, environment construction beyond the plain stage, and final voice performance.

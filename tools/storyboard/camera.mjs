@@ -8,6 +8,8 @@ export const FRAMING_ORDER = ['wide', 'medium', 'close', 'detail'];
 export const LENSES = {wide:55, normal:40, tele:26};
 export const BEHAVIORS = ['hold', 'push-in', 'pullback', 'orbit', 'track', 'follow', 'reveal', 'whip-pan'];
 export const WHIP_FRAMES = 8;
+// A whip transition swings at least this far (so it reads as a whip) and at most this far (so it stays legible)
+export const WHIP_MIN_DEG = 45, WHIP_MAX_DEG = 90;
 const UP = new Vector3(0, 1, 0);
 const v3 = array => new Vector3(...array);
 
@@ -111,7 +113,8 @@ function behaviorCamera(plan, shot, frame) {
     case 'track': {
       const pose = poseToCamera(blend(start, end, u));
       const right = new Vector3().crossVectors(UP, direction(start.azimuth, 0)).normalize();
-      const shift = right.multiplyScalar(MathUtils.lerp(-c.params.distance / 2, c.params.distance / 2, u));
+      const sign = c.params.direction === 'left' ? -1 : 1;
+      const shift = right.multiplyScalar(sign * MathUtils.lerp(-c.params.distance / 2, c.params.distance / 2, u));
       pose.position.add(shift);
       if (!c.params.pan) pose.target.add(shift); // Parallel truck: foreground slides past; pan keeps the subject centred
       return pose;
@@ -134,15 +137,30 @@ function whipTarget(position, fromTarget, toTarget, u) {
   return position.clone().add(new Vector3(0, 0, -1).applyQuaternion(q).multiplyScalar(distance));
 }
 
+// The incoming look direction: the final one yawed (a pan, never a tilt) toward where the previous shot looked, by 45-90 degrees
+export function whipStartDirection(fromDir, toDir) {
+  const flat = v => new Vector3(v.x, 0, v.z).normalize();
+  const from = flat(fromDir), to = flat(toDir);
+  let yaw = Math.atan2(new Vector3().crossVectors(to, from).y, to.dot(from));
+  if (!Number.isFinite(yaw) || Math.abs(yaw) < 1e-3) yaw = 1e-3; // Same heading: whip in from the left
+  const swing = Math.sign(yaw) * MathUtils.clamp(Math.abs(yaw), MathUtils.degToRad(WHIP_MIN_DEG), MathUtils.degToRad(WHIP_MAX_DEG));
+  return toDir.clone().applyAxisAngle(UP, swing);
+}
+
 export function cameraAt(plan, shotIndex, frame) {
   const shot = plan.shots[shotIndex];
   const camera = behaviorCamera(plan, shot, frame);
   const whip = shot.transition?.type === 'whip' && shotIndex > 0 ? shot.transition.frames ?? WHIP_FRAMES : 0;
   if (whip && frame < shot.startFrame + whip) {
+    // Whip in from the direction the previous shot was looking, already at speed on the cut, decelerating onto the subject
     const previous = plan.shots[shotIndex - 1];
-    const fromTarget = cameraAt(plan, shotIndex - 1, previous.endFrame - 1).target;
-    const u = ease('whip', (frame - shot.startFrame + 1) / whip);
-    return {...camera, target:whipTarget(camera.position, fromTarget, camera.target, u), whip:true};
+    const before = cameraAt(plan, shotIndex - 1, previous.endFrame - 1);
+    const fromDir = before.target.clone().sub(before.position).normalize();
+    const toDir = camera.target.clone().sub(camera.position).normalize();
+    const startDir = whipStartDirection(fromDir, toDir);
+    const u = ease('whipIn', (frame - shot.startFrame) / whip);
+    const dir = startDir.clone().applyQuaternion(new Quaternion().slerp(new Quaternion().setFromUnitVectors(startDir, toDir), u));
+    return {...camera, target:camera.position.clone().addScaledVector(dir, camera.position.distanceTo(camera.target)), whip:true};
   }
   const [from, to] = shot.camera.window;
   return {...camera, whip:shot.camera.behavior === 'whip-pan' && frame >= from && frame <= to};

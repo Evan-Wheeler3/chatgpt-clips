@@ -30,6 +30,8 @@ export const EASINGS = {
   anticipate:t => { const c = 1.1; return t * t * ((c + 1) * t - c); },
   // Whip pans: almost all rotation happens in the middle third
   whip:cubicBezier(0.7, 0, 0.3, 1),
+  // Whip-in transitions: already at full speed on the cut, decelerating onto the new subject
+  whipIn:cubicBezier(0.15, 0.75, 0.35, 1),
   // Film-style ease for dolly moves
   dolly:cubicBezier(0.45, 0, 0.2, 1)
 };

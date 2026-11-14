@@ -58,11 +58,11 @@
         {
           "id": "hoops",
           "start": "Iron",
-          "purpose": "Slide along the hoops and staves in close detail as they are named, so the viewer sees what holds the curve",
+          "purpose": "Cut in on the same side of the barrel, keeping its curving edge where the eye already is, then slide along the hoops and staves as they are named",
           "subject": "barrel",
-          "transition": {"type": "cut", "motivation": "The narration names physical parts, so cut in to detail"},
-          "camera": {"move": "track", "framing": "detail", "azimuth": 20, "elevation": 6, "focus": [0, 0.3, 0.5], "lens": "tele",
-                     "params": {"distance": 0.25}, "during": {"from": "Iron", "to": "tight"}, "ease": "dolly"},
+          "transition": {"type": "cut", "motivation": "The narration names physical parts, so cut in to detail; the silhouette edge stays put across the cut"},
+          "camera": {"move": "track", "framing": "detail", "azimuth": -60, "elevation": 6, "focus": [0, 0.3, 0.45], "lens": "tele",
+                     "params": {"distance": 0.25, "direction": "left"}, "during": {"from": "Iron", "to": "tight"}, "ease": "dolly"},
           "focus": ["hoops", "staves"]
         }
       ]
@@ -94,14 +94,14 @@
         },
         {
           "id": "turn",
-          "start": "and#2",
-          "purpose": "Rise and pull back as the barrel pivots on its bulge, revealing how little floor it needs to turn",
+          "start": "easy#2",
+          "purpose": "Rise and pull back as the barrel pivots on its bulge from the first frame, revealing how little floor it needs to turn",
           "subject": "barrel",
-          "transition": {"type": "cut", "motivation": "The action changes from travelling to turning; a higher, wider view makes the pivot readable"},
+          "transition": {"type": "cut", "motivation": "Cut on action: the pivot starts on the cut as 'easy to turn' begins; a higher, wider view makes it readable"},
           "camera": {"move": "pullback", "framing": "close", "azimuth": 40, "elevation": 16, "to": {"framing": "wide", "azimuth": 52, "elevation": 34},
-                     "during": {"from": "turn", "to": "spot"}, "ease": "settle"},
+                     "during": {"to": "spot"}, "ease": "settle"},
           "events": [
-            {"at": "turn", "prop": "barrel", "do": "pivot", "until": "right", "params": {"degrees": 80}, "ease": "cubic"},
+            {"at": "shot-start", "prop": "barrel", "do": "pivot", "until": "right", "params": {"degrees": 80}, "ease": "cubic"},
             {"at": "spot", "prop": "barrel", "do": "wobble", "duration": 0.6, "params": {"degrees": 5, "axis": [0, 1, 0], "cycles": 2}}
           ],
           "focus": ["spot"]
