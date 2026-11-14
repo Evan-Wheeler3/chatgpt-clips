@@ -30,6 +30,8 @@ export const ENGINES = {
   }
 };
 export const DEFAULT_ENGINE = 'qwen3-tts';
+// Word timing for local takes: forced alignment of the known script (whisper.cpp remains the fallback)
+export const ALIGNER = {name:'Qwen3-ForcedAligner 0.6B (8-bit MLX)', repo:'mlx-community/Qwen3-ForcedAligner-0.6B-8bit', license:'Apache-2.0 (model card)', downloadGB:1.28};
 export const REFERENCE = {minSec:3, maxSec:60, recommended:[10, 20], sampleRate:24000};
 const NOT_A_PERSON = /^(|claude.*|ai|assistant|bot|automation|auto|pipeline|system|ci|test)$/i;
 
@@ -57,6 +59,21 @@ export async function installPlan(engine = DEFAULT_ENGINE, {voiceDir = VOICE_DIR
 }
 
 // One-time install (network). Needs --yes: it downloads several GB
+// Adds the forced aligner to an existing install (about 1.3 GB; needs --yes)
+export async function installAligner({voiceDir = VOICE_DIR, yes = false, log = console.error} = {}) {
+  const m = await manifest(voiceDir), free = await freeDiskGB(voiceDir);
+  if (!m) throw new Error('Install the voice engine first (node tools/narration/voice.mjs install)');
+  const plan = {aligner:ALIGNER.repo, license:ALIGNER.license, downloadGB:ALIGNER.downloadGB, freeDiskGB:+free.toFixed(1), fits:free - ALIGNER.downloadGB >= 1};
+  if (!yes) return {...plan, status:'plan-only', next:'re-run with --yes to download'};
+  if (!plan.fits) throw new Error(`Not enough free disk for the aligner (${plan.freeDiskGB} GB free)`);
+  const p = paths(voiceDir), modelDir = join(p.models, ALIGNER.repo.replace('/', '--'));
+  log(`downloading ${ALIGNER.repo}`);
+  await run(p.python, ['-c', `from huggingface_hub import snapshot_download; snapshot_download(${JSON.stringify(ALIGNER.repo)}, local_dir=${JSON.stringify(modelDir)})`], {maxBuffer:64 * 1024 * 1024});
+  const record = {...m, aligner:{repo:ALIGNER.repo, modelDir, license:ALIGNER.license, sizeGB:+(await dirSizeGB(modelDir)).toFixed(2), installedAt:new Date().toISOString()}};
+  await writeFile(p.manifest, JSON.stringify(record, null, 2) + '\n');
+  return {...record.aligner, status:'installed'};
+}
+
 export async function install({engine = DEFAULT_ENGINE, voiceDir = VOICE_DIR, python = process.env.HOLDUP_PYTHON ?? '/opt/homebrew/bin/python3.12', yes = false, log = console.error} = {}) {
   const plan = await installPlan(engine, {voiceDir});
   if (!yes) return {...plan, status:'plan-only', next:'re-run with --yes to download and install'};
@@ -124,7 +141,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const print = v => process.stdout.write(JSON.stringify(v, null, 2) + '\n');
   const go = async () => {
     if (command === 'status') return print(await status());
-    if (command === 'install') return print(await install({engine:opt('--engine') ?? DEFAULT_ENGINE, yes:rest.includes('--yes')}));
+    if (command === 'install') return print(rest.includes('--aligner') ? await installAligner({yes:rest.includes('--yes')}) : await install({engine:opt('--engine') ?? DEFAULT_ENGINE, yes:rest.includes('--yes')}));
     if (command === 'enroll') {
       const transcribe = async wav => {
         const { whisperWords } = await import('./narrate.mjs');
@@ -136,7 +153,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       };
       return print(await enroll({id:opt('--id'), audio:resolve(process.cwd(), opt('--audio') ?? ''), owner:opt('--owner'), consent:opt('--consent'), transcript:opt('--transcript'), transcribe}));
     }
-    throw new Error('Usage: voice.mjs status | install [--yes] | enroll --id <id> --audio <file> --owner "<name>" --consent "<statement>" [--transcript "<words>"]');
+    throw new Error('Usage: voice.mjs status | install [--aligner] [--yes] | enroll --id <id> --audio <file> --owner "<name>" --consent "<statement>" [--transcript "<words>"]');
   };
   go().catch(err => { console.error(err.message); process.exitCode = 1; });
 }

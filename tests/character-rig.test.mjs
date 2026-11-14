@@ -147,7 +147,11 @@ test('barrel-bilge stars the approved cooper: feet planted, contact made, heads 
   // Only the two camera-move entrances are cropped (reveal rising from the floor, profile orbiting him into frame)
   const crops = v.warnings.filter(w => w.code === 'CHARACTER_HEAD_CROPPED' || w.code === 'CHARACTER_STRAY_LIMB');
   assert.deepEqual([...new Set(crops.map(w => w.shot))].sort(), ['profile', 'reveal']);
-  assert.ok(crops.every(w => w.shot === 'reveal' ? w.frames[1] <= 15 : w.frames[0] >= 85 && w.frames[1] <= 101), JSON.stringify(crops));
+  // ...and only while that shot's camera move is bringing him into frame (any narration take: frames follow the words)
+  for (const w of crops) {
+    const [from, to] = plan.shots.find(x => x.id === w.shot).camera.window;
+    assert.ok(w.frames[0] >= from && w.frames[1] <= to, `${w.code} ${w.shot} f${w.frames.join('-')} outside the camera move f${from}-${to}`);
+  }
   const def = plan.cast[0].definition, units = def.heightM / def.rig.heightMm, track = castTracks(plan).get('cooper');
   for (const state of track) {
     const J = buildFigure(def, state).joints, foot = Math.min(J.heelF[1], J.toeF[1], J.heelB[1], J.toeB[1]) * units;

@@ -7,8 +7,9 @@ import { promisify } from 'node:util';
 import { alignWords, spokenText } from './align.mjs';
 import { transcribeIslands } from './whisper.mjs';
 import { speechIslands } from './vad.mjs';
-import { markedPauses } from './markup.mjs';
 import { createProvider, narratorFor, synthesize } from './tts.mjs';
+import { forcedAlign, forcedAlignerAvailable } from './forced-align.mjs';
+import { markedPauses, plainText } from './markup.mjs';
 
 const run = promisify(execFile);
 
@@ -64,13 +65,20 @@ export async function narrate({slug, narration, outDir, audioPath = null, profil
       ({words, quality} = alignWords(narration.script, recognized));
       aligner = {engine:`${provider.id}-alignment`, note:'character timestamps returned with the audio'};
       if (verifyAlignment) whisper = await whisperWords(wav16);
+    } else if (await forcedAlignerAvailable()) {
+      // Forced alignment of the known script (measured); whisper only when asked to cross-check
+      const forced = await forcedAlign(wav16, plainText(narration.script));
+      recognized = forced.words;
+      ({words, quality} = alignWords(narration.script, recognized));
+      aligner = forced.engine;
+      if (verifyAlignment) whisper = await whisperWords(wav16);
     } else {
       whisper = await whisperWords(wav16);
       recognized = whisper.words; islands = whisper.islands;
       ({words, quality} = alignWords(narration.script, recognized));
       aligner = {...whisper.engine, silenceThreshold:Math.round(whisper.threshold)};
     }
-    const crossCheck = whisper && synth.words?.length ? timingAgreement(words, alignWords(narration.script, whisper.words).words) : null;
+    const crossCheck = whisper && recognized !== whisper.words ? timingAgreement(words, alignWords(narration.script, whisper.words).words) : null;
     const data = await readFile(wav);
     const result = {
       version:1, slug, take:takeId, script:spokenText(narration.script).replace(/\s+/g, ' ').trim(),

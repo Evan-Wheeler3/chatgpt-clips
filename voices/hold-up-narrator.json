@@ -1,13 +1,11 @@
 {
   "name": "Hold Up narrator",
-  "status": "unselected",
-  "note": "The channel's default narrator: the owner's own cloned voice, generated locally for free. Stories without their own voice use this profile once it is approved. It stays unselected until the owner records a reference, listens to the auditions and picks one (node tools/narration/audition.mjs select <n> --by \"<name>\").",
-  "provider": null,
+  "status": "approved",
+  "note": "The channel's default narrator: the owner's own cloned voice, generated locally for free. Stories without their own voice use this profile. Approved by the owner from the Phase 6.1 audition (take 1, Natural conversational); delivery.minPauseMs 300 = only deliberate script beats of 300 ms or more are voiced.",
+  "provider": "local-clone",
   "settings": {},
   "delivery": {
-    "minPauseMs": 300,
-    "pauseScale": 0.6,
-    "maxPauseMs": 1200
+    "minPauseMs": 300
   },
   "target": {
     "summary": "An entertaining person telling an incredible story to a friend.",
@@ -34,7 +32,15 @@
       "monotone"
     ]
   },
-  "approval": null,
-  "engine": null,
-  "voice": null
+  "approval": {
+    "by": "Evan Wheeler",
+    "on": "2026-11-14",
+    "audition": "hold-up-narrator-audition-02",
+    "take": "voice-01.wav",
+    "takeSha256": "4111835ce1777ffa1ec62c33bcdc4261618b600efe8ec7f7e960a61d2a9a701e"
+  },
+  "engine": "qwen3-tts",
+  "voice": "owner",
+  "seed": 1873,
+  "variant": "Natural conversational"
 }

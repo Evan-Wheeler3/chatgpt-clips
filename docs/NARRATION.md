@@ -11,7 +11,7 @@ story.json narration.script (+ delivery markup)
 tools/narration/tts.mjs ── provider.render ─▶ cache (.cache/narration, content-addressed) ─▶ provider.synthesize (WAV)
    │       local-clone: tools/narration/local/clone_worker.py in .cache/voice/venv (MLX, offline)
    ▼
-tools/narration/narrate.mjs ── word timing: whisper.cpp alignment ── take ─▶ production/<slug>/takes/<take>/
+tools/narration/narrate.mjs ── word timing: forced aligner ▸ whisper.cpp ── take ─▶ production/<slug>/takes/<take>/
    ▼                                                                       (active copy: narration.wav, words.json)
 tools/narration/sync.mjs ── compile old vs new take ─▶ narration-sync.json (retimed shots/actions, conflicts)
    ▼
@@ -89,7 +89,10 @@ Scripts keep their exact words; markup shapes delivery only:
 Marked beats are measured in every take (`words.json` → `pauses`) and checked by the sync report.
 
 ## Word timing, takes and sync
-- **Timing:** whisper.cpp aligns every take to the script (`tools/narration/align.mjs`). Timing is measured, never estimated.
+- **Timing:** when the forced aligner is installed (`node tools/narration/voice.mjs install --aligner`: Qwen3-ForcedAligner 0.6B 8-bit, 1.28 GB, Apache-2.0, offline via mlx-audio), it measures where each word of the known script is spoken (`tools/narration/forced-align.mjs`). Otherwise whisper.cpp transcribes and aligns as before. Timing is measured, never estimated.
+  - *Why:* on the approved cloned take, whisper stretched "right" over the "p" closure in "spot" and collapsed "on the spot." to zero length. That caused a pivot/wobble overlap and missing captions. The forced aligner matched all 40 words.
+  - *Resolution:* the aligner reports on a 0.08 s step. A word shorter than one step shares the step with its neighbour (no boundary moves more than 40 ms) and is marked `within-aligner-step`.
+  - *Cross-check:* `--verify-alignment` also runs whisper and records the agreement (`alignmentCrossCheck`).
 - **Takes:** each take is kept in `production/<slug>/takes/<take>/`. `--use-take <id>` switches the active take without regenerating.
 - **Sync report:** narrating a story whose previous take exists, or switching takes, writes `narration-sync.json` with retimed shots and actions, plus these conflicts:
 
@@ -125,3 +128,7 @@ npm run storyboard -- --story stories/barrel-bilge/story.json --narrate        #
 npm run storyboard -- --story stories/barrel-bilge/story.json --render --quality production --qa --name production-natural-voice
 ```
 Review the sync report before rendering. `--use-take` returns to the approved macOS take at any time.
+
+**Done and approved (Phase 6.1):**
+- **Render:** `production-natural-voice.mp4` uses the owner's cloned voice (audition take 1, Natural conversational) and is in sync with no conflicts.
+- **One staging change:** the reveal's camera rise now starts on the shot's first frame instead of waiting for "Why". The cloned narrator breathes for 0.64 s first, which left the camera low with the cooper's head cut off at the top. The rise still lands on "bulge".

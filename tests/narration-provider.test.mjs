@@ -140,6 +140,9 @@ test('the approved narrator is the default voice; until then stories fall back t
   try {
     await cp(join(repo, 'voices'), dir, {recursive:true, filter:src => !src.includes('/private')});
     const narration = (await story()).narration;
+    // Start from an unselected narrator, whatever the repository's current choice is
+    const unselected = {...await readJson(join(dir, 'hold-up-narrator.json')), status:'unselected', provider:null, approval:null};
+    await writeFile(join(dir, 'hold-up-narrator.json'), JSON.stringify(unselected));
     assert.equal((await narratorFor(narration, dir)).profile.provider, 'macos-say', 'no narrator approved yet');
     await assert.rejects(narratorFor({script:'x'}, dir), /No approved Hold Up narrator/);
     const narrator = await readJson(join(dir, 'hold-up-narrator.json'));
@@ -194,6 +197,7 @@ test('alignment cross-check, word timestamp integrity and pause measurements', (
 
 test('audition: one cloned voice, three delivery variants, honest settings reports; only a person selects the narrator', async () => {
   const {dir, provider, voiceDir, privateDir} = await sandbox();
+  const repoNarrator = await readFile(join(repo, 'voices/hold-up-narrator.json'), 'utf8');
   try {
     const out = join(dir, 'auditions'), voicesDir = join(dir, 'voices');
     await cp(join(repo, 'voices'), voicesDir, {recursive:true, filter:src => !src.includes('/private')});
@@ -213,6 +217,39 @@ test('audition: one cloned voice, three delivery variants, honest settings repor
     await assert.rejects(select({n:3, by:'claude', outDir:out, voicesDir}), /person/);
     const chosen = await select({n:3, by:'Ada Reviewer', outDir:out, voicesDir});
     assert.equal(chosen.status, 'approved'); assert.equal(chosen.voice, 'owner'); assert.equal(chosen.variant, 'Expressive, comedic timing');
-    assert.equal((await readJson(join(repo, 'voices/hold-up-narrator.json'))).status, 'unselected', 'the repository narrator stays unselected');
+    assert.equal(await readFile(join(repo, 'voices/hold-up-narrator.json'), 'utf8'), repoNarrator, 'the audition sandbox never touches the repository narrator');
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});
+
+test('the committed Hold Up narrator, once approved, names its approver and has a sensible pause threshold', async () => {
+  const narrator = await readJson(join(repo, 'voices/hold-up-narrator.json'));
+  if (narrator.status !== 'approved') return;
+  assert.ok(narrator.approval?.by && narrator.approval.takeSha256, 'a person approved a specific audition take');
+  assert.equal(narrator.provider, 'local-clone'); assert.ok(narrator.voice);
+  // minPauseMs: marked beats at least this long become spoken pauses; conversational values sit between quick beats and long silences
+  assert.ok(narrator.delivery.minPauseMs >= 150 && narrator.delivery.minPauseMs <= 1000, `delivery.minPauseMs ${narrator.delivery.minPauseMs} ms`);
+});
+
+test('forced alignment: the known script is measured, and words shorter than the aligner step still get a span', async () => {
+  const { resolveSubStepWords, forcedAlign, ALIGNER_STEP_SEC } = await import('../tools/narration/forced-align.mjs');
+  // "a" comes back with zero length between "has" and "name" (the aligner reports on a 0.08 s step)
+  const fixed = resolveSubStepWords([{text:'has', start:3.52, end:3.68}, {text:'a', start:3.68, end:3.68}, {text:'name', start:3.68, end:4.16}]);
+  assert.deepEqual(fixed.map(w => [w.text, w.start, w.end]), [['has', 3.52, 3.68], ['a', 3.68, 3.72], ['name', 3.72, 4.16]]);
+  assert.equal(fixed[1].timing, 'within-aligner-step');
+  assert.ok(Math.abs(fixed[2].start - 3.68) <= ALIGNER_STEP_SEC / 2 + 1e-9, 'no boundary moves more than half a step');
+  const last = resolveSubStepWords([{text:'the', start:11.68, end:11.76}, {text:'spot', start:11.76, end:11.76}]);
+  assert.deepEqual(last.map(w => [w.start, w.end]), [[11.68, 11.72], [11.72, 11.76]], 'a final zero-length word borrows from the word before');
+  // Worker protocol: request with the local model and the plain script; JSON words back; errors surface clearly
+  const dir = await temp();
+  try {
+    await writeFile(join(dir, 'manifest.json'), JSON.stringify({aligner:{repo:'mlx-community/Qwen3-ForcedAligner-0.6B-8bit', modelDir:'/models/aligner'}}));
+    let seen;
+    const runner = async (python, args) => { seen = JSON.parse(await readFile(args[2], 'utf8')); return {stdout:JSON.stringify({engineVersion:'0.0-test', words:[{text:'Hi', start:0.08, end:0.24}, {text:'a', start:0.24, end:0.24}, {text:'there', start:0.24, end:0.56}]})}; };
+    const result = await forcedAlign('/tmp/a.wav', 'Hi a there', {voiceDir:dir, python:'python', runner});
+    assert.deepEqual(seen, {model:'/models/aligner', audio:'/tmp/a.wav', text:'Hi a there', language:'English'});
+    assert.ok(result.words.every(w => w.end > w.start), 'every word has a span');
+    assert.equal(result.engine.name, 'qwen3-forced-aligner');
+    await assert.rejects(forcedAlign('/tmp/a.wav', 'x', {voiceDir:dir, python:'python', runner:async () => { throw Object.assign(new Error('boom'), {stderr:'{"error":"RuntimeError: bad audio"}'}); }}), /Forced alignment failed/);
+    await assert.rejects(forcedAlign('/tmp/a.wav', 'x', {voiceDir:join(dir, 'none')}), /not installed/);
   } finally { await rm(dir, {recursive:true, force:true}); }
 });

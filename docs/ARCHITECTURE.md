@@ -20,7 +20,7 @@ Original `SKILL.md` is a detailed instruction set for a particular bridge short.
    5.4 The cooper is locked as the master character (`characters/cooper/`, versioned, with visual regression) and stars in barrel-bilge; Bram is legacy. Production approved.
    5.5 Character library, resolver, image-first intake, approval gates and rig attachments: see `docs/CHARACTER-LIBRARY.md` and `docs/CHARACTER-STYLE-GUIDE.md`.
 6. Final voice, captions, sound design and audio QA; Remotion composition.
-   6.1 Narration engine: free local voice cloning of the owner's voice (Qwen3-TTS 0.6B via mlx-audio; macOS say fallback; recordings), voice profiles, delivery markup, whisper word timing, takes and narration sync reports. The audition is ready once the engine is installed and a reference is enrolled. See `docs/NARRATION.md`.
+   6.1 Narration engine: free local voice cloning of the owner's voice (Qwen3-TTS 0.6B via mlx-audio; macOS say fallback; recordings), voice profiles, delivery markup, forced-aligner word timing (whisper fallback), takes and narration sync reports. The owner approved the narrator and the natural-voice barrel-bilge render. See `docs/NARRATION.md`.
 6. Benchmarked end-to-end sample and iteration.
 
 ## Data contracts
