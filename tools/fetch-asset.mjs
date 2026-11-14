@@ -1,0 +1,19 @@
+import { relative } from 'node:path';
+import { createPolyHavenProvider } from './providers/polyhaven.mjs';
+
+// Explicit, per-asset download into assets/cache; it never edits assets/catalog.json
+async function main(args) {
+  let provider, id, resolution = '1k';
+  for (let i=0; i<args.length; i++) {
+    if (args[i] === '--provider') provider=args[++i];
+    else if (args[i] === '--id') id=args[++i];
+    else if (args[i] === '--resolution') resolution=args[++i];
+    else throw new Error(`Unknown argument: ${args[i]}`);
+  }
+  if (provider !== 'polyhaven') throw new Error('Supported providers: polyhaven');
+  if (!id) throw new Error('Provide --id');
+  const result = await createPolyHavenProvider().fetchModel(id, {resolution});
+  process.stdout.write(JSON.stringify({...result, dir:relative(process.cwd(), result.dir)}, null, 2) + '\n');
+}
+
+main(process.argv.slice(2)).catch(err=>{console.error(err.message);process.exitCode=1;});

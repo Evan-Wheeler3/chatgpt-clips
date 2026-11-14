@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const STOP = new Set(['a','an','the','of','for','in','with','and','to','on','old','3d','model']);
-const tokens = value => [...new Set(String(value ?? '').toLowerCase().match(/[a-z0-9]+/g)?.filter(w => !STOP.has(w)) ?? [])];
+export const tokens = value => [...new Set(String(value ?? '').toLowerCase().match(/[a-z0-9]+/g)?.filter(w => !STOP.has(w)) ?? [])];
 const normalize = (value, label) => {
   if (typeof value !== 'string' || !value.trim()) throw new Error(`Missing ${label}`);
   return value.trim();
@@ -40,7 +40,7 @@ export function scoreAsset(request, asset) {
   return score;
 }
 
-export async function resolveAssets(requests, {catalogPath = resolve(root,'assets/catalog.json')} = {}) {
+export async function resolveAssets(requests, {catalogPath = resolve(root,'assets/catalog.json'), providers = []} = {}) {
   const catalog = validateCatalog(JSON.parse(await readFile(catalogPath,'utf8')));
   if (!Array.isArray(requests)) throw new Error('requests must be an array');
   const installed = [];
@@ -54,21 +54,31 @@ export async function resolveAssets(requests, {catalogPath = resolve(root,'asset
       .filter(candidate => candidate.score > 0 && (!request.style || candidate.asset.style === request.style))
       .sort((a,b) => b.score - a.score || a.asset.id.localeCompare(b.asset.id))
       .map(candidate => ({...candidate.asset, score:candidate.score}));
-    return {requestId:request.id, query:request.query, status:candidates.length ? 'found' : 'not_found', candidates};
+    const result = {requestId:request.id, query:request.query, status:candidates.length ? 'found' : 'not_found', candidates};
+    // External hits are suggestions for review, never a silent substitute: the request stays not_found
+    if (!candidates.length && providers.length) {
+      result.externalCandidates = (await Promise.all(providers.map(provider => provider.search(request)))).flat();
+    }
+    return result;
   }));
 }
 
 async function main(args) {
-  let query, requestFile, outFile;
+  let query, requestFile, outFile, external;
   for (let i=0; i<args.length; i++) {
     if (args[i] === '--query') query=args[++i];
     else if (args[i] === '--request') requestFile=args[++i];
     else if (args[i] === '--out') outFile=args[++i];
+    else if (args[i] === '--external') external=args[++i];
     else throw new Error(`Unknown argument: ${args[i]}`);
   }
   if (!!query === !!requestFile) throw new Error('Provide exactly one of --query or --request');
   const requests = query ? [{id:'ad-hoc',query}] : JSON.parse(await readFile(resolve(process.cwd(),requestFile),'utf8')).requests;
-  const result = {version:1,results:await resolveAssets(requests)};
+  const providers = [];
+  if (external === 'polyhaven') providers.push((await import('./providers/polyhaven.mjs')).createPolyHavenProvider());
+  else if (external) throw new Error(`Unknown external provider: ${external}`);
+  const result = {version:1,results:await resolveAssets(requests,{providers})};
+  if (providers.length) result.providerCredits = providers.map(provider => provider.credit);
   const output=JSON.stringify(result,null,2)+'\n';
   if (outFile) {
     const full=resolve(process.cwd(),outFile);

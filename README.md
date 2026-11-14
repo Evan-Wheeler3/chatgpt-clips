@@ -10,7 +10,8 @@ Improve pacing, voice performance, camera direction and environment quality whil
 - [x] Architecture and production contracts documented
 - [x] Initial local asset manifest + resolver implementation and tests
 - [ ] Integrate asset resolver into a real Three.js shot
-- [ ] Add external provider adapters (Poly Haven first)
+- [x] Poly Haven provider adapter (search + explicit checksum-verified glTF download to cache)
+- [ ] Additional provider adapters
 - [ ] Add Blender batch conversion and optional MCP fallback
 - [ ] Narration-timed storyboard, camera presets, and animated preview
 - [ ] End-to-end render, QA, and comparison against baseline
@@ -22,7 +23,7 @@ Research & script -> voice + word timing -> beat/shot plan -> asset resolver
   -> camera/animation/audio edit -> QA -> final Remotion render
 ```
 
-**No fabricated assets or invented provider results:** v1 resolver searches a local JSON catalog and returns a structured miss. Remote downloads are deliberately not implemented until real provider integrations and license checks exist.
+**No fabricated assets or invented provider results:** the resolver searches a local JSON catalog and returns a structured miss. With `--external polyhaven` it attaches Poly Haven suggestions to misses for review; it never downloads or substitutes them. Downloads happen only through the explicit `assets:fetch` command.
 
 ## Getting started
 Node.js 20+ (Node 22 recommended).
@@ -31,6 +32,8 @@ Node.js 20+ (Node 22 recommended).
 npm test
 npm run assets -- --query "wooden bar counter"
 npm run validate:example
+npm run assets -- --query "wooden stool" --external polyhaven   # network: suggests Poly Haven models on local misses
+npm run assets:fetch -- --provider polyhaven --id wooden_stool_01 --resolution 1k
 ```
 
 Add models to `assets/library/` and declare them in `assets/catalog.json`. See `docs/ASSET_PIPELINE.md`. Example entries are metadata-only fixtures and do not represent downloaded assets.

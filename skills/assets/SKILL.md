@@ -12,6 +12,6 @@ description: Retrieve and prepare reusable, provenance-tracked 3D assets for Thr
 - Imported assets need meter scale, scene orientation, bounding box, normals, sensible polygon/material budgets, texture compression and GLB export checks.
 - For misses, mark `not_found` and let the coordinator decide: external search -> human style approval -> Blender repair/custom creation -> simplified procedural fallback only if visually acceptable.
 - Cache model and provenance metadata keyed by an immutable provider ID/version and file hash after download.
-- External providers and Blender are **planned integrations**, not currently implemented.
+- Poly Haven is the only implemented external provider: `npm run assets -- --query "..." --external polyhaven` suggests candidates on misses, and `npm run assets:fetch` downloads one reviewed candidate to the cache. Check `matchedTerms`/`coverage`, warnings and the thumbnail before fetching; a low-coverage hit is usually a different object. Other providers and Blender are **planned integrations**, not currently implemented.
 
 Read `docs/ASSET_PIPELINE.md` for interfaces and quality gates.

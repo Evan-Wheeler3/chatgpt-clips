@@ -7,6 +7,7 @@
   "scripts": {
     "test": "node --test",
     "assets": "node tools/asset-resolver.mjs",
-    "validate:example": "node tools/asset-resolver.mjs --request examples/asset-requests.json"
+    "validate:example": "node tools/asset-resolver.mjs --request examples/asset-requests.json",
+    "assets:fetch": "node tools/fetch-asset.mjs"
   }
 }
