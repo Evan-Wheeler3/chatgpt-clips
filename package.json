@@ -1,0 +1,12 @@
+{
+  "name": "hold-up-animation-v2",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {"node": ">=20"},
+  "scripts": {
+    "test": "node --test",
+    "assets": "node tools/asset-resolver.mjs",
+    "validate:example": "node tools/asset-resolver.mjs --request examples/asset-requests.json"
+  }
+}
