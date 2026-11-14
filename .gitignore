@@ -24,3 +24,6 @@ tmp/
 
 # Voice cloning: owner recordings, transcripts and cloned-voice profiles stay local
 voices/private/
+
+# Licensed, catalogued reusable sound assets (audio/catalog.json) are part of the repository
+!audio/sfx/*.wav
