@@ -231,5 +231,24 @@ export function createPolyHavenProvider({
     }
   }
 
-  return {name:'polyhaven', credit:CREDIT, search, fetchModel};
+  // Fetches (or revalidates) a model and describes it in the provider-agnostic conversion source contract
+  async function conversionSource(id, options = {}) {
+    const fetched = await fetchModel(id, options);
+    const model = (await index()).models[id] ?? {};
+    const provenance = fetched.provenance;
+    const dims = model.dimensions;
+    return {
+      provider:'polyhaven', id, version:provenance.filesHash, resolution:provenance.resolution,
+      dir:fetched.dir, entry:provenance.entry, fetchStatus:fetched.status,
+      files:provenance.files.map(({path, size, sha256}) => ({path, size, sha256})),
+      attribution:{name:provenance.name, sourceUrl:provenance.sourceUrl, license:provenance.license,
+        licenseEvidence:provenance.licenseEvidence, creator:provenance.creator, credit:CREDIT},
+      metadata:{name:provenance.name, description:model.description ?? '', tags:model.tags ?? [],
+        category:model.category ?? null, style:'realistic', warnings:provenance.warnings ?? []},
+      // Poly Haven reports Blender Z-up millimetres [x, depth, height]; glTF is Y-up metres [x, height, depth]
+      expected:Array.isArray(dims) && dims.length === 3 ? {extentsM:[dims[0] / 1000, dims[2] / 1000, dims[1] / 1000]} : null
+    };
+  }
+
+  return {name:'polyhaven', credit:CREDIT, search, fetchModel, conversionSource};
 }

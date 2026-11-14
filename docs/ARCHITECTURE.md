@@ -11,9 +11,9 @@
 Original `SKILL.md` is a detailed instruction set for a particular bridge short. It uses `templates/bridge/`, custom geometry, fixed color/shadow choices and many bridge-specific paths. Reuse the strongest rendering techniques selectively; general story production must not depend on copying one full world.
 
 ## Phase order
-1. Baseline repo audit and local asset registry/resolver (this commit).
-2. External provider adapters with explicit license/provenance checks; download cache and thumbnails.
-3. Asset importer/normalizer with Blender command-line optional path and GLB inspection.
+1. Baseline repo audit and local asset registry/resolver. (done)
+2. External provider adapters with explicit license/provenance checks and download cache. (done: Poly Haven)
+3. Asset converter/validator: deterministic glTF → GLB, Khronos + scale/orientation validation, Three.js previews, approved catalog registration. (done; Blender path for other formats/repairs still open)
 4. Voice-first storyboard and shot-plan compiler.
 5. Reusable camera/action library, Remotion scene test harness, audio QA.
 6. Benchmarked end-to-end sample and iteration.

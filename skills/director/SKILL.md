@@ -25,4 +25,4 @@ An original script or topic, reference style guidance, asset catalog, the user's
 `production/<slug>/story.md`, `words.json`, `shots.json`, `asset-requests.json`, `asset-resolution.json`, preview, final video, `qa.json`.
 
 ## Current implementation limitations
-This repo currently implements the **local asset resolver, the Poly Haven search/download adapter and contracts only**. Do not claim the complete studio pipeline or Blender MCP is working until integrated and tested.
+This repo currently implements the **local asset resolver, the Poly Haven search/download adapter, glTF → GLB conversion/validation with Three.js previews, catalog registration and contracts only**. Do not claim the complete studio pipeline or Blender MCP is working until integrated and tested.

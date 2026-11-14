@@ -9,10 +9,11 @@ Improve pacing, voice performance, camera direction and environment quality whil
 - [x] Separate V2 repository initialized
 - [x] Architecture and production contracts documented
 - [x] Initial local asset manifest + resolver implementation and tests
+- [x] glTF → GLB conversion, validation, Three.js preview and approved catalog registration (`painted_wooden_stool` registered)
 - [ ] Integrate asset resolver into a real Three.js shot
 - [x] Poly Haven provider adapter (search + explicit checksum-verified glTF download to cache)
 - [ ] Additional provider adapters
-- [ ] Add Blender batch conversion and optional MCP fallback
+- [ ] Add Blender batch conversion for formats/repairs gltf-transform cannot handle, and optional MCP fallback
 - [ ] Narration-timed storyboard, camera presets, and animated preview
 - [ ] End-to-end render, QA, and comparison against baseline
 
@@ -26,7 +27,7 @@ Research & script -> voice + word timing -> beat/shot plan -> asset resolver
 **No fabricated assets or invented provider results:** the resolver searches a local JSON catalog and returns a structured miss. With `--external polyhaven` it attaches Poly Haven suggestions to misses for review; it never downloads or substitutes them. Downloads happen only through the explicit `assets:fetch` command.
 
 ## Getting started
-Node.js 20+ (Node 22 recommended).
+Node.js 20+ (Node 22 recommended). Run `npm install` first. Conversion previews and the Three.js load test also need Google Chrome or Chromium (or `CHROME_PATH`); Blender is not required.
 
 ```bash
 npm test
@@ -34,6 +35,9 @@ npm run assets -- --query "wooden bar counter"
 npm run validate:example
 npm run assets -- --query "wooden stool" --external polyhaven   # network: suggests Poly Haven models on local misses
 npm run assets:fetch -- --provider polyhaven --id wooden_stool_01 --resolution 1k
+npm run assets:convert -- --provider polyhaven --id painted_wooden_stool
+npm run assets:register -- --report assets/converted/polyhaven/painted_wooden_stool/<key>/report.json --approve --approved-by "<you>"
+npm run test:integration
 ```
 
 Add models to `assets/library/` and declare them in `assets/catalog.json`. See `docs/ASSET_PIPELINE.md`. Example entries are metadata-only fixtures and do not represent downloaded assets.

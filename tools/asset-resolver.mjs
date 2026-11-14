@@ -10,7 +10,7 @@ const normalize = (value, label) => {
   return value.trim();
 };
 
-export function validateCatalog(catalog) {
+export function validateCatalog(catalog, rootDir = root) {
   if (catalog?.version !== 1 || !Array.isArray(catalog.assets)) throw new Error('Invalid asset catalog version/shape');
   const ids = new Set();
   for (const item of catalog.assets) {
@@ -20,9 +20,10 @@ export function validateCatalog(catalog) {
     if (!Array.isArray(item.tags) || item.tags.some(tag => typeof tag !== 'string')) throw new Error(`Invalid tags: ${item.id}`);
     if (!/^https:\/\//.test(item.sourceUrl)) throw new Error(`Invalid sourceUrl: ${item.id}`);
     if (isAbsolute(item.localPath) || item.localPath.includes('\\')) throw new Error(`Invalid localPath: ${item.id}`);
-    const full = resolve(root, item.localPath);
-    if (relative(root, full).startsWith('..' + sep) || relative(root, full) === '..') throw new Error(`Path escapes repository: ${item.id}`);
+    const full = resolve(rootDir, item.localPath);
+    if (relative(rootDir, full).startsWith('..' + sep) || relative(rootDir, full) === '..') throw new Error(`Path escapes repository: ${item.id}`);
     if (!/\.glb$/i.test(full)) throw new Error(`Asset is not GLB: ${item.id}`);
+    if (item.sha256 !== undefined && !/^[0-9a-f]{64}$/.test(item.sha256)) throw new Error(`Invalid sha256: ${item.id}`);
   }
   return catalog;
 }
@@ -40,12 +41,12 @@ export function scoreAsset(request, asset) {
   return score;
 }
 
-export async function resolveAssets(requests, {catalogPath = resolve(root,'assets/catalog.json'), providers = []} = {}) {
-  const catalog = validateCatalog(JSON.parse(await readFile(catalogPath,'utf8')));
+export async function resolveAssets(requests, {catalogPath = resolve(root,'assets/catalog.json'), providers = [], rootDir = root} = {}) {
+  const catalog = validateCatalog(JSON.parse(await readFile(catalogPath,'utf8')), rootDir);
   if (!Array.isArray(requests)) throw new Error('requests must be an array');
   const installed = [];
   for (const asset of catalog.assets) {
-    try { await access(resolve(root, asset.localPath)); installed.push(asset); }
+    try { await access(resolve(rootDir, asset.localPath)); installed.push(asset); }
     catch { /* A catalog record does not prove that a local asset exists */ }
   }
   return Promise.all(requests.map(async request => {

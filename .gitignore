@@ -6,6 +6,7 @@ node_modules/
 assets/library/
 assets/cache/
 assets/downloads/
+assets/converted/
 production/
 out/
 dist/

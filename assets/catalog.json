@@ -1,1 +1,57 @@
-{"version":1,"assets":[]}
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "polyhaven-painted-wooden-stool",
+      "name": "Painted Wooden Stool",
+      "description": "Free 4K model - painted wooden stool with chipped paint, worn edges and rustic farmhouse charm; simple antique carpentry.",
+      "tags": [
+        "painted",
+        "worn",
+        "old",
+        "antique",
+        "vintage",
+        "farmhouse",
+        "rustic",
+        "carpentry",
+        "aged",
+        "chair",
+        "furniture",
+        "seating",
+        "stools & bar seating"
+      ],
+      "style": "realistic",
+      "localPath": "assets/library/polyhaven-painted-wooden-stool.glb",
+      "sourceUrl": "https://polyhaven.com/a/painted_wooden_stool",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "Kirill Sannikov",
+      "provider": {
+        "name": "polyhaven",
+        "id": "painted_wooden_stool",
+        "version": "05124979aecd8b4eb15587a43eccae4bb0a5b7e4",
+        "resolution": "1k"
+      },
+      "sha256": "09e76b74501193a3f9293a0051832c6be81fc4a120ac0e86a346ac881c9fa1dc",
+      "bytes": 1874168,
+      "dimensionsM": [
+        0.38484,
+        0.57892,
+        0.40607
+      ],
+      "triangles": 676,
+      "conversion": {
+        "key": "7fc69e4db7aacd48",
+        "converterVersion": 1,
+        "report": "assets/converted/polyhaven/painted_wooden_stool/7fc69e4db7aacd48/report.json"
+      },
+      "review": {
+        "approvedBy": "Claude Code (preview review, pending human confirmation)",
+        "approvedAt": "2026-11-14T05:40:53.547Z",
+        "warnings": [
+          "Khronos glTF validator reported 1 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+        ]
+      }
+    }
+  ]
+}

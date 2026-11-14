@@ -3,11 +3,24 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "engines": {"node": ">=20"},
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "node --test",
     "assets": "node tools/asset-resolver.mjs",
     "validate:example": "node tools/asset-resolver.mjs --request examples/asset-requests.json",
-    "assets:fetch": "node tools/fetch-asset.mjs"
+    "assets:fetch": "node tools/fetch-asset.mjs",
+    "assets:convert": "node tools/convert-asset.mjs",
+    "assets:register": "node tools/register-asset.mjs",
+    "test:integration": "HOLDUP_INTEGRATION=1 node --test 'tests/integration/*.test.mjs'"
+  },
+  "dependencies": {
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "@gltf-transform/functions": "4.5.1",
+    "gltf-validator": "2.0.0-dev.3.10",
+    "puppeteer-core": "25.16.0",
+    "three": "0.186.1"
   }
 }
