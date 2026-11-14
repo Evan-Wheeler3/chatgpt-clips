@@ -4,7 +4,6 @@ import { fileURLToPath } from 'node:url';
 import { narrate } from './narration/narrate.mjs';
 import { loadVoiceProfile, authorize } from './narration/tts.mjs';
 import { narrationSync } from './narration/sync.mjs';
-import { loadEnv } from './narration/env.mjs';
 import { compileStory } from './storyboard/compile.mjs';
 import { validatePlan } from './storyboard/validate.mjs';
 import { renderAnimatic } from './storyboard/animatic.mjs';
@@ -57,7 +56,6 @@ async function main(args) {
     if (previous) { syncReport = await narrationSync(story, previous, JSON.parse(await readFile(wordsPath, 'utf8'))); await writeFile(join(outDir, 'narration-sync.json'), JSON.stringify(syncReport, null, 2) + '\n'); }
   }
   if (narrateNow) {
-    await loadEnv();
     const previous = await exists(wordsPath) ? JSON.parse(await readFile(wordsPath, 'utf8')) : null;
     const profile = voice ? await loadVoiceProfile(voice) : null;
     const authorization = approveSpend ? authorize({by:approvedBy, maxUsd:approveSpend}) : null;

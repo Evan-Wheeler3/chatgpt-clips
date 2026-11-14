@@ -1,16 +1,40 @@
 {
   "name": "Hold Up narrator",
   "status": "unselected",
-  "note": "The channel's default narrator. Stories without their own voice use this profile once it is approved. It stays unselected until the owner listens to the auditions and picks one (node tools/narration/audition.mjs select <n> --by \"<name>\").",
+  "note": "The channel's default narrator: the owner's own cloned voice, generated locally for free. Stories without their own voice use this profile once it is approved. It stays unselected until the owner records a reference, listens to the auditions and picks one (node tools/narration/audition.mjs select <n> --by \"<name>\").",
   "provider": null,
-  "voiceId": null,
-  "modelId": null,
   "settings": {},
-  "delivery": {"minPauseMs": 300, "pauseScale": 0.6, "maxPauseMs": 1200},
+  "delivery": {
+    "minPauseMs": 300,
+    "pauseScale": 0.6,
+    "maxPauseMs": 1200
+  },
   "target": {
     "summary": "An entertaining person telling an incredible story to a friend.",
-    "want": ["American male", "young-to-middle-aged adult", "natural, conversational", "energetic without sounding fake", "quick, engaging storytelling", "slightly sarcastic or amused when it fits", "excellent comedic timing", "expressive pitch and rhythm", "clear and articulate", "shifts between suspense, humour and surprise"],
-    "avoid": ["generic documentary narration", "deep movie-trailer voice", "corporate presentation voice", "robotic delivery", "excessively dramatic pauses", "artificial influencer excitement", "monotone"]
+    "want": [
+      "the owner's own voice, cloned locally",
+      "American male",
+      "young-to-middle-aged adult",
+      "natural, conversational",
+      "energetic without sounding fake",
+      "quick, engaging storytelling",
+      "slightly sarcastic or amused when it fits",
+      "excellent comedic timing",
+      "expressive pitch and rhythm",
+      "clear and articulate",
+      "shifts between suspense, humour and surprise"
+    ],
+    "avoid": [
+      "generic documentary narration",
+      "deep movie-trailer voice",
+      "corporate presentation voice",
+      "robotic delivery",
+      "excessively dramatic pauses",
+      "artificial influencer excitement",
+      "monotone"
+    ]
   },
-  "approval": null
+  "approval": null,
+  "engine": null,
+  "voice": null
 }

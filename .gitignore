@@ -21,3 +21,6 @@ tmp/
 *.blend
 *.fbx
 *.obj
+
+# Voice cloning: owner recordings, transcripts and cloned-voice profiles stay local
+voices/private/

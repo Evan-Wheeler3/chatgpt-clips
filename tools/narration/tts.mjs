@@ -2,12 +2,12 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir, appendFile, access } from 'node:fs/promises';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createElevenLabs, DEFAULT_BASE } from './providers/elevenlabs.mjs';
 import { createMacSay, createRecorded } from './providers/local.mjs';
-import { loadEnv } from './env.mjs';
+import { createLocalClone } from './providers/local-clone.mjs';
 
 /*
- * Narration synthesis behind one interface, with a content-addressed cache and a spending guard.
+ * Narration synthesis behind one interface, with a content-addressed cache. Every provider is free and local; the spending
+ * guard stays as a safety net so no paid service can ever be called without a person's explicit, capped approval.
  *   provider: {id, paid, render(script, profile), estimate(text, profile), cacheKey(text, profile), synthesize(text, profile)}
  *   profile:  voices/<id>.json (provider, voiceId, modelId, settings, delivery)
  * Paid providers only run with an explicit authorization {by, maxUsd} from a person; cache hits never cost anything.
@@ -21,16 +21,20 @@ export class SpendNotAuthorized extends Error {
   constructor(message, estimate) { super(message); this.name = 'SpendNotAuthorized'; this.code = 'unauthorized-spend'; this.estimate = estimate; }
 }
 
-export async function createProvider(id, {env = process.env, fetch} = {}) {
-  if (id === 'elevenlabs') { await loadEnv(undefined, env); return createElevenLabs({apiKey:env.ELEVENLABS_API_KEY, base:env.ELEVENLABS_API_BASE ?? DEFAULT_BASE, fetch}); }
+export async function createProvider(id, options = {}) {
+  if (id === 'local-clone') return createLocalClone(options);
   if (id === 'macos-say') return createMacSay();
   if (id === 'recorded') return createRecorded();
-  throw new Error(`Unknown narration provider "${id}" (elevenlabs, macos-say, recorded)`);
+  throw new Error(`Unknown narration provider "${id}" (local-clone, macos-say, recorded)`);
 }
 
+// Profiles: voices/<id>.json (committed), or voices/private/<id>/profile.json for an enrolled voice (gitignored)
 export async function loadVoiceProfile(id, dir = VOICES_DIR) {
-  const file = join(dir, `${id}.json`);
-  try { return {id, ...JSON.parse(await readFile(file, 'utf8'))}; } catch { throw new Error(`No voice profile "${id}" (${file})`); }
+  for (const file of [join(dir, `${id}.json`), join(dir, 'private', id, 'profile.json')]) {
+    const profile = await readFile(file, 'utf8').then(JSON.parse, () => null);
+    if (profile) return {id, ...profile};
+  }
+  throw new Error(`No voice profile "${id}" in ${dir} (or ${join(dir, 'private', id)})`);
 }
 
 // The voice a story uses: the story's own profile, else the approved Hold Up narrator, else the development fallback
@@ -49,7 +53,9 @@ export function authorize({by, maxUsd}) {
   return {by:String(by).trim(), maxUsd, spentUsd:0};
 }
 
-export async function synthesize({provider, profile, script}, {authorization = null, cacheDir = resolve(root, '.cache/narration'), usageLog = resolve(root, 'production/narration/usage.jsonl'), env = process.env} = {}) {
+export async function synthesize({provider, profile:given, script}, {authorization = null, cacheDir = resolve(root, '.cache/narration'), usageLog = resolve(root, 'production/narration/usage.jsonl'), env = process.env} = {}) {
+  // Providers may resolve what the cache key needs (e.g. the exact reference recording behind a cloned voice)
+  const profile = provider.prepare ? await provider.prepare(given) : given;
   const text = provider.render(script, profile);
   const keyObject = provider.cacheKey(text, profile);
   const key = createHash('sha256').update(JSON.stringify(keyObject)).digest('hex').slice(0, 32);

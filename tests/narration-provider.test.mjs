@@ -5,10 +5,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { loadEnv, redact } from '../tools/narration/env.mjs';
 import { parseScript, renderScript, spokenWords, markedPauses } from '../tools/narration/markup.mjs';
-import { createElevenLabs, wordsFromAlignment, ProviderError, markupTarget, PRICING } from '../tools/narration/providers/elevenlabs.mjs';
-import { synthesize, authorize, SpendNotAuthorized, narratorFor, createProvider } from '../tools/narration/tts.mjs';
+import { createLocalClone } from '../tools/narration/providers/local-clone.mjs';
+import { synthesize, authorize, SpendNotAuthorized, narratorFor, createProvider, loadVoiceProfile } from '../tools/narration/tts.mjs';
+import { installPlan, install, enroll, loadVoice, ENGINES } from '../tools/narration/voice.mjs';
 import { alignWords, scriptWords } from '../tools/narration/align.mjs';
 import { timingAgreement, pauseReport } from '../tools/narration/narrate.mjs';
 import { narrationSync } from '../tools/narration/sync.mjs';
@@ -18,150 +18,134 @@ import { wordAt } from '../tools/storyboard/sample.mjs';
 
 const run = promisify(execFile);
 const repo = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const FAKE_WORKER = join(repo, 'tests/fixtures/fake-clone-worker.mjs');
 const readJson = async f => JSON.parse(await readFile(f, 'utf8'));
 const temp = () => mkdtemp(join(tmpdir(), 'holdup-narration-'));
 const story = () => readJson(join(repo, 'stories/barrel-bilge/story.json'));
-const PROFILE = {id:'audition-01', provider:'elevenlabs', voiceId:'voice123', modelId:'eleven_multilingual_v2', settings:{stability:0.4, similarity_boost:0.75, style:0.3, use_speaker_boost:true, speed:1}, delivery:{minPauseMs:300, pauseScale:0.6}};
+const tone = async (file, seconds) => run('ffmpeg', ['-loglevel', 'error', '-y', '-f', 'lavfi', '-i', `sine=frequency=180:duration=${seconds}`, '-ac', '1', file]);
 
-// ElevenLabs-shaped character alignment for a text, at a steady pace, with markup characters included
-function fakeAlignment(text, perChar = 0.05) {
-  const characters = [...text];
-  return {characters, character_start_times_seconds:characters.map((_, i) => +(i * perChar).toFixed(3)), character_end_times_seconds:characters.map((_, i) => +((i + 1) * perChar).toFixed(3))};
+// A sandbox with an "installed" engine (manifest only) and an enrolled voice, driven by the fake worker
+async function sandbox() {
+  const dir = await temp(), voiceDir = join(dir, 'voice'), privateDir = join(dir, 'private');
+  await mkdir(voiceDir, {recursive:true});
+  await writeFile(join(voiceDir, 'manifest.json'), JSON.stringify({engine:'qwen3-tts', repo:ENGINES['qwen3-tts'].repo, modelDir:join(voiceDir, 'models/x'), packages:{'mlx-audio':'0.0-test'}}));
+  const audio = join(dir, 'me.wav');
+  await tone(audio, 12);
+  await enroll({id:'owner', audio, owner:'Ada Reviewer', consent:'I am Ada; this is my own voice and I permit cloning it', transcript:'This is what my voice sounds like.', privateDir});
+  const provider = createLocalClone({python:process.execPath, worker:FAKE_WORKER, voiceDir, privateDir});
+  return {dir, voiceDir, privateDir, provider};
 }
-// A mock fetch that records calls and answers like the API
-function mockFetch(handler) {
-  const calls = [];
-  const fn = async (url, init) => { calls.push({url, init}); return handler(url, init, calls.length); };
-  fn.calls = calls;
-  return fn;
-}
-const json = (status, body, headers = {}) => new Response(JSON.stringify(body), {status, headers:{'content-type':'application/json', ...headers}});
-let mp3;
-async function realMp3() {
-  if (mp3) return mp3;
-  const dir = await temp(), file = join(dir, 'tone.mp3');
-  await run('ffmpeg', ['-loglevel', 'error', '-y', '-f', 'lavfi', '-i', 'sine=frequency=220:duration=2', '-ac', '1', file]);
-  mp3 = await readFile(file); await rm(dir, {recursive:true, force:true});
-  return mp3;
-}
-const ttsOk = async (url, init) => {
-  const body = JSON.parse(init.body);
-  return json(200, {audio_base64:(await realMp3()).toString('base64'), alignment:fakeAlignment(body.text)}, {'request-id':'req-1', 'character-cost':String(body.text.length)});
-};
+const PROFILE = {id:'owner', provider:'local-clone', engine:'qwen3-tts', voice:'owner', seed:1873, settings:{temperature:0.8, top_p:0.9}, delivery:{minPauseMs:100}};
 
-test('configuration: .env loading, redaction, and a clear missing-key error', async () => {
-  const dir = await temp();
-  try {
-    await writeFile(join(dir, '.env'), '# comment\nELEVENLABS_API_KEY="sk_test_123456"\nOTHER=1\n');
-    const env = {OTHER:'keep'};
-    await loadEnv(join(dir, '.env'), env);
-    assert.equal(env.ELEVENLABS_API_KEY, 'sk_test_123456'); assert.equal(env.OTHER, 'keep', 'existing variables win');
-    assert.equal(redact('sk_test_123456'), '**********3456'); assert.equal(redact(undefined), '(not set)');
-    const fetch = mockFetch(ttsOk);
-    const provider = createElevenLabs({apiKey:undefined, fetch});
-    await assert.rejects(provider.synthesize('hello', PROFILE), e => e.code === 'missing-key' && /\.env/.test(e.message));
-    assert.equal(fetch.calls.length, 0);
-    await assert.rejects(createProvider('nope'), /Unknown narration provider/);
-  } finally { await rm(dir, {recursive:true, force:true}); }
-});
-
-test('delivery markup keeps the words and renders pauses, emphasis and tones per provider', async () => {
+test('delivery markup keeps the words; local engines get punctuation beats, the macOS fallback its own markup', async () => {
   const s = (await story()).narration.script;
   assert.deepEqual(spokenWords(s), scriptWords(s), 'markup never changes the spoken words');
-  assert.equal(renderScript(s, 'macos-say'), s.replace(/\s+/g, ' ').trim(), 'the macOS fallback renders the original script');
-  const ssml = renderScript(s, 'ssml-break', {minPauseMs:300, pauseScale:0.6});
-  assert.equal((ssml.match(/<break time="0\.21s" \/>/g) ?? []).length, 2, 'only the deliberate 350 ms pauses survive, scaled');
-  assert.ok(!/slnc|emph/.test(ssml));
-  const tagged = renderScript('So [[tone amused]] it rolls. [[slnc 600]] Easy.', 'audio-tags');
-  assert.equal(tagged, 'So [amused] it rolls.… Easy.'.replace('rolls.…', 'rolls.'), 'v3/v4: audio tags, no break tags, sentence punctuation left alone');
-  assert.equal(renderScript('Wait [[slnc 600]] for it.', 'audio-tags'), 'Wait… for it.');
-  assert.equal(markupTarget('eleven_v3'), 'audio-tags'); assert.equal(markupTarget('eleven_multilingual_v2'), 'ssml-break');
+  assert.equal(renderScript(s, 'macos-say'), s.replace(/\s+/g, ' ').trim(), 'the development fallback renders the original script');
+  assert.equal(renderScript(s, 'punctuation', {minPauseMs:100000}), spokenWords(s).join(' '), 'no added beats: the script as written');
+  const beats = renderScript(s, 'punctuation', {minPauseMs:100});
+  assert.match(beats, /a name… the bilge\./); assert.match(beats, /easy to roll… and easy/);
+  assert.equal((beats.match(/…/g) ?? []).length, 2, 'beats after sentence ends add nothing');
+  assert.ok(!/slnc|emph|tone|\[|</.test(beats));
+  assert.equal(renderScript('So [[tone amused]] it rolls.', 'punctuation'), 'So it rolls.', 'tones are dropped where the engine has no style control');
   assert.deepEqual(markedPauses(s).map(p => p.ms), [350, 150, 350, 250, 150]);
   assert.equal(parseScript('[[emph +]] big deal').find(t => t.type === 'word').emphasis, true);
 });
 
-test('ElevenLabs requests follow the documented endpoint, and character timestamps become word timestamps', async () => {
-  const fetch = mockFetch(ttsOk);
-  const provider = createElevenLabs({apiKey:'sk_test_123456', fetch});
-  const text = provider.render((await story()).narration.script, PROFILE);
-  const result = await provider.synthesize(text, PROFILE);
-  const {url, init} = fetch.calls[0];
-  assert.equal(url, 'https://api.elevenlabs.io/v1/text-to-speech/voice123/with-timestamps?output_format=mp3_44100_128');
-  assert.equal(init.method, 'POST'); assert.equal(init.headers['xi-api-key'], 'sk_test_123456');
-  const body = JSON.parse(init.body);
-  assert.equal(body.model_id, 'eleven_multilingual_v2'); assert.equal(body.text, text);
-  assert.deepEqual(body.voice_settings, PROFILE.settings);
-  assert.equal(result.response.requestId, 'req-1');
-  // Break tags are not words; every script word is aligned exactly, in order, with start <= end
-  assert.ok(!result.words.some(w => /break|time=/.test(w.text)));
-  const aligned = alignWords((await story()).narration.script, result.words);
-  assert.equal(aligned.quality.exact, aligned.quality.scriptWords);
-  assert.ok(aligned.words.every((w, i) => w.start <= w.end && (i === 0 || w.start >= aligned.words[i - 1].end)));
-  // Alignment accuracy: word boundaries equal the characters' measured times
-  const words = wordsFromAlignment(fakeAlignment('Hi [amused] there <break time="0.2s" /> friend', 0.1));
-  assert.deepEqual(words.map(w => [w.text, w.start, w.end]), [['Hi', 0, 0.2], ['there', 1.2, 1.7], ['friend', 4, 4.6]]);
+test('local cloning: the worker gets the reference, transcript, seed and text; unsupported settings are reported, not assumed', async () => {
+  const {dir, provider, privateDir} = await sandbox();
+  try {
+    const out = await synthesize({provider, profile:PROFILE, script:'That curve has a name: [[slnc 150]] the bilge.'}, {cacheDir:join(dir, 'cache'), usageLog:join(dir, 'usage.jsonl')});
+    assert.equal(out.cached, false); assert.equal(out.costUsd, 0); assert.match(out.audioPath, /\.wav$/);
+    assert.equal(out.renderedText, 'That curve has a name… the bilge.');
+    assert.deepEqual(out.response.applied, {top_p:0.9}); assert.deepEqual(out.response.ignored, ['temperature']);
+    assert.equal(out.response.refText, 'This is what my voice sounds like.');
+    const voice = await loadVoice('owner', privateDir);
+    assert.equal(out.request.referenceSha256, voice.reference.sha256, 'the cache key covers the exact reference recording');
+    assert.equal(out.request.engineVersion, '0.0-test');
+    const {stdout} = await run('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_name,sample_rate', '-of', 'csv=p=0', out.audioPath]);
+    assert.equal(stdout.trim(), 'pcm_s16le,24000');
+    // Cache: the same request is free and instant; a different setting is a new generation
+    const again = await synthesize({provider, profile:PROFILE, script:'That curve has a name: [[slnc 150]] the bilge.'}, {cacheDir:join(dir, 'cache')});
+    assert.equal(again.cached, true); assert.equal(again.key, out.key);
+    const other = await synthesize({provider, profile:{...PROFILE, settings:{top_p:0.5}}, script:'That curve has a name: [[slnc 150]] the bilge.'}, {cacheDir:join(dir, 'cache')});
+    assert.notEqual(other.key, out.key);
+  } finally { await rm(dir, {recursive:true, force:true}); }
 });
 
-test('provider errors are explained, retryable where it makes sense, and never echo the key', async () => {
-  const cases = [
-    [401, {detail:{status:'invalid_api_key', message:'Invalid API key'}}, 'auth', false],
-    [422, {detail:[{loc:['body', 'text'], msg:'field required', type:'missing'}]}, 'validation', false],
-    [429, {detail:{status:'too_many_concurrent_requests', message:'Too many requests'}}, 'rate-limit', true],
-    [401, {detail:{status:'quota_exceeded', message:'This request exceeds your quota of credits'}}, 'quota', true],
-    [503, {detail:'unavailable'}, 'server', true]
-  ];
-  for (const [status, body, code, retryable] of cases) {
-    const provider = createElevenLabs({apiKey:'sk_secret_9999', fetch:mockFetch(() => json(status, body))});
-    const error = await provider.synthesize('hi', PROFILE).catch(e => e);
-    assert.ok(error instanceof ProviderError, `${status}`);
-    if (code !== 'quota') assert.equal(error.code, code); else assert.ok(['quota', 'auth'].includes(error.code));
-    if (code !== 'quota') assert.equal(error.retryable, retryable);
-    assert.ok(!error.message.includes('sk_secret_9999'));
-  }
-  const offline = createElevenLabs({apiKey:'k', fetch:async () => { throw new Error('ENOTFOUND'); }});
-  assert.equal((await offline.synthesize('hi', PROFILE).catch(e => e)).code, 'network');
-  assert.throws(() => createElevenLabs({apiKey:'k'}).estimate('hi', {...PROFILE, modelId:'eleven_mystery'}), /No published price/);
+test('local cloning fails clearly without the engine, without an enrolled voice, or when the model errors', async () => {
+  const dir = await temp();
+  const {provider, dir:sandboxDir} = await sandbox();
+  try {
+    const bare = createLocalClone({python:process.execPath, worker:FAKE_WORKER, voiceDir:join(dir, 'none'), privateDir:join(dir, 'private')});
+    await assert.rejects(bare.synthesize('hi', PROFILE), /not installed.*voice\.mjs install/);
+    await assert.rejects(provider.synthesize('hi', {...PROFILE, voice:'stranger'}), /No enrolled voice "stranger"/);
+    process.env.FAKE_WORKER_FAIL = '1';
+    try { await assert.rejects(provider.synthesize('hi', PROFILE), /Local voice generation failed: RuntimeError: model exploded/); }
+    finally { delete process.env.FAKE_WORKER_FAIL; }
+  } finally { await rm(dir, {recursive:true, force:true}); await rm(sandboxDir, {recursive:true, force:true}); }
 });
 
-test('paid requests need a named approver and a cap; refusals never reach the network; the cache makes repeats free', async () => {
+test('enrollment: only the owner\'s voice, with consent, a usable length and a transcript; nothing private is tracked by git', async () => {
   const dir = await temp();
   try {
-    const fetch = mockFetch(ttsOk);
-    const provider = createElevenLabs({apiKey:'sk_test', fetch});
-    const req = {provider, profile:PROFILE, script:'Why do wooden barrels bulge in the middle?'};
-    const opts = {cacheDir:join(dir, 'cache'), usageLog:join(dir, 'usage.jsonl'), env:{}};
-    await assert.rejects(synthesize(req, opts), SpendNotAuthorized);
+    const short = join(dir, 'short.wav'), good = join(dir, 'good.wav'), privateDir = join(dir, 'private');
+    await tone(short, 2); await tone(good, 8);
+    const base = {id:'owner', audio:good, owner:'Ada Reviewer', consent:'This is my own voice and I permit cloning it', transcript:'Hello there.', privateDir};
+    await assert.rejects(enroll({...base, owner:'Claude'}), /owner must name/);
+    await assert.rejects(enroll({...base, consent:'ok'}), /consent/);
+    await assert.rejects(enroll({...base, audio:short}), /use 3-60 s/);
+    await assert.rejects(enroll({...base, audio:join(dir, 'missing.wav')}), /not a readable audio/);
+    await assert.rejects(enroll({...base, transcript:null}), /--transcript/);
+    const voice = await enroll(base);
+    assert.equal(voice.reference.sampleRate, 24000); assert.equal(voice.owner, 'Ada Reviewer');
+    assert.match(voice.warnings[0], /Short reference/);
+    const viaWhisper = await enroll({...base, id:'second', transcript:null, transcribe:async () => 'hello there'});
+    assert.match(viaWhisper.transcriptSource, /whisper/);
+    assert.equal((await loadVoiceProfile('owner', dir)).provider, 'local-clone', 'enrolled voices are usable profiles');
+    const {stdout} = await run('git', ['check-ignore', 'voices/private/owner/reference.wav', '.cache/voice/manifest.json', 'production/narration/auditions/voice-01.wav'], {cwd:repo});
+    assert.equal(stdout.trim().split('\n').length, 3, 'recordings, models and generated audio are gitignored');
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});
+
+test('install shows the plan and needs --yes', async () => {
+  const dir = await temp();
+  try {
+    const plan = await installPlan('qwen3-tts', {voiceDir:join(dir, 'voice')});
+    assert.equal(plan.needGB, +(ENGINES['qwen3-tts'].downloadGB + ENGINES['qwen3-tts'].environmentGB).toFixed(1));
+    assert.match(plan.license.weights, /Apache-2\.0/); assert.equal(plan.installed, false);
+    const dry = await install({voiceDir:join(dir, 'voice')});
+    assert.equal(dry.status, 'plan-only', 'nothing is downloaded without --yes');
+    await assert.rejects(installPlan('voxcpm-huge'), /Unknown engine/);
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});
+
+test('no paid service can run without a named approver and a cap (safety net), and refusals never call it', async () => {
+  const dir = await temp();
+  let calls = 0;
+  const paid = {id:'hypothetical-paid', paid:true, render:s => s, estimate:t => ({characters:t.length, usd:t.length / 1000 * 0.08}), cacheKey:t => ({p:'paid', t}),
+    synthesize:async () => { calls++; return {audio:Buffer.from('x'), extension:'wav', words:null, response:null}; }};
+  try {
+    const opts = {cacheDir:join(dir, 'c'), usageLog:join(dir, 'u.jsonl'), env:{}};
+    await assert.rejects(synthesize({provider:paid, profile:{id:'p'}, script:'hello world'}, opts), SpendNotAuthorized);
     assert.throws(() => authorize({by:'Claude', maxUsd:1}), /person/);
-    assert.throws(() => authorize({by:'Ada Reviewer', maxUsd:0}), /cap/);
-    await assert.rejects(synthesize(req, {...opts, authorization:authorize({by:'Ada Reviewer', maxUsd:0.0001})}), /exceed the approved cap/);
-    await assert.rejects(synthesize(req, {...opts, env:{HOLDUP_BLOCK_PAID_TTS:'1'}, authorization:authorize({by:'Ada Reviewer', maxUsd:1})}), /blocked/);
-    assert.equal(fetch.calls.length, 0, 'no refused request reached ElevenLabs');
-    const authorization = authorize({by:'Ada Reviewer', maxUsd:0.05});
-    const first = await synthesize(req, {...opts, authorization});
-    assert.equal(fetch.calls.length, 1); assert.equal(first.cached, false);
-    assert.equal(first.estimate.usd, +(req.script.length / 1000 * PRICING.usdPer1kChars.eleven_multilingual_v2).toFixed(4));
-    assert.ok(authorization.spentUsd > 0);
-    const log = (await readFile(opts.usageLog, 'utf8')).trim().split('\n').map(JSON.parse);
-    assert.equal(log.length, 1); assert.equal(log[0].approvedBy, 'Ada Reviewer'); assert.equal(log[0].characterCostHeader, String(req.script.length));
-    const again = await synthesize(req, opts); // no authorization needed for a cache hit
-    assert.equal(again.cached, true); assert.equal(again.costUsd, 0); assert.equal(fetch.calls.length, 1);
-    assert.deepEqual(again.words, first.words);
-    const changed = await synthesize({...req, profile:{...PROFILE, settings:{...PROFILE.settings, stability:0.6}}}, opts).catch(e => e);
-    assert.ok(changed instanceof SpendNotAuthorized, 'new settings are a new paid request');
+    await assert.rejects(synthesize({provider:paid, profile:{id:'p'}, script:'hello world'}, {...opts, authorization:authorize({by:'Ada Reviewer', maxUsd:0.00001})}), /cap/);
+    await assert.rejects(synthesize({provider:paid, profile:{id:'p'}, script:'hello world'}, {...opts, env:{HOLDUP_BLOCK_PAID_TTS:'1'}, authorization:authorize({by:'Ada Reviewer', maxUsd:1})}), /blocked/);
+    assert.equal(calls, 0);
+    await assert.rejects(createProvider('elevenlabs'), /Unknown narration provider/, 'no paid provider is registered');
   } finally { await rm(dir, {recursive:true, force:true}); }
 });
 
 test('the approved narrator is the default voice; until then stories fall back to their development voice', async () => {
   const dir = await temp();
   try {
-    await cp(join(repo, 'voices'), dir, {recursive:true});
+    await cp(join(repo, 'voices'), dir, {recursive:true, filter:src => !src.includes('/private')});
     const narration = (await story()).narration;
     assert.equal((await narratorFor(narration, dir)).profile.provider, 'macos-say', 'no narrator approved yet');
     await assert.rejects(narratorFor({script:'x'}, dir), /No approved Hold Up narrator/);
     const narrator = await readJson(join(dir, 'hold-up-narrator.json'));
-    await writeFile(join(dir, 'hold-up-narrator.json'), JSON.stringify({...narrator, status:'approved', provider:'elevenlabs', voiceId:'v1', modelId:'eleven_multilingual_v2'}));
+    await writeFile(join(dir, 'hold-up-narrator.json'), JSON.stringify({...narrator, status:'approved', provider:'local-clone', engine:'qwen3-tts', voice:'owner'}));
     const chosen = await narratorFor(narration, dir);
-    assert.equal(chosen.profile.voiceId, 'v1'); assert.match(chosen.reason, /approved Hold Up narrator/);
+    assert.equal(chosen.profile.voice, 'owner'); assert.match(chosen.reason, /approved Hold Up narrator/);
     await writeFile(join(dir, 'other.json'), JSON.stringify({provider:'macos-say', voiceId:'Alex'}));
     assert.equal((await narratorFor({...narration, voice:{profile:'other'}}, dir)).profile.voiceId, 'Alex', 'a story can name its own voice');
   } finally { await rm(dir, {recursive:true, force:true}); }
@@ -179,9 +163,7 @@ test('new narration retimes the storyboard through its word anchors and flags ed
   const hoops = plan.shots.find(x => x.id === 'hoops'), ironFrame = plan.words[iron].startFrame;
   assert.ok(Math.abs(hoops.startFrame - ironFrame) <= 4, 'the hoops cut follows "Iron", not a uniform rescale');
   assert.notEqual(report.shots.find(x => x.id === 'hoops').ratio, report.shots.find(x => x.id === 'reveal').ratio);
-  // Captions: the caption word at each word's midpoint is that word
-  for (const w of plan.words) assert.equal(wordAt(plan, (w.start + w.end) / 2 * plan.fps).i, w.i);
-  // Conflicts: a crushed beat, a shot squeezed so its pointing pose runs over the cut, and a script edit that removes an anchor
+  for (const w of plan.words) assert.equal(wordAt(plan, (w.start + w.end) / 2 * plan.fps).i, w.i, 'captions show each word while it is spoken');
   // (a half-second point on "bilge" fits its shot; a take that rushes from "bilge" into "Iron" pulls the cut inside it)
   const tight = structuredClone(s);
   tight.beats.flatMap(b => b.shots).find(x => x.id === 'profile').events.find(e => e.do === 'pose').duration = 0.5;
@@ -200,38 +182,37 @@ test('new narration retimes the storyboard through its word anchors and flags ed
   assert.equal(blocked.status, 'blocked'); assert.ok(blocked.conflicts.some(c => c.code === 'ANCHOR_MISSING'));
 });
 
-test('alignment cross-check and pause measurements', () => {
+test('alignment cross-check, word timestamp integrity and pause measurements', () => {
   const a = [{text:'a', start:0, end:0.2, match:'exact'}, {text:'b', start:0.5, end:0.7, match:'exact'}];
   const b = [{text:'a', start:0.02, end:0.2, match:'exact'}, {text:'b', start:0.5, end:0.74, match:'exact'}];
   const agree = timingAgreement(a, b);
   assert.equal(agree.words, 2); assert.ok(Math.abs(agree.meanAbsSec - 0.015) < 1e-9); assert.ok(Math.abs(agree.maxAbsSec - 0.04) < 1e-9);
   const words = alignWords('Wait [[slnc 400]] for it', [{text:'Wait', start:0, end:0.3}, {text:'for', start:0.75, end:0.9}, {text:'it', start:0.9, end:1}]).words;
+  assert.ok(words.every((w, i) => w.start <= w.end && (i === 0 || w.start >= words[i - 1].end)));
   assert.deepEqual(pauseReport('Wait [[slnc 400]] for it', words), [{after:'Wait', markedMs:400, measuredMs:450}]);
 });
 
-test('audition: prepared without a key or spending; generation needs approval; only a person selects the narrator', async () => {
-  const dir = await temp();
+test('audition: one cloned voice, three delivery variants, honest settings reports; only a person selects the narrator', async () => {
+  const {dir, provider, voiceDir, privateDir} = await sandbox();
   try {
     const out = join(dir, 'auditions'), voicesDir = join(dir, 'voices');
-    await cp(join(repo, 'voices'), voicesDir, {recursive:true});
-    const fetch = mockFetch(ttsOk), provider = createElevenLabs({apiKey:undefined, fetch});
-    const prepared = await prepare({outDir:out, provider, env:{}});
-    assert.equal(prepared.status, 'prepared'); assert.equal(prepared.candidates.length, 3);
-    assert.ok(prepared.candidates.every(c => c.renderedText === prepared.candidates[0].renderedText && c.modelId === prepared.modelId), 'same text and settings for every voice');
-    assert.ok(prepared.estimatedTotalUsd > 0 && prepared.estimatedTotalUsd < 0.1);
-    assert.match(await readFile(join(out, 'README.md'), 'utf8'), /No voice selected/);
-    await assert.rejects(generate({outDir:out, provider, approvedBy:'Claude', approveSpendUsd:1, env:{}}), /person/);
-    await assert.rejects(generate({outDir:out, provider, approvedBy:'Ada Reviewer', approveSpendUsd:0.001, env:{}}), /estimated/);
+    await cp(join(repo, 'voices'), voicesDir, {recursive:true, filter:src => !src.includes('/private')});
+    const waiting = await prepare({outDir:out, voiceDir:join(dir, 'nothing'), privateDir:join(dir, 'nobody')});
+    assert.equal(waiting.status, 'waiting'); assert.equal(waiting.missing.length, 2, 'engine and voice both reported missing');
+    await assert.rejects(generate({outDir:out, voiceDir:join(dir, 'nothing'), privateDir:join(dir, 'nobody')}), /cannot run yet/);
+    const ready = await prepare({outDir:out, provider, voiceDir, privateDir});
+    assert.equal(ready.status, 'ready'); assert.equal(ready.costUsd, 0);
+    assert.equal(new Set(ready.takes.map(t => t.renderedText)).size, 2, 'the expressive take adds beats; the other two keep the script as written');
     await assert.rejects(select({n:1, by:'Ada Reviewer', outDir:out, voicesDir}), /Generate and listen/);
-    assert.equal(fetch.calls.length, 0);
-    const keyed = createElevenLabs({apiKey:'sk_test', fetch});
-    const report = await generate({outDir:out, provider:keyed, approvedBy:'Ada Reviewer', approveSpendUsd:0.1, env:{}, cacheDir:join(dir, 'cache')});
-    assert.equal(fetch.calls.length, 3); assert.equal(report.status, 'generated');
-    assert.ok(report.candidates.every(c => c.measurements.alignment.exact === c.measurements.alignment.scriptWords && c.measurements.wordsPerMinute > 0));
-    assert.equal(report.selection, null, 'generation never selects a voice');
-    await assert.rejects(select({n:2, by:'claude', outDir:out, voicesDir}), /person/);
-    const chosen = await select({n:2, by:'Ada Reviewer', outDir:out, voicesDir});
-    assert.equal(chosen.status, 'approved'); assert.equal(chosen.voiceId, prepared.candidates[1].voiceId); assert.equal(chosen.approval.by, 'Ada Reviewer');
+    const measureTake = async () => ({durationSec:10, wordsPerMinute:180, alignment:{exact:40, scriptWords:40}, beats:[]});
+    const report = await generate({outDir:out, provider, voiceDir, privateDir, cacheDir:join(dir, 'cache'), measureTake});
+    assert.equal(report.status, 'generated'); assert.equal(report.selection, null, 'generation never selects');
+    assert.deepEqual(report.takes.map(t => t.file), ['voice-01.wav', 'voice-02.wav', 'voice-03.wav']);
+    assert.deepEqual(report.takes[1].settingsIgnored, ['temperature'], 'an engine without temperature says so');
+    assert.match(await readFile(join(out, 'README.md'), 'utf8'), /ignored: temperature/);
+    await assert.rejects(select({n:3, by:'claude', outDir:out, voicesDir}), /person/);
+    const chosen = await select({n:3, by:'Ada Reviewer', outDir:out, voicesDir});
+    assert.equal(chosen.status, 'approved'); assert.equal(chosen.voice, 'owner'); assert.equal(chosen.variant, 'Expressive, comedic timing');
     assert.equal((await readJson(join(repo, 'voices/hold-up-narrator.json'))).status, 'unselected', 'the repository narrator stays unselected');
   } finally { await rm(dir, {recursive:true, force:true}); }
 });

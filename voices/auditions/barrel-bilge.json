@@ -1,26 +1,30 @@
 {
-  "id": "hold-up-narrator-audition-01",
+  "id": "hold-up-narrator-audition-02",
   "story": "stories/barrel-bilge/story.json",
-  "passage": "full script",
-  "passageNote": "The full barrel-bilge narration (203 spoken characters): a question hook, a named reveal ('the bilge'), a quick explanation and a payoff line. It is short, has suspense, a reveal and a light punchline, and each take can drive the real video for comparison.",
-  "provider": "elevenlabs",
-  "modelId": "eleven_multilingual_v2",
-  "modelNote": "Multilingual v2 accepts SSML break tags (v3/v4 do not) and is the API default. If the chosen voice needs more playful delivery, a second round can try eleven_v3/eleven_v4 with [[tone ...]] audio tags.",
-  "settings": {"stability": 0.4, "similarity_boost": 0.75, "style": 0.3, "use_speaker_boost": true, "speed": 1.0},
-  "settingsNote": "The same for every voice. Lower stability than the 0.5 default allows more expressive range; style adds personality; speed stays at 1.0 (no artificial speed change).",
+  "passageNote": "The full barrel-bilge narration (203 spoken characters): a question hook, a named reveal ('the bilge'), a quick explanation and a payoff line. The same text and the same cloned voice in every take; only the delivery variant changes.",
+  "provider": "local-clone",
+  "engine": "qwen3-tts",
+  "voice": "owner",
   "seed": 1873,
-  "outputFormat": "mp3_44100_128",
-  "delivery": {"minPauseMs": 300, "pauseScale": 0.6, "maxPauseMs": 1200},
-  "discovery": {
-    "query": {"category": "premade", "page_size": 100},
-    "labels": {"gender": "male", "accent": "american", "age": ["young", "middle aged", "middle_aged"]},
-    "avoidDescriptions": ["deep", "trailer", "documentary", "news", "corporate", "announcer"]
-  },
-  "candidates": [
-    {"name": "Chris", "voiceId": "iP95p4xoKVk53GoZ742B", "why": "Casual, conversational American male: the storyteller-to-a-friend brief."},
-    {"name": "Liam", "voiceId": "TX3LPaxmHKxFdv7VOQHJ", "why": "Younger, articulate and energetic American male: quick, clear storytelling."},
-    {"name": "Eric", "voiceId": "cjVigY5qzO86Huf0OWal", "why": "Friendly middle-aged American male: warmer, smoother, with room for dry humour."}
+  "variants": [
+    {
+      "name": "Natural conversational",
+      "description": "The script's own punctuation only: no added beats, default sampling.",
+      "delivery": {"minPauseMs": 100000},
+      "settings": {}
+    },
+    {
+      "name": "Energetic storyteller",
+      "description": "No added beats, so it runs straight through; a higher sampling temperature for livelier, more varied prosody (only if the engine accepts temperature, as reported in comparison.json).",
+      "delivery": {"minPauseMs": 100000},
+      "settings": {"temperature": 0.9}
+    },
+    {
+      "name": "Expressive, comedic timing",
+      "description": "Every beat marked in the script becomes an ellipsis the voice can play ('a name… the bilge', 'easy to roll… and easy to turn'), with a slightly raised temperature (if accepted).",
+      "delivery": {"minPauseMs": 100},
+      "settings": {"temperature": 0.8}
+    }
   ],
-  "candidatesNote": "Names and IDs are from ElevenLabs' premade voice library as known before this session. They are unverified until `audition.mjs prepare` checks them against GET /v2/voices with the API key (a free request); discovery also lists other matching voices in case any of these were retired.",
-  "alternates": [{"name": "Will", "voiceId": "bIHbv24MWmeRgasZH58o", "why": "Young, relaxed and friendly American male, if one of the three is unavailable."}]
+  "honesty": "Qwen3-TTS Base (cloning) documents no style, emotion, speed or pitch controls. The variants differ only by text punctuation (always applied) and sampling settings the engine's generate() accepts; ignored settings are listed per take."
 }

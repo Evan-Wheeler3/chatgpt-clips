@@ -1,75 +1,97 @@
-# Narration engine (Phase 6.1)
+# Narration engine (Phase 6.1, local voice cloning)
 
-Narration drives every Hold Up video. Shots, camera moves, prop and character actions and captions are anchored to spoken words, so a new take retimes the whole video by moving each beat to where its word is now spoken. Nothing is scaled uniformly.
+Hold Up narration is **free and local**: the owner's own voice is cloned from a short recording and speaks every script on the Mac. There are no paid APIs, subscriptions or keys, and nothing needs the internet after the one-time engine install.
+
+Narration drives the video. Shots, camera moves, prop and character actions, and captions are anchored to spoken words, so a new take retimes everything by moving each beat to where its word is now spoken. Nothing is scaled uniformly.
 
 ```text
-story.json narration.script (with delivery markup)
-   │  voice: story profile ▸ approved Hold Up narrator ▸ development fallback (macOS say)
+story.json narration.script (+ delivery markup)
+   │  voice: story profile ▸ approved Hold Up narrator (the owner's cloned voice) ▸ development fallback (macOS say)
    ▼
-tools/narration/tts.mjs ── provider.render ─▶ cache (.cache/narration, content-addressed) ─▶ spending guard ─▶ provider.synthesize
-   │                                                                                    (paid: named approver + USD cap; usage log)
+tools/narration/tts.mjs ── provider.render ─▶ cache (.cache/narration, content-addressed) ─▶ provider.synthesize (WAV)
+   │       local-clone: tools/narration/local/clone_worker.py in .cache/voice/venv (MLX, offline)
    ▼
-tools/narration/narrate.mjs ── word timing: provider alignment (ElevenLabs) ▸ whisper.cpp ── take ─▶ production/<slug>/takes/<take>/
-   │                                                                                                 (active copy: narration.wav, words.json)
-   ▼
+tools/narration/narrate.mjs ── word timing: whisper.cpp alignment ── take ─▶ production/<slug>/takes/<take>/
+   ▼                                                                       (active copy: narration.wav, words.json)
 tools/narration/sync.mjs ── compile old vs new take ─▶ narration-sync.json (retimed shots/actions, conflicts)
    ▼
 storyboard compile ─▶ render (captions read the same words)
 ```
 
-## Setup
-1. Copy `.env.example` to `.env` (gitignored) and set `ELEVENLABS_API_KEY` (https://elevenlabs.io/app/settings/api-keys).
-2. Optional: set `ELEVENLABS_API_BASE` for a regional host.
+## Engine choice (researched 2026-11-14, official sources)
+Researched for this machine: Apple M1 MacBook Air, 8 GB RAM, about 8 GB of free disk.
 
-The key is read only from the environment or `.env`, and is never printed (`redact()` shows the last 4 characters).
+| | Qwen3-TTS (chosen) | VoxCPM2 | OpenVoice V2 |
+|---|---|---|---|
+| licence: code / weights | Apache-2.0 / Apache-2.0 | Apache-2.0 / Apache-2.0 | MIT / MIT (+ MeloTTS MIT) |
+| model used / size | 0.6B Base, about 2.5 GB (1.7B is 4.5 GB) | 2B, about 5.0 GB | about 0.13 GB + MeloTTS |
+| cloning input | reference audio + its transcript | reference audio (transcript optional) | reference audio |
+| delivery control on a cloned voice | none documented; sampling only | style prefix, e.g. "(slightly faster, cheerful)" | speed |
+| Apple Silicon | via **mlx-audio** (MIT), native MLX | about 8 GB VRAM officially; community MLX ports | CPU; macOS install issues noted upstream |
+| naturalness | high | high | lower (base TTS + timbre conversion) |
+
+**Why Qwen3-TTS 0.6B:**
+- It's the only high-quality cloning model that fits this Mac's RAM and remaining disk, with a documented cloning API on Apple Silicon (mlx-audio).
+- VoxCPM2 has real style control for cloned voices but doesn't fit the free disk.
+- OpenVoice fits easily but sounds noticeably less natural.
+
+The engine sits behind `ENGINES` in `tools/narration/voice.mjs`; another engine needs a registry entry and, if its API differs, a branch in the worker.
+
+**Sources:**
+- github.com/QwenLM/Qwen3-TTS and its LICENSE;
+- huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-Base;
+- github.com/OpenBMB/VoxCPM and huggingface.co/openbmb/VoxCPM2;
+- github.com/myshell-ai/OpenVoice and huggingface.co/myshell-ai/OpenVoiceV2;
+- github.com/Neywa-Labs/mlx-audio.
+
+## Setup (one time)
+```bash
+node tools/narration/voice.mjs status            # disk, RAM, what is installed and enrolled
+node tools/narration/voice.mjs install           # prints the plan: about 2.6 GB model + about 1.5 GB Python environment, about 3 GB RAM
+node tools/narration/voice.mjs install --yes     # downloads and installs into .cache/voice/ (gitignored); refuses if the disk can't hold it
+```
+The manifest (`.cache/voice/manifest.json`) records the model, package versions and measured sizes. The worker runs with `HF_HUB_OFFLINE=1`.
+
+## Enrolling the owner's voice
+Use only a voice you own or have explicit permission to clone.
+1. Record 10–20 s of natural speech: a quiet room, no music, one take, at your normal storytelling energy. The tool accepts 3–60 s.
+2. Enroll it:
+   ```bash
+   node tools/narration/voice.mjs enroll --id owner --audio my-voice.m4a --owner "<your name>" \
+     --consent "I am <name>; this is my own voice and I permit Hold Up to clone it" --transcript "<exactly what you said>"
+   ```
+   Without `--transcript`, whisper.cpp transcribes the recording; check the result.
+3. **Where it's stored:** `voices/private/owner/` (gitignored): `reference.wav` (24 kHz mono), `voice.json` (owner, consent, date, SHA-256, transcript) and `profile.json`.
 
 ## Providers (`tools/narration/providers/`)
-Every provider implements one interface: `render(script, profile)`, `estimate(text, profile)`, `cacheKey(text, profile)` and `synthesize(text, profile)`. The result is `{audio, extension, words|null, response}`.
+Every provider implements `render(script, profile)`, `estimate`, `cacheKey`, `synthesize` and optionally `prepare`. All are free.
 
-| provider | cost | word timing | use |
+| provider | output | word timing | use |
 |---|---|---|---|
-| `elevenlabs` | paid, per character ($0.08/1K for v2/v3/v4, $0.04/1K for Flash; https://elevenlabs.io/pricing/api, read 2026-11-14) | character timestamps from `POST /v1/text-to-speech/{voice_id}/with-timestamps` | the Hold Up narrator |
-| `macos-say` | free | whisper.cpp | development fallback (the original narrator) |
-| `recorded` | free | whisper.cpp | imported human recordings (`--audio <file>`) |
+| `local-clone` | WAV (engine rate, 16-bit) | whisper.cpp | the Hold Up narrator (the owner's cloned voice) |
+| `macos-say` | AIFF → WAV | whisper.cpp | development fallback (the original narrator) |
+| `recorded` | any audio | whisper.cpp | real human recordings (`--audio <file>`) |
 
-**Implementation notes:**
-- The ElevenLabs implementation follows the official API reference: `xi-api-key` header; `text`, `model_id`, `voice_settings` (stability, similarity_boost, style, use_speaker_boost, speed 0.7–1.2) and `seed` in the body; `output_format` as a query parameter.
-- Voice discovery uses `GET /v2/voices`; usage uses `GET /v1/user/subscription`.
-- **Errors** are mapped to clear codes: `missing-key`, `auth` (401), `forbidden` (403), `validation` (400/422), `rate-limit`/`quota` (429, retryable), `server`, `network`. Messages never include the key.
-- **A new provider** needs only those four methods plus an entry in `createProvider`.
-
-## Spending safeguards
-- **Approval required:** a paid request runs only with an authorization: `authorize({by:'<person>', maxUsd})`, or on the CLI `--approve-spend <usd> --approved-by "<name>"` (audition: `--by`). Automated-sounding names are refused. A request is checked against the estimate and the remaining cap *before* any network call.
-- **Hard off switch:** `HOLDUP_BLOCK_PAID_TTS=1` refuses every paid request.
-- **Cache:** results are keyed by provider, voice, model, settings, seed, format and rendered text. Repeats are free and need no approval; any change is a new paid request.
-- **Usage log:** every paid request is appended to `production/narration/usage.jsonl` with the approver, characters, estimated cost, ElevenLabs' `character-cost` and `request-id` headers, and the cache key.
-
-## Voice profiles (`voices/*.json`)
-A profile records `provider`, `voiceId`, `modelId`, `settings`, `seed`, `outputFormat` and `delivery` (pause handling).
-- **`voices/hold-up-narrator.json`** is the channel's narrator. It records the target delivery (American male, young to middle-aged, conversational storyteller; no trailer, documentary or corporate voice) and stays `unselected` until the owner chooses a voice.
-- **Once approved**, every story without its own voice uses it.
-- **A story can name another profile** with `narration.voice.profile`.
+**Local cloning in practice:**
+- The worker applies a setting only if the model's `generate()` names it, and reports what it applied and ignored. Unsupported controls are never assumed.
+- The cache key includes the engine version, model, the SHA-256 of the reference recording, settings, seed and text, so changing any of them regenerates.
+- **Safety net:** `tts.mjs` still refuses any provider marked `paid` unless a named person approves a USD cap (`HOLDUP_BLOCK_PAID_TTS=1` blocks them all). No paid provider is registered.
 
 ## Delivery markup (`tools/narration/markup.mjs`)
-Scripts keep their exact words; markup only shapes delivery:
+Scripts keep their exact words; markup shapes delivery only:
 
-| markup | meaning | macOS say | ElevenLabs v2 / Flash | ElevenLabs v3 / v4 |
-|---|---|---|---|---|
-| `[[slnc 350]]` | intentional pause (ms) | as written | `<break time="…"/>` if ≥ `delivery.minPauseMs`, scaled by `pauseScale` | an ellipsis for pauses ≥ 500 ms (no break tags on these models) |
-| `[[emph +]]` | stress the next word | as written | word kept (no SSML emphasis) | word kept |
-| `[[tone amused]]` | speaking style for what follows | dropped | dropped | `[amused]` audio tag |
+| markup | meaning | local cloning (`punctuation`) | macOS say |
+|---|---|---|---|
+| `[[slnc 350]]` | an intentional beat (ms) | an ellipsis after the word, if ≥ `delivery.minPauseMs` and not already at a sentence end | as written |
+| `[[emph +]]` | stress the next word | word kept as is (no emphasis control) | as written |
+| `[[tone amused]]` | style for what follows | dropped (no style control in Qwen3-TTS Base) | dropped |
 
-The narrator profile keeps only deliberate pauses (≥ 300 ms) at 60% of their length and leaves short beats to punctuation, so there's no pause after every sentence and no speed changes. Marked pauses are measured in every take (`words.json` → `pauses`) and checked by the sync report.
+Marked beats are measured in every take (`words.json` → `pauses`) and checked by the sync report.
 
-## Word timing
-- **Source:** ElevenLabs returns character start and end times with the audio. `wordsFromAlignment` turns them into words (skipping break tags and audio tags), and `alignWords` maps them onto the script words. Recordings and macOS `say` use whisper.cpp as before. Timing is always measured, never estimated from text.
-- **Cross-check:** `--verify-alignment` also runs whisper on a provider take and records the mean and maximum difference (`alignmentCrossCheck`).
-- **Takes:** each take is kept in `production/<slug>/takes/<take>/`; the active copy is `production/<slug>/{narration.wav, words.json}`. `--use-take <id>` switches back without synthesis.
-
-## Sync report (`narration-sync.json`)
-Narrating a story whose previous take exists, or switching takes, compiles both versions and reports:
-- every shot's start, end, duration and ratio, and every action's old and new frames;
-- conflicts:
+## Word timing, takes and sync
+- **Timing:** whisper.cpp aligns every take to the script (`tools/narration/align.mjs`). Timing is measured, never estimated.
+- **Takes:** each take is kept in `production/<slug>/takes/<take>/`. `--use-take <id>` switches the active take without regenerating.
+- **Sync report:** narrating a story whose previous take exists, or switching takes, writes `narration-sync.json` with retimed shots and actions, plus these conflicts:
 
 | code | severity | meaning |
 |---|---|---|
@@ -80,30 +102,26 @@ Narrating a story whose previous take exists, or switching takes, compiles both 
 | `SHOT_RETIMED_HEAVILY` | editorial | a shot is < 0.65× or > 1.5× its previous length |
 | `MOVE_TOO_FAST` | editorial | a camera move now has fewer than 8 frames |
 | `ACTION_CROSSES_CUT` | editorial | a timed action that fitted its shot now runs past the cut |
-| `BEAT_LOST` | editorial | a marked pause of ≥ 300 ms kept less than 35% of its length |
+| `BEAT_LOST` | editorial | a marked beat of ≥ 300 ms kept less than 35% of its length |
 | `NEW_WARNING` | review | a storyboard warning the old take did not have |
 
-A blocked report stops the storyboard run. Editorial conflicts need a decision: adjust the story's anchors, add a beat, or ask for a new take.
+## Narrator audition (`voices/auditions/barrel-bilge.json` → `production/narration/auditions/`)
+The full barrel-bilge script is read by the **same cloned voice** in three delivery variants:
+1. **Natural conversational:** the script's own punctuation, default sampling.
+2. **Energetic storyteller:** no added beats, and sampling temperature 0.9, *if the engine accepts it*.
+3. **Expressive, comedic timing:** every marked beat becomes an ellipsis ("a name… the bilge", "easy to roll… and easy to turn"), with temperature 0.8 if accepted.
 
-## Commands
+Qwen3-TTS Base documents no style, emotion, speed or pitch control for cloned voices. The variants therefore differ only by punctuation (always applied) and by sampling settings the engine accepts; `comparison.json` lists what was applied and ignored for each take.
+
 ```bash
-# Free
-node tools/narration/audition.mjs prepare                                   # audition plan, cost estimate; with a key: verify voices (free)
-npm run storyboard -- --story stories/barrel-bilge/story.json --narrate      # development voice (macOS say), free
-npm run storyboard -- --story ... --use-take <id>                           # switch takes
-node tools/narration/sync.mjs --story ... --to <take>                       # compare the active take with another
-
-# Paid (only with the owner's approval)
-node tools/narration/audition.mjs generate --approve-spend 0.10 --by "<name>"
-node tools/narration/audition.mjs select <1|2|3> --by "<name>"               # the owner's choice becomes the Hold Up narrator
-npm run storyboard -- --story stories/barrel-bilge/story.json --narrate --approve-spend 0.05 --approved-by "<name>" --verify-alignment
-npm run storyboard -- --story stories/barrel-bilge/story.json --render --quality production --qa --name production-natural-voice
+node tools/narration/audition.mjs prepare                    # plan and what is still missing (no generation)
+node tools/narration/audition.mjs generate                   # voice-01.wav .. voice-03.wav + comparison.json + README.md
+node tools/narration/audition.mjs select <1|2|3> --by "<name>"   # the owner's choice becomes the Hold Up narrator
 ```
 
-## Narrator audition (`voices/auditions/barrel-bilge.json` → `production/narration/auditions/`)
-- **Passage:** the full barrel-bilge script (203 spoken characters): a question hook, a reveal, an explanation and a payoff.
-- **Model and settings:** `eleven_multilingual_v2` with the same settings and seed for every voice (stability 0.4, similarity 0.75, style 0.3, speaker boost, speed 1.0).
-- **Candidates:** Chris, Liam and Eric from the ElevenLabs premade library, with Will as an alternate. Their IDs are unverified until `prepare` runs with a key.
-- **Output:** `voice-01.mp3`–`voice-03.mp3`, plus `comparison.json` (IDs, model, settings, rendered text, cost, and measurements: duration, words per minute, kept pauses, alignment quality) and `README.md`.
-- **Estimated cost:** about $0.06 for all three.
-- **Selection:** nothing selects a voice automatically.
+## Re-voicing barrel-bilge (after the narrator is approved)
+```bash
+npm run storyboard -- --story stories/barrel-bilge/story.json --narrate        # uses the approved narrator; writes narration-sync.json
+npm run storyboard -- --story stories/barrel-bilge/story.json --render --quality production --qa --name production-natural-voice
+```
+Review the sync report before rendering. `--use-take` returns to the approved macOS take at any time.

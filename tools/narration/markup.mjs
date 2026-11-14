@@ -2,7 +2,7 @@
  * Provider-neutral delivery markup. Scripts keep their words; markup only shapes delivery:
  *   [[slnc 350]]        an intentional pause of 350 ms (the existing barrel-bilge markup)
  *   [[emph +]]          emphasise the next word
- *   [[tone amused]]     a speaking style for what follows, where the model supports it (ElevenLabs v3/v4 audio tags)
+ *   [[tone amused]]     a speaking style for what follows, only for engines with style control (none of the installed ones yet)
  * parseScript() splits a script into tokens; each provider renders them its own way. Words are never changed.
  */
 export function parseScript(script) {
@@ -35,8 +35,8 @@ export function markedPauses(script) {
 /*
  * Render for a target. delivery: {minPauseMs (shorter marked pauses are left to punctuation), pauseScale, maxPauseMs}
  *   'macos-say'        [[slnc N]] [[emph +]] as authored
- *   'ssml-break'       <break time="0.35s" /> (ElevenLabs Multilingual v2 / Flash); emphasis has no tag, so the word is kept as is
- *   'audio-tags'       ElevenLabs v3/v4: no break tags; long pauses become an ellipsis, tones become [tag] audio tags
+ *   'punctuation'      local cloning engines (no pause or emphasis tags): a kept pause after a word without closing
+ *                      punctuation becomes an ellipsis, which these models voice as a beat; tones are dropped
  *   'plain'            words only
  */
 export function renderScript(script, target, {minPauseMs = 0, pauseScale = 1, maxPauseMs = 3000} = {}) {
@@ -48,9 +48,8 @@ export function renderScript(script, target, {minPauseMs = 0, pauseScale = 1, ma
       if (t.ms < minPauseMs) continue;
       const ms = Math.min(maxPauseMs, Math.round(t.ms * pauseScale));
       if (target === 'macos-say') parts.push(`[[slnc ${ms}]]`);
-      else if (target === 'ssml-break') parts.push(`<break time="${(ms / 1000).toFixed(2)}s" />`);
-      else if (target === 'audio-tags' && ms >= 500 && parts.length && !/[.…!?]$/.test(parts.at(-1))) parts[parts.length - 1] += '…';
-    } else if (t.type === 'tone' && target === 'audio-tags') parts.push(`[${t.tag}]`);
+      else if (target === 'punctuation' && parts.length && !/[.…!?]$/.test(parts.at(-1))) parts[parts.length - 1] = parts.at(-1).replace(/[,:;]?$/, '…');
+    }
   }
   return parts.join(' ').replace(/\s+/g, ' ').trim();
 }
