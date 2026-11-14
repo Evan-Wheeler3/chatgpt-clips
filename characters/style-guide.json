@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "basedOn": "cooper@1.0.0",
+  "note": "Machine-readable Hold Up character style limits, measured from the approved cooper. Ranges leave room for different ages, builds and roles; they are review triggers, not approval. Prose and examples: docs/CHARACTER-STYLE-GUIDE.md.",
+  "render": {
+    "mode": "vector-2d",
+    "outlinePx": [3, 8],
+    "outlineRatio": 0.0085,
+    "outline": "one dark, slightly warm ink line around every silhouette (cooper: #1E1A16); no outlines inside a limb chain"
+  },
+  "proportions": {
+    "headsTall": {"adult": [2.9, 4.2], "child": [2.3, 3.0], "cooper": 3.26},
+    "note": "Stylized, compact bodies with a large readable head. Builds may differ (lanky, stocky, short, tall); keep the head big enough for the face to read on a phone."
+  },
+  "face": {
+    "eyes": "solid dark vertical ovals; no whites, irises, lashes or highlights",
+    "eyeHeightOfHead": [0.11, 0.22],
+    "brows": "short, thick, dark arcs that carry most of the expression",
+    "browThicknessOfHead": [0.03, 0.06],
+    "nose": "none, or a single small mark at most",
+    "mouth": "a simple line, arc, O or D shape; open mouths show a dark interior and a small tongue",
+    "facialHair": "allowed as one simple dark shape (moustache, beard) with the same outline weight"
+  },
+  "color": {
+    "maxClothingColors": 5,
+    "maxClothingSaturation": 0.62,
+    "minValueSeparation": 0.08,
+    "palette": "muted, period-appropriate earth tones; one warm accent at most (buttons, a scarf, a badge)",
+    "skin": "any natural skin tone; keep clear value separation from collar and hair"
+  },
+  "shading": "flat colour; one soft shade layer only if a design needs it (none on the cooper)",
+  "detail": "consistent, low complexity: a handful of design lines (seams, cuffs, pocket) per garment; no texture, hatching or gradients",
+  "readability": {"minHeadPoints": 16, "minEdgeContrast": 0.1, "minColorContrast": 12, "note": "Measured by tools/characters/metrics.mjs on rendered frames"},
+  "expressions": {
+    "required": ["neutral", "happy", "surprised", "concerned"],
+    "core": ["neutral", "speaking", "happy", "surprised", "concerned", "thinking", "confused", "determined", "realization", "disappointed"]
+  },
+  "artwork": {
+    "formats": ["png", "jpg", "jpeg", "webp"],
+    "minLongEdgePx": 1536,
+    "minShortEdgePx": 1024,
+    "background": "plain, light and even; no scene behind the figure",
+    "views": {"required": ["3/4 view, full body, facing screen right"], "recommended": ["front", "side", "back"]},
+    "sheet": ["full-body turnaround", "expression row (the required set at least)", "colour swatches with labels", "separate drawings of removable accessories (hat, tools, weapons)"],
+    "forbidden": ["copies or close imitations of another creator's characters", "likeness of a real living person", "logos, watermarks or text over the figure"]
+  }
+}

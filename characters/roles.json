@@ -1,0 +1,62 @@
+{
+  "note": "Role vocabulary for the character resolver. A role belongs to one family; families describe what kind of person a character reads as, not an identity. Matching an identity needs the same role (or an explicit alias); a family match alone is never enough to reuse a character as someone else.",
+  "families": {
+    "tradesperson": [
+      "cooper",
+      "blacksmith",
+      "carpenter",
+      "wheelwright",
+      "cobbler",
+      "baker",
+      "printer",
+      "miller"
+    ],
+    "townsperson": [
+      "shopkeeper",
+      "clerk",
+      "bartender",
+      "townsman",
+      "townswoman",
+      "newcomer",
+      "traveller",
+      "settler",
+      "homesteader"
+    ],
+    "frontier": [
+      "gunfighter",
+      "outlaw",
+      "lawman",
+      "marshal",
+      "sheriff",
+      "deputy",
+      "cowboy"
+    ],
+    "science": [
+      "scientist",
+      "chemist",
+      "inventor",
+      "physician",
+      "engineer",
+      "astronomer"
+    ],
+    "military": [
+      "soldier",
+      "officer",
+      "sailor",
+      "cavalryman",
+      "drummer boy"
+    ]
+  },
+  "aliases": {
+    "barrel maker": "cooper",
+    "gunslinger": "gunfighter",
+    "barkeep": "bartender",
+    "cowpuncher": "cowboy",
+    "drover": "cowboy",
+    "trail hand": "cowboy"
+  },
+  "ordinary": [
+    "tradesperson",
+    "townsperson"
+  ]
+}

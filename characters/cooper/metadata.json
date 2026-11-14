@@ -4,8 +4,84 @@
   "role": "Hold Up master character",
   "designVersion": "1.0.0",
   "status": "approved-master",
-  "approvedOn": "2026-11-14",
-  "approvedFrom": "Phase 5.3 stills and five-second rig test (commit 4a2fcb4)",
+  "library": {
+    "roles": [
+      "cooper"
+    ],
+    "family": "tradesperson",
+    "description": "A young-adult cooper (barrel maker) in a newsboy cap, cream shirt with rolled sleeves, brown leather bib apron with brass buttons, dark trousers and boots. Round pale face, dark curly hair, simple dot eyes and thick brows.",
+    "personality": "friendly, curious, hands-on; explains by doing",
+    "historicalContext": "Mid-19th-century cooperage worker (the approved design brief says 1850s). Note: the eight-panel newsboy cap is most typical of the 1880s-1920s; the approved design treats it as period-plausible, so stories set well before 1850 should consider an outfit variant.",
+    "era": {
+      "from": 1840,
+      "to": 1890,
+      "label": "mid to late 19th century"
+    },
+    "regions": [
+      "Western Europe",
+      "North America"
+    ],
+    "age": "young adult",
+    "build": "compact, average height (1.40 m in scene scale)",
+    "settings": [
+      "cooperage",
+      "workshop",
+      "warehouse",
+      "docks",
+      "town"
+    ],
+    "outfits": {
+      "workshop": {
+        "default": true,
+        "description": "Cream work shirt with rolled sleeves, leather bib apron, newsboy cap, dark trousers, boots",
+        "era": {
+          "from": 1840,
+          "to": 1890
+        },
+        "tags": [
+          "work clothes",
+          "apron",
+          "cap"
+        ],
+        "status": "approved",
+        "version": "1.0.0"
+      }
+    },
+    "accessories": {
+      "cap": {
+        "builtIn": true,
+        "removable": false,
+        "note": "part of the approved head design"
+      }
+    },
+    "rights": {
+      "artwork": "characters/cooper/reference.png, the approved character sheet supplied by the channel owner",
+      "creator": "supplied by the channel owner (generation method not recorded)",
+      "commercialUse": "stated by the channel owner as Hold Up artwork; not independently verified",
+      "confirmed": false
+    }
+  },
+  "approvals": {
+    "1.0.0": {
+      "definitionSha256": "cbd61768291ee0db181e77aa7f22ada769ab7db3a4ab9ab05520bc63e66737f7",
+      "design": {
+        "status": "approved",
+        "by": "channel owner",
+        "on": "2026-11-14",
+        "evidence": "Phase 5.4 brief from the channel owner: \"The user has officially approved the new cooper character and its five-second rig demonstration. The character design is FINAL.\""
+      },
+      "rig": {
+        "status": "approved",
+        "by": "channel owner",
+        "on": "2026-11-14",
+        "evidence": "Phase 5.4 brief from the channel owner: \"The user has officially approved the new cooper character and its five-second rig demonstration. The character design is FINAL.\""
+      },
+      "production": {
+        "status": "pending",
+        "evidence": "Phase 5.4 render production/barrel-bilge/production-approved-cooper.mp4 awaits the owner's visual review"
+      }
+    }
+  },
   "renderer": {
     "mode": "vector-2d",
     "code": [
