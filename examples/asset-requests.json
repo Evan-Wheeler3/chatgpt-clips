@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "requests": [
+    {"id":"saloon-bar","query":"western wooden bar counter","style":"stylized","tags":["western","interior"]},
+    {"id":"whiskey-glass","query":"whiskey glass","style":"stylized","tags":["glass","saloon"]},
+    {"id":"saloon-room","query":"western saloon interior","style":"stylized","tags":["environment","western"]}
+  ]
+}
