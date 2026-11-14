@@ -34,6 +34,7 @@ export function scoreAsset(request, asset) {
   const description = new Set(tokens(asset.description));
   let score = 0;
   for (const word of wanted) score += title.has(word) ? 4 : tags.has(word) ? 3 : description.has(word) ? 1 : 0;
+  if (score === 0) return 0; // Style alone must never match an unrelated model
   if (request.style && asset.style === request.style) score += 3;
   if (request.style && asset.style !== request.style) score -= 6;
   return score;
