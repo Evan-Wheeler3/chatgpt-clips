@@ -18,7 +18,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { samplePlan } from '/sb/sample.mjs';
-let plan, renderer, scene, camera, out, ctx, groups = new Map(), W, H, issues = [];
+import { propWorldPoints } from '/sb/actions.mjs';
+let plan, renderer, scene, camera, out, ctx, groups = new Map(), shadows = new Map(), W, H, issues = [];
 
 window.setup = async (planJson, size, issueList) => {
   plan = planJson; W = size.width; H = size.height; issues = issueList;
@@ -54,11 +55,47 @@ window.setup = async (planJson, size, issueList) => {
     model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
     const group = new THREE.Group(); group.add(model); scene.add(group);
     groups.set(prop.id, group);
+    if (prop.base.grounded !== false && stage.contactShadows !== false) shadows.set(prop.id, [contactLayer(0.35), contactLayer(0.7)]);
   }
   out = document.createElement('canvas'); out.width = W; out.height = H;
   ctx = out.getContext('2d');
   return {props:groups.size, missing:plan.props.filter(p => p.missing).map(p => p.id)};
 };
+
+// Contact shadows: a soft ambient-occlusion pool under the footprint and a tight dark patch where the silhouette meets the floor
+let blobTexture;
+function contactLayer(opacity) {
+  if (!blobTexture) {
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const g = c.getContext('2d'), grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(0,0,0,1)'); grad.addColorStop(0.55, 'rgba(0,0,0,0.55)'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = grad; g.fillRect(0, 0, 64, 64);
+    blobTexture = new THREE.CanvasTexture(c);
+  }
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({map:blobTexture, color:0x000000, transparent:true, opacity, depthWrite:false}));
+  mesh.rotation.x = -Math.PI / 2; mesh.renderOrder = 1; mesh.userData.opacity = opacity;
+  scene.add(mesh);
+  return mesh;
+}
+
+function placeContactShadows(frame) {
+  for (const prop of plan.props) {
+    const layers = shadows.get(prop.id);
+    if (!layers) continue;
+    const points = propWorldPoints(prop, frame);
+    const minY = Math.min(...points.map(p => p.y)), height = Math.max(...points.map(p => p.y)) - minY;
+    const fade = Math.max(0, 1 - minY / Math.max(0.05, height * 0.25));
+    const footprint = new THREE.Box3().setFromPoints(points);
+    const contact = new THREE.Box3().setFromPoints(points.filter(p => p.y <= minY + Math.max(0.01, height * 0.06)));
+    [[footprint, 1.25, 0], [contact, 1, 0.08]].forEach(([box, grow, pad], k) => {
+      const layer = layers[k], size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
+      layer.position.set(center.x, 0.002 + k * 0.001, center.z);
+      layer.scale.set(size.x * grow + pad, size.z * grow + pad, 1);
+      layer.material.opacity = layer.userData.opacity * fade;
+      layer.visible = groups.get(prop.id).visible;
+    });
+  }
+}
 
 function draw(frame) {
   const s = samplePlan(plan, frame);
@@ -70,6 +107,7 @@ function draw(frame) {
     group.scale.setScalar(p.scale);
     group.visible = p.visible;
   }
+  placeContactShadows(frame);
   camera.fov = s.camera.fov; camera.updateProjectionMatrix();
   camera.position.copy(s.camera.position); camera.lookAt(s.camera.target);
   renderer.render(scene, camera);

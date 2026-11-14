@@ -258,3 +258,75 @@ test('animatic renders a vertical MP4 and storyboard sheet in headless Chrome wi
     assert.ok((await stat(result.sheet)).size > 1000);
   } finally { await rm(dir, {recursive:true, force:true}); }
 });
+
+test('cut continuity: abrupt scale jumps and dead starts are flagged, matched or declared-contrast cuts are not', async () => {
+  const dir = await catalogDir();
+  try {
+    const check = async fn => {
+      const story = structuredClone(baseStory()); fn(story);
+      const v = validatePlan(await compile(story, dir));
+      return {codes:[...v.errors, ...v.warnings].map(i => i.code), slide:[...v.errors, ...v.warnings].filter(i => i.shot === 'slide').map(i => i.code), cuts:v.cuts};
+    };
+    // Baseline cuts in the fixture keep size and position steady
+    const base = await check(() => {});
+    assert.ok(!base.codes.some(code => code.startsWith('CUT_')), base.codes.join());
+    assert.ok(base.cuts.every(cut => cut.scaleRatio < 2));
+    // Ending the first shot extremely close and cutting to a wide follow is a scale jump
+    const jump = s => {
+      s.beats[0].shots[0].camera = {move:'push-in', framing:'medium', azimuth:20, elevation:10, to:{framing:'detail'}, during:{from:'Look', to:'crate.'}};
+      s.beats[1].shots[0].camera = {move:'follow', framing:'wide', azimuth:-60, elevation:30, params:{lag:0.15}};
+    };
+    const abrupt = await check(jump);
+    assert.ok(abrupt.slide.includes('CUT_SCALE_JUMP'), abrupt.slide.join());
+    // The same cut declared as a deliberate contrast cut is allowed
+    const contrast = await check(s => { jump(s); s.beats[1].shots[0].transition.intent = 'contrast'; });
+    assert.ok(!contrast.slide.some(code => code.startsWith('CUT_SCALE') || code === 'CUT_DISORIENTING' || code === 'CUT_POSITION_JUMP'), contrast.slide.join());
+    assert.equal(contrast.cuts[0].intent, 'contrast');
+    // A follow shot whose action begins long after the cut leaves dead frames
+    const dead = await check(s => { s.beats[1].shots[0].events[0].at = 'across'; });
+    assert.ok(dead.slide.includes('CUT_DEAD_START'));
+    // Starting the action on the cut itself is supported directly
+    const story = structuredClone(baseStory());
+    story.beats[1].shots[0].events[0].at = 'shot-start';
+    const plan = await compile(story, dir);
+    assert.equal(plan.props[0].actions[0].startFrame, plan.shots[1].startFrame);
+    await assert.rejects(compile(Object.assign(structuredClone(baseStory()), {beats:[baseStory().beats[0], {...baseStory().beats[1], shots:[{...baseStory().beats[1].shots[0], transition:{type:'cut', motivation:'x', intent:'smash'}}]}]}), dir), /intent must be/);
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});
+
+test('silhouette sampling grounds a rolling round mesh within a millimetre', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'hold-up-shape-'));
+  try {
+    // A 64-sided barrel-like solid: radius bulges from 0.3 at the ends to 0.37 at the middle
+    const document = new Document();
+    const buffer = document.createBuffer();
+    const rings = 9, sides = 64, positions = [], indices = [];
+    for (let r = 0; r < rings; r++) {
+      const y = r / (rings - 1) * 0.9, radius = 0.3 + 0.07 * Math.sin(Math.PI * r / (rings - 1));
+      for (let k = 0; k < sides; k++) positions.push(Math.cos(k / sides * 2 * Math.PI) * radius, y, Math.sin(k / sides * 2 * Math.PI) * radius);
+    }
+    for (let r = 0; r < rings - 1; r++) for (let k = 0; k < sides; k++) {
+      const a = r * sides + k, b = r * sides + (k + 1) % sides;
+      indices.push(a, b, a + sides, b, b + sides, a + sides);
+    }
+    const prim = document.createPrimitive()
+      .setAttribute('POSITION', document.createAccessor().setType('VEC3').setArray(new Float32Array(positions)).setBuffer(buffer))
+      .setIndices(document.createAccessor().setType('SCALAR').setArray(new Uint16Array(indices)).setBuffer(buffer));
+    document.createScene().addChild(document.createNode().setMesh(document.createMesh().addPrimitive(prim)));
+    const path = join(dir, 'barrel.glb');
+    await writeFile(path, await new NodeIO().writeBinary(document));
+    const {readGlbShape} = await import('../tools/storyboard/compile.mjs');
+    const shape = await readGlbShape(path);
+    const prop = {...shape, bounds:{min:shape.min, max:shape.max}, base:{position:[0, 0, 0], rotation:[90, 0, 0]},
+      actions:[{type:'roll', startFrame:0, endFrame:100, params:{distance:2.3, direction:[1, 0, 0]}, ease:'linear'}]};
+    const all = [];
+    for (let i = 0; i < positions.length; i += 3) all.push(new Vector3(positions[i], positions[i + 1], positions[i + 2]));
+    let worst = 0;
+    for (let frame = 0; frame <= 100; frame += 2) {
+      const state = propStateAt(prop, frame);
+      const trueMin = Math.min(...all.map(p => p.clone().applyQuaternion(state.quaternion).add(state.position).y));
+      worst = Math.max(worst, Math.abs(trueMin));
+    }
+    assert.ok(worst < 0.001, `mesh leaves or sinks into the floor by ${(worst * 1000).toFixed(2)} mm`);
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});

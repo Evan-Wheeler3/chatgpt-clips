@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Vector3, Ray } from 'three';
+import { PerspectiveCamera, Vector3, Ray, MathUtils } from 'three';
 import { samplePlan } from './sample.mjs';
 import { propWorldBox, INSTANT_ACTIONS } from './actions.mjs';
 import { FRAMING, focusPoint, moveProgress } from './camera.mjs';
@@ -12,6 +12,10 @@ const SYNC_LEAD_FRAMES = 8, SYNC_LAG_FRAMES = 2;
 const STATIC_SHOT_SEC = 2.0, DRIFT_FRACTION = 0.9;
 // The subject should be at least this fraction of frame height, and closer than this share of the fog's far plane
 const MIN_SUBJECT_HEIGHT = 0.12, MAX_FOG_DEPTH = 0.7;
+// Across a continuity cut the viewer re-finds the subject; these are review triggers, not hard limits
+const CUT_SCALE_RATIO = 2.0, CUT_SHIFT_NDC = 0.6;
+const CUT_SOFT = {scale:1.6, shift:0.35, viewDeg:60, pitchDeg:8};
+const DEAD_START_FRAMES = 12;
 
 // The point the shot is about: the subject's framed focus, interpolated along the move
 function shotFocus(shot, box, frame) {
@@ -44,6 +48,22 @@ function project(cameraState, aspect, box) {
   const front = points.filter(point => !point.behind).map(point => point.ndc);
   const xs = front.map(p => p.x), ys = front.map(p => p.y);
   return {center, behind:front.length === 0, minX:Math.min(...xs), maxX:Math.max(...xs), minY:Math.min(...ys), maxY:Math.max(...ys)};
+}
+
+const round2 = value => Math.round(value * 100) / 100;
+
+// How the subject reads on screen at one frame: height share, centre, viewing direction in the subject's own frame, camera pitch
+function cutView(sample, prop, aspect) {
+  const box = prop?.bounds ? propWorldBox(prop, sample.frame) : null;
+  if (!box) return null;
+  const view = project(sample.camera, aspect, box);
+  if (view.behind) return null;
+  const state = sample.props.find(p => p.id === prop.id);
+  const toCamera = sample.camera.position.clone().sub(box.getCenter(new Vector3())).normalize().applyQuaternion(state.quaternion.clone().invert());
+  const look = sample.camera.target.clone().sub(sample.camera.position).normalize();
+  // Size is the larger on-screen dimension (a barrel lying down is wide, not tall); position is the centre of what is visible
+  const [x0, x1, y0, y1] = [Math.max(view.minX, -1), Math.min(view.maxX, 1), Math.max(view.minY, -1), Math.min(view.maxY, 1)];
+  return {size:Math.max(x1 - x0, y1 - y0) / 2, center:{x:(x0 + x1) / 2, y:(y0 + y1) / 2}, view:toCamera, pitch:MathUtils.radToDeg(Math.asin(look.y))};
 }
 
 const inside = (point, area) => point.x >= area.left && point.x <= area.right && point.y >= area.bottom && point.y <= area.top;
@@ -179,11 +199,47 @@ export function validatePlan(plan) {
     if (box && !onScreen(project(sample.camera, aspect, box).center)) warnings.push({code:'ACTION_OFF_SCREEN', prop:prop.id, shot:action.shot, message:`${action.type} starts while ${prop.id} is off screen`});
   }
 
+  // Cut continuity: compare the subject's on-screen size, position and viewing angle either side of each cut
+  const cuts = [];
+  for (let i = 1; i < plan.shots.length; i++) {
+    const a = plan.shots[i - 1], b = plan.shots[i];
+    if (b.transition.type !== 'cut' || a.subject !== b.subject) continue;
+    const prop = propById.get(b.subject);
+    const before = cutView(samples[a.endFrame - 1], prop, aspect), after = cutView(samples[b.startFrame], prop, aspect);
+    if (!before || !after) continue;
+    const metrics = {
+      from:a.id, to:b.id, frame:b.startFrame,
+      scaleRatio:round2(Math.max(before.size, after.size) / Math.max(1e-3, Math.min(before.size, after.size))),
+      shiftNdc:round2(Math.hypot(after.center.x - before.center.x, after.center.y - before.center.y)),
+      viewDeg:Math.round(MathUtils.radToDeg(before.view.angleTo(after.view))),
+      pitchDeg:Math.round(Math.abs(before.pitch - after.pitch)),
+      intent:b.transition.intent
+    };
+    cuts.push(metrics);
+    if (b.transition.intent === 'contrast') continue;
+    if (metrics.scaleRatio > CUT_SCALE_RATIO) warnings.push({code:'CUT_SCALE_JUMP', shot:b.id, message:`${b.subject} changes size ${metrics.scaleRatio}x across the cut from ${a.id}; match scale or declare intent "contrast"`});
+    if (metrics.shiftNdc > CUT_SHIFT_NDC) warnings.push({code:'CUT_POSITION_JUMP', shot:b.id, message:`${b.subject} jumps ${Math.round(metrics.shiftNdc * 50)}% of the frame across the cut from ${a.id}`});
+    const changed = [metrics.scaleRatio > CUT_SOFT.scale, metrics.shiftNdc > CUT_SOFT.shift, metrics.viewDeg > CUT_SOFT.viewDeg, metrics.pitchDeg > CUT_SOFT.pitchDeg].filter(Boolean).length;
+    if (changed >= 3) warnings.push({code:'CUT_DISORIENTING', shot:b.id, message:`Size, position, angle and horizon change together across the cut from ${a.id} (scale ${metrics.scaleRatio}x, shift ${metrics.shiftNdc}, view ${metrics.viewDeg}°, pitch ${metrics.pitchDeg}°); keep at least two of them steady`});
+  }
+
+  // Dead frames after a cut: the shot has action coming, but nothing moves for a while after the cut
+  for (let i = 1; i < plan.shots.length; i++) {
+    const shot = plan.shots[i];
+    if (shot.transition.type === 'whip') continue;
+    const actions = plan.props.flatMap(prop => prop.actions.filter(action => action.shot === shot.id && !INSTANT_ACTIONS.has(action.type)));
+    const cameraMoves = shot.camera.behavior !== 'hold' && shot.camera.behavior !== 'follow';
+    const firstMotion = Math.min(...actions.map(action => action.startFrame), cameraMoves ? shot.camera.window[0] : Infinity);
+    if (Number.isFinite(firstMotion) && firstMotion - shot.startFrame > DEAD_START_FRAMES) {
+      warnings.push({code:'CUT_DEAD_START', shot:shot.id, message:`Nothing moves for ${firstMotion - shot.startFrame} frames after the cut, then the shot's action starts; cut closer to the action`});
+    }
+  }
+
   errors.push(...rangeIssues(perFrameErrors));
   warnings.push(...rangeIssues(perFrameWarnings));
   const lengths = plan.shots.map(shot => (shot.endFrame - shot.startFrame) / fps);
   return {
-    status:errors.length ? 'needs-revision' : 'pass', errors, warnings,
+    status:errors.length ? 'needs-revision' : 'pass', errors, warnings, cuts,
     stats:{shots:plan.shots.length, durationSec:plan.durationFrames / fps, averageShotSec:Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length * 100) / 100,
       shortestShotSec:Math.min(...lengths), longestShotSec:Math.max(...lengths),
       behaviors:Object.fromEntries([...new Set(plan.shots.map(shot => shot.camera.behavior))].map(b => [b, plan.shots.filter(shot => shot.camera.behavior === b).length])),

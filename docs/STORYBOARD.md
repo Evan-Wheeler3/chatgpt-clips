@@ -36,12 +36,12 @@ Outputs go to `production/<slug>/` (gitignored): `narration.wav`, `words.json`, 
   - `start` is the word anchor where the cut lands; the first shot starts at 0.
   - `purpose` is required: what the viewer should notice and why.
   - `subject` is a prop id; `foreground[]` lists props allowed to cross in front of it.
-  - `transition`: `{type:"cut", motivation}` or `{type:"whip"}`. Cuts must state their motivation.
+  - `transition`: `{type:"cut", motivation, intent?}` or `{type:"whip"}`. Cuts must state their motivation. `intent:"contrast"` declares a deliberate smash cut and skips the cut-continuity warnings; the default is `"continuity"`.
   - `camera`: `{move, framing, azimuth, elevation, focus, lens, from?, to?, during?, ease, params}`.
   - `events[]`: `{at, prop, do, params, until|duration, ease}`.
   - `focus[]`: word anchors where the subject must be clearly framed.
 - **Anchors:** `"bulge"` (must be unique), `"bulge#2"`, a phrase such as `"on the spot"`, or `{at, edge:"end", offset}`. Ambiguous or unknown anchors fail compilation. Cuts lead their word by `timing.cutLeadSec` (0.1 s) and actions by `eventLeadSec` (0.07 s), so action starts on or just before the word.
-- **Framing** is semantic, not coordinates: `wide` / `medium` / `close` / `detail` (fills 40/62/88/180% of the limiting frame dimension). Camera distance is solved from the subject's real silhouette: compile extracts each GLB's extreme vertices in 96 directions. An axis-aligned box overestimated a barrel's width by 60% at oblique angles, which put every shot nearly twice too far away.
+- **Framing** is semantic, not coordinates: `wide` / `medium` / `close` / `detail` (fills 40/62/88/180% of the limiting frame dimension). Camera distance is solved from the subject's real silhouette: compile extracts each GLB's extreme vertices in 2048 directions. With 96 directions, a rolling barrel sank up to 17 mm into the floor; with 2048 the error is about 0.1 mm. An axis-aligned box overestimated a barrel's width by 60% at oblique angles, which put every shot nearly twice too far away.
 - **`during`:** `{from, to}` word anchors confine a move to the words it supports. Before the window the shot holds its start framing, after it the end framing. This creates motion bursts instead of constant drift.
 
 ## Camera behaviors (`tools/storyboard/camera.mjs`)
@@ -78,14 +78,34 @@ Easings (`easing.mjs`): `dolly`, `settle` (soft start, overshoot, settle), `cubi
   - errors: `SUBJECT_OFF_SCREEN`, `SUBJECT_TOO_SMALL` (< 12% of frame height), `SUBJECT_IN_FOG` (beyond 70% of fog far), `FOCUS_NOT_FRAMED` (subject outside the safe area on its focus word)
   - warnings: `SUBJECT_OUTSIDE_SAFE_AREA`, `SUBJECT_OCCLUDED` (by a prop not declared as foreground)
 - **Sync:** `SYNC_EARLY` (> 8 frames before its word), `SYNC_LATE` (> 2 frames after), `ACTION_OFF_SCREEN`
+- **Cut continuity** (warnings only, same-subject hard cuts that don't declare `contrast`). Each cut compares the last frame before it with the first frame after. Metrics: on-screen size (larger visible dimension), visible-centre position, viewing angle in the subject's own frame, and camera pitch.
+  - `CUT_SCALE_JUMP`: size changes more than 2×.
+  - `CUT_POSITION_JUMP`: the subject moves more than 30% of the frame.
+  - `CUT_DISORIENTING`: three of four change together (size > 1.6×, shift > 0.35 NDC, view > 60°, pitch > 8°).
+  - `CUT_DEAD_START`: the shot's first action or camera move starts more than 12 frames after the cut.
+  - Every cut's metrics are listed under `cuts` in `validation.json`, so a deliberate change of angle (a cut needs one) is visible without being an error.
 
 Validation is necessary but not sufficient. On the demo, a frame-by-frame look caught two things it missed: a "profile" angle that looked identical on a symmetrical barrel, and an empty wide shot. The second led to the fog and size checks. Always review `storyboard.png` and the animatic.
 
 ## Animatic (`animatic.mjs`)
-Headless Chrome (SwiftShader, throwaway profile) loads the catalog GLBs with the real Three.js `GLTFLoader` and renders every frame with the same `samplePlan()` the validator used. Frames go to ffmpeg with the narration, as H.264 + AAC. The burned-in overlay shows the shot, move, beat, timecode and frame, the safe area, the current sentence with the spoken word highlighted, missing-asset flags and active validation codes. The stage (ground plane, background, fog, lights) is declared in the story; it is staging, not a substitute for any requested asset. `storyboard.png` shows one frame per shot (its first focus word, else where its move lands) with the shot's purpose.
+Headless Chrome (SwiftShader, throwaway profile) loads the catalog GLBs with the real Three.js `GLTFLoader` and renders every frame with the same `samplePlan()` the validator used. Frames go to ffmpeg with the narration, as H.264 + AAC. Grounded props get contact shadows each frame: a soft pool under the silhouette footprint and a tight dark patch where it meets the floor, fading with height (`stage.contactShadows:false` disables them). The burned-in overlay shows the shot, move, beat, timecode and frame, the safe area, the current sentence with the spoken word highlighted, missing-asset flags and active validation codes. The stage (ground plane, background, fog, lights) is declared in the story; it is staging, not a substitute for any requested asset. `storyboard.png` shows one frame per shot (its first focus word, else where its move lands) with the shot's purpose.
 
 ## Demo: `stories/barrel-bilge`
 An original 12.2 s explainer on why barrels bulge, with sources in `stories/barrel-bilge/sources.md`. It has 6 shots: reveal → orbit → track → whip + push-in → follow → pullback. It uses 3 Poly Haven CC0 assets from the catalog and validates with 0 errors and 0 warnings. Rendering the 360×640 animatic takes about 40 s on SwiftShader.
+
+## Demo revision: the contact → roll cut
+The first version cut from the end of a close push-in on the barrel's side to a wide, head-on follow. The barrel shrank about 2×, rotated 78° and jumped 10° in horizon. It then sat still for 22 frames before rolling, and it rested on its protruding bung.
+
+The revision cuts on action instead:
+- the roll starts on the cut frame with a shove-like `out` ease;
+- the follow opens at `medium` (1.32× from the push-in's end) at the same focus height and horizon (3°), with a 50° angle change;
+- the barrel is laid down with its bung clear of the floor for the whole roll (3.6 mm centre variation, down from 16 mm).
+
+The new cut checks would have flagged the original (`CUT_DISORIENTING`, `CUT_DEAD_START`).
+
+They also flag two cuts outside that fix, which are left as review notes:
+- `profile → hoops`: the barrel moves from frame-left to frame-right;
+- `turn`: holds 20 frames before its pivot starts.
 
 ## Not in scope yet
 Final-resolution rendering, Remotion composition, SFX and music, characters and rigs, environment construction beyond the plain stage, and final voice performance.

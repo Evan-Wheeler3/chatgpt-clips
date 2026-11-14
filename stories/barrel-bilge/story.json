@@ -79,17 +79,17 @@
           "transition": {"type": "whip"},
           "camera": {"move": "push-in", "framing": "medium", "azimuth": 100, "elevation": 2, "focus": [0, -0.2, 0], "to": {"framing": "close"},
                      "during": {"from": "bulge#2", "to": "heavy"}, "ease": "dolly"},
-          "events": [{"at": "shot-start", "prop": "barrel", "do": "set", "params": {"position": [-0.8, 0, 0.1], "rotation": [90, 0, 0]}}],
+          "events": [{"at": "shot-start", "prop": "barrel", "do": "set", "params": {"position": [-0.8, 0, 0.1], "rotation": [90, 330, 0]}}],
           "focus": ["bulge#2"]
         },
         {
           "id": "roll",
           "start": "heavy",
-          "purpose": "Follow the barrel as one push sends it rolling, so 'easy to roll' is felt, not just heard",
+          "purpose": "Cut on the shove: the barrel is already rolling on the first frame, and the camera follows at the same height and focus so the eye stays on it, so 'easy to roll' is felt, not just heard",
           "subject": "barrel",
-          "transition": {"type": "cut", "motivation": "Action starts: cut wider to give the roll room to travel"},
-          "camera": {"move": "follow", "framing": "wide", "azimuth": 22, "elevation": 12, "params": {"lag": 0.15}},
-          "events": [{"at": "easy#1", "prop": "barrel", "do": "roll", "until": "roll", "params": {"distance": 1.3, "direction": [1, 0, 0]}, "ease": "cubic"}],
+          "transition": {"type": "cut", "motivation": "Cut on action: the roll starts on the cut, and a 50-degree swing turns the barrel's motion across the frame"},
+          "camera": {"move": "follow", "framing": "medium", "azimuth": 50, "elevation": 5, "focus": [0, -0.2, 0], "params": {"lag": 0.15}},
+          "events": [{"at": "shot-start", "prop": "barrel", "do": "roll", "until": "roll", "params": {"distance": 1.3, "direction": [1, 0, 0]}, "ease": "out"}],
           "focus": ["roll"]
         },
         {

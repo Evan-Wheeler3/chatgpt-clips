@@ -16,9 +16,10 @@ export const TIMING_DEFAULTS = {cutLeadSec:0.1, eventLeadSec:0.07, tailSec:0.6, 
 const TRANSITIONS = ['cut', 'whip'];
 const sha256 = data => createHash('sha256').update(data).digest('hex');
 
-// Bounds plus the model's extreme vertices in ~100 directions: a silhouette proxy that frames and grounds
-// round objects correctly from any angle, where an axis-aligned box would overestimate them
-export async function readGlbShape(path, directions = 96) {
+// Bounds plus the model's extreme vertices in 2048 directions: a silhouette proxy that frames and grounds
+// round objects correctly from any angle, where an axis-aligned box would overestimate them. 96 directions
+// let a rolling barrel sink up to 17 mm into the floor; 2048 keeps the error near 0.1 mm
+export async function readGlbShape(path, directions = 2048) {
   const document = await new NodeIO().registerExtensions(ALL_EXTENSIONS).setLogger(new Logger(Logger.Verbosity.ERROR)).read(path);
   const scene = document.getRoot().getDefaultScene() ?? document.getRoot().listScenes()[0];
   const {min, max} = getBounds(scene);
@@ -110,7 +111,9 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
       if (!BEHAVIORS.includes(behavior)) throw new Error(`Shot ${shot.id}: unknown camera move "${behavior}"`);
       if (!propById.has(shot.subject)) throw new Error(`Shot ${shot.id}: unknown subject "${shot.subject}"`);
       for (const id of shot.foreground ?? []) if (!propById.has(id)) throw new Error(`Shot ${shot.id}: unknown foreground prop "${id}"`);
-      const transition = {type:shot.transition?.type ?? 'cut', motivation:shot.transition?.motivation ?? null, frames:shot.transition?.frames};
+      // intent "contrast" declares a deliberate smash cut, so composition-continuity warnings are skipped for it
+      const transition = {type:shot.transition?.type ?? 'cut', motivation:shot.transition?.motivation ?? null, frames:shot.transition?.frames, intent:shot.transition?.intent ?? 'continuity'};
+      if (!['continuity', 'contrast'].includes(transition.intent)) throw new Error(`Shot ${shot.id}: transition intent must be "continuity" or "contrast"`);
       if (!TRANSITIONS.includes(transition.type)) throw new Error(`Shot ${shot.id}: unknown transition "${transition.type}"`);
       const easeName = shot.camera.ease ?? (behavior === 'whip-pan' ? 'whip' : 'dolly');
       if (!isEasing(easeName)) throw new Error(`Shot ${shot.id}: unknown easing "${easeName}"`);
