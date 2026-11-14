@@ -1,5 +1,7 @@
 # Hold Up character art direction (Phase 5.1)
 
+> **Superseded for the cooper:** Phase 5.3 rebuilt the approved character sheet as a vector rig. See `docs/CHARACTER-RIG.md`. The 5.1 candidates below were rejected; this file is kept as a record.
+
 **Status:** three candidate directions are built and rendered for review. **No direction is approved.** Bram (`characters/bram.json`) remains the cast of `stories/barrel-bilge` until a human chooses.
 
 **References:** no frames from Rick's Clips or any other creator were downloaded, inspected or used. Every comparison image is our own render through the Hold Up character system. The broad idea of "simple, expressive cartoon characters inside more detailed 3D environments" informed the brief only. No characters, silhouettes, faces or designs were referenced.

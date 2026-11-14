@@ -9,6 +9,7 @@ import { createPost } from './post.mjs';
 import { buildEnvironment } from './environment.mjs';
 import { buildCharacter } from './character-rig.mjs';
 import { buildHybridCharacter } from './character-hybrid.mjs';
+import { buildVectorCharacter } from './character-vector.mjs';
 
 let plan, quality, renderer, scene, camera, out, ctx, post, env = null, W, H, issues = [], keyLight;
 const groups = new Map(), shadows = new Map(), characters = new Map();
@@ -84,8 +85,10 @@ window.setup = async (planJson, size, issueList, qualityName) => {
   }
   for (const member of plan.cast ?? []) {
     // Hybrid definitions (3D body forms + 2D face) and cutout definitions share the same rig and pose data
-    const rig = member.definition.render?.mode === 'hybrid-3d'
-      ? buildHybridCharacter(member.definition, {quality, outputWidth:W, outputHeight:H})
+    const mode = member.definition.render?.mode;
+    const display = quality.post === 'none' ? null : {grade:style.grade, shadowTint:style.palette.shadowTint, highlightTint:style.palette.highlightTint};
+    const rig = mode === 'vector-2d' ? buildVectorCharacter(member.definition, {quality, outputWidth:W, outputHeight:H, display})
+      : mode === 'hybrid-3d' ? buildHybridCharacter(member.definition, {quality, outputWidth:W, outputHeight:H})
       : buildCharacter(member.definition, {style, quality, maxAnisotropy:renderer.capabilities.getMaxAnisotropy(), outputHeight:H});
     scene.add(rig.group, rig.shadowGroup);
     // Each character also lives on its own layer (1, 2, ...) so QA can render its silhouette mask alone
@@ -146,10 +149,14 @@ function draw(frame) {
     group.visible = p.visible;
   }
   placeContactShadows(frame);
+  // The camera is set before the characters: vector characters paint at the current frame's screen scale
+  camera.fov = s.camera.fov; camera.updateProjectionMatrix();
+  camera.position.copy(s.camera.position); camera.lookAt(s.camera.target);
+  camera.updateMatrixWorld();
   const lightDir = keyLight ? keyLight.target.position.clone().sub(keyLight.position).normalize() : new THREE.Vector3(0, -1, 0);
   for (const c of s.characters) {
     const {rig, shadow, feet} = characters.get(c.id);
-    rig.apply(c, s.camera.position, lightDir, characterTint(c));
+    characters.get(c.id).figure = rig.apply(c, s.camera.position, lightDir, characterTint(c), camera);
     shadow.position.set(c.position[0], 0.008, c.position[2]);
     shadow.scale.set(0.55 * c.heightM, 0.32 * c.heightM, 1);
     // The tight patch widens with the stance (push, walk) so both feet stay grounded
@@ -159,8 +166,6 @@ function draw(frame) {
     feet.rotation.z = Math.atan2(-c.facing[2], c.facing[0]); // Flat plane: local y is world -z
   }
   env?.update(frame, plan.fps);
-  camera.fov = s.camera.fov; camera.updateProjectionMatrix();
-  camera.position.copy(s.camera.position); camera.lookAt(s.camera.target);
   post.setFrame(frame);
   renderer.info.reset();
   post.render();
@@ -346,7 +351,8 @@ window.characterMetrics = frames => frames.map(frame => {
   return {frame, shot:s.shot.id, characters:s.characters.map(c => {
     const entry = characters.get(c.id);
     const mask = characterMask(entry.layer);
-    let area = 0; for (const m of mask) area += m;
+    let area = 0, bbox = [W, H, 0, 0];
+    for (let i = 0; i < mask.length; i++) if (mask[i]) { area++; const x = i % W, y = (i - x) / W; bbox = [Math.min(bbox[0], x), Math.min(bbox[1], y), Math.max(bbox[2], x), Math.max(bbox[3], y)]; }
     if (area < 300) return {id:c.id, visible:false};
     // Silhouette edge: luminance step from each boundary pixel to the background two pixels outside it
     let edgeSum = 0, edgeN = 0, inLab = [0, 0, 0], inN = 0, ringLab = [0, 0, 0], ringN = 0;
@@ -367,9 +373,24 @@ window.characterMetrics = frames => frames.map(frame => {
     const top = center.clone().setY(center.y + headMm * units / 2).project(camera), bottom = center.clone().setY(center.y - headMm * units / 2).project(camera);
     const headPx = Math.abs(top.y - bottom.y) / 2 * H;
     const toPoints = 390 / W;
-    return {id:c.id, visible:true, areaFraction:area / (W * H), pieces:pieces(mask, area * 0.004),
+    return {id:c.id, visible:true, areaFraction:area / (W * H), bbox, pieces:pieces(mask, area * 0.004),
       edgeContrast:edgeSum / Math.max(1, edgeN), colorContrast:Math.hypot(...inLab.map((v, k) => v - ringLab[k])), lab:inLab,
       headPoints:headPx * toPoints, eyePoints:headPx * toPoints * 0.14};
+  })};
+});
+
+// Vector characters: world positions of the painted joints (hands, feet, head) for contact and continuity checks
+window.characterJoints = frames => frames.map(frame => {
+  const s = draw(frame);
+  return {frame, characters:s.characters.map(c => {
+    const entry = characters.get(c.id);
+    if (!entry.figure?.joints || !entry.rig.world) return {id:c.id};
+    const joints = Object.fromEntries(Object.entries(entry.figure.joints).map(([k, [x, y]]) => [k, entry.rig.world(x, y).toArray()]));
+    // On screen, the painted palm should cover the point on the prop it was solved for
+    const px = p => { const v = new THREE.Vector3(...p).project(camera); return [(v.x + 1) / 2 * W, (1 - v.y) / 2 * H]; };
+    const contactPx = c.contact ? Math.hypot(...px(joints[`hand${c.contact.hand ?? 'F'}`]).map((v, i) => v - px(c.contact.point)[i])) * 1080 / W : null;
+    const screen = Object.fromEntries(Object.entries(joints).map(([k, p]) => [k, px(p)]));
+    return {id:c.id, contact:c.contact, joints, screen, contactPx};
   })};
 });
 

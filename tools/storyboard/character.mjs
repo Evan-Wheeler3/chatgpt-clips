@@ -8,7 +8,7 @@ import { propWorldBox } from './actions.mjs';
  * Pose angles are degrees: limbs hang straight down at 0 and positive swings them forward;
  * `torso`/`head` positive lean forward; `knee`/`elbow` positive bend the joint naturally.
  */
-export const CHARACTER_ACTIONS = ['place', 'walk', 'pose', 'push', 'look', 'expression'];
+export const CHARACTER_ACTIONS = ['place', 'walk', 'pose', 'push', 'touch', 'look', 'expression'];
 export const INSTANT_CHARACTER_ACTIONS = new Set(['place', 'look', 'expression']);
 const TURN_FRAMES = 5;
 // Hands are solved onto the prop for this many frames; after the shove the prop leaves them (follow-through)
@@ -36,8 +36,20 @@ export const FACES = {
   proud:{mouth:'grin', brow:8, browTilt:-6},
   curious:{mouth:'hmm', brow:12, browTilt:10},
   surprised:{mouth:'oh', brow:22, browTilt:0},
-  effort:{mouth:'grit', brow:-10, browTilt:12}
+  effort:{mouth:'grit', brow:-10, browTilt:12},
+  // The approved cooper's core set (characters/cooper.json); cutout rigs map them onto their nearest mouths
+  speaking:{mouth:'grin', brow:4, browTilt:0},
+  concerned:{mouth:'hmm', brow:4, browTilt:14},
+  thinking:{mouth:'hmm', brow:6, browTilt:8},
+  confused:{mouth:'oh', brow:10, browTilt:10},
+  determined:{mouth:'grit', brow:-8, browTilt:14},
+  realization:{mouth:'grin', brow:16, browTilt:0},
+  disappointed:{mouth:'hmm', brow:0, browTilt:-10}
 };
+// Hands rest on a prop for a touch: reach in over these frames, then hold until the action ends
+const TOUCH_REACH_FRAMES = 12;
+// Gaze (eyes and the vector rig's head turn) eases toward its target instead of snapping
+const GAZE_FOLLOW = 0.22;
 
 const lerp = MathUtils.lerp;
 function mixPose(a, b, t) {
@@ -114,7 +126,7 @@ export function characterTrack(plan, member, cameraAt) {
   let position = new Vector3(member.start.position[0], 0, member.start.position.at(-1));
   let facing = new Vector3(1, 0, 0), mirror = null, turnFrom = null, turnStart = -Infinity;
   let pose = {...NEUTRAL}, poseFrom = {...NEUTRAL}, poseTarget = {...NEUTRAL}, poseStart = 0, poseFrames = 1, poseEase = 'settle';
-  let face = 'neutral', look = [0, 0], lookTarget = null;
+  let face = 'neutral', look = [0, 0], lookTarget = null, gaze = null;
   let walk = null, walkPhase = 0, step = null;
   let headSpring = {x:0, v:0}, capSpring = {x:0, v:0}, lastTorso = NEUTRAL.torso, lastX = 0;
   if (member.start.face) {
@@ -126,7 +138,7 @@ export function characterTrack(plan, member, cameraAt) {
   for (let frame = 0; frame < plan.durationFrames; frame++) {
     const camera = cameraAt(frame);
     // A cut changes the camera, not the character: facing snaps to the new view instead of animating a turn
-    if (cuts.has(frame)) { mirror = null; turnFrom = null; lastX = null; headSpring = {x:0, v:0}; capSpring = {x:0, v:0}; }
+    if (cuts.has(frame)) { gaze = null; mirror = null; turnFrom = null; lastX = null; headSpring = {x:0, v:0}; capSpring = {x:0, v:0}; }
     for (const action of actions) {
       if (action.startFrame !== frame) continue;
       const p = action.params ?? {};
@@ -142,7 +154,7 @@ export function characterTrack(plan, member, cameraAt) {
       } else if (action.type === 'pose' || action.type === 'push') {
         poseFrom = {...pose};
         poseTarget = preset(action.type === 'push' ? 'push' : p.preset);
-        poseStart = frame; poseFrames = action.type === 'push' ? 3 : BLEND_FRAMES; poseEase = action.type === 'push' ? 'out' : 'settle';
+        poseStart = frame; poseFrames = action.type === 'push' ? 3 : p.frames ?? BLEND_FRAMES; poseEase = action.type === 'push' ? 'out' : p.ease ?? 'settle';
         if (poseTarget.face) face = poseTarget.face;
         if (poseTarget.look) { look = poseTarget.look; lookTarget = null; }
         const target = p.target ?? p.prop;
@@ -155,7 +167,7 @@ export function characterTrack(plan, member, cameraAt) {
     // Release: after a timed pose ends, return to idle
     const releasing = actions.find(a => (a.type === 'pose' || a.type === 'push') && a.endFrame > a.startFrame && frame >= a.endFrame && frame < a.endFrame + RELEASE_FRAMES
       && !actions.some(b => (b.type === 'pose' || b.type === 'push') && b.startFrame > a.startFrame && b.startFrame <= frame));
-    if (releasing && frame === releasing.endFrame) { poseFrom = {...pose}; poseTarget = {...NEUTRAL}; poseStart = frame; poseFrames = RELEASE_FRAMES; poseEase = 'dolly'; face = face === 'effort' ? 'proud' : face; }
+    if (releasing && frame === releasing.endFrame) { poseFrom = {...pose}; poseTarget = {...NEUTRAL}; poseStart = frame; poseFrames = releasing.params.release ?? RELEASE_FRAMES; poseEase = 'dolly'; face = face === 'effort' ? 'proud' : face; }
     pose = mixPose(poseFrom, poseTarget, ease(poseEase, (frame - poseStart + 1) / poseFrames));
     pose.hipDrop *= bodyScale;
     if (upcoming) {
@@ -217,9 +229,7 @@ export function characterTrack(plan, member, cameraAt) {
             const torsoRad = MathUtils.degToRad(pose.torso);
             let worst = 0;
             for (const side of ['F', 'B']) {
-              const shoulder = def.rig[`shoulder${side}`];
-              const len = def.rig.shoulderHeight;
-              const sx = shoulder[0] + Math.sin(torsoRad) * len, sy = hipY + Math.cos(torsoRad) * len;
+              const [sx, sy] = shoulderPoint(def, side, hipY, torsoRad);
               const solved = solveTwoBone({x:along - sx, y:up - sy}, def.rig.upperArm, def.rig.forearm + def.rig.hand * 0.6);
               // Arms hang from the torso, which leans forward (clockwise): local swing = absolute + lean
               pose[`arm${side}`] = [solved.upper + pose.torso, solved.elbow];
@@ -230,6 +240,35 @@ export function characterTrack(plan, member, cameraAt) {
             if (pose.torso < 66) pose.torso = Math.min(66, pose.torso + 5);
             else pose.hipDrop = Math.min(def.rig.hipY * 0.45, pose.hipDrop + def.rig.hipY * 0.04);
           }
+        }
+      }
+    }
+
+    // Touch: one hand reaches onto a prop (by default its near top edge), rests there until the action ends, then releases
+    const touching = actions.find(a => a.type === 'touch' && frame >= a.startFrame && frame < a.endFrame + (a.params.release ?? RELEASE_FRAMES));
+    if (touching && !pushing) {
+      const tp = touching.params, side = tp.hand ?? 'F';
+      const box = propWorldBox(propById(plan, tp.prop), frame);
+      if (box) {
+        const reach = ease('sine', (frame - touching.startFrame + 1) / (tp.frames ?? TOUCH_REACH_FRAMES));
+        const release = frame >= touching.endFrame ? 1 - ease('sine', (frame - touching.endFrame + 1) / (tp.release ?? RELEASE_FRAMES)) : 1;
+        const w = Math.min(reach, release);
+        const height = box.min.y + (box.max.y - box.min.y) * (tp.height ?? 1);
+        const center = box.getCenter(new Vector3()).setY(height);
+        const edge = box.clampPoint(position.clone().setY(height), new Vector3()).setY(height);
+        // Rest the palm just inside the edge, so it sits on the rim rather than on the corner of the bounding box
+        const inward = center.clone().sub(edge).setY(0);
+        if (inward.lengthSq() > 1e-8) edge.addScaledVector(inward.normalize(), Math.min(tp.inset ?? 0.05, center.distanceTo(edge)));
+        const hit = new Ray(camera.position.clone(), edge.clone().sub(camera.position).normalize()).intersectPlane(plane, new Vector3());
+        if (hit) {
+          const local = hit.clone().sub(position);
+          const along = local.dot(right) * screenSign / units, up = local.y / units;
+          const [sx, sy] = shoulderPoint(def, side, def.rig.hipY - pose.hipDrop + bob, MathUtils.degToRad(pose.torso));
+          const solved = solveTwoBone({x:along - sx, y:up - sy}, def.rig.upperArm, def.rig.forearm + def.rig.hand * 0.6);
+          const [upper, elbow] = pose[`arm${side}`];
+          pose[`arm${side}`] = [lerp(upper, solved.upper + pose.torso, w), lerp(elbow, solved.elbow, w)];
+          pose[side === 'F' ? 'handF' : 'handB'] = 'open';
+          if (w >= 0.999) contact = {point:edge.toArray(), shortfallM:solved.shortfall * units, prop:tp.prop, hand:side};
         }
       }
     }
@@ -264,6 +303,7 @@ export function characterTrack(plan, member, cameraAt) {
         lookVec = [MathUtils.clamp(d.dot(right) * mirror / Math.max(0.3, d.length()), -1, 1), MathUtils.clamp(d.y / Math.max(0.3, d.length()) * 1.5, -1, 1)];
       }
     }
+    gaze = gaze ? gaze.map((g, i) => g + (lookVec[i] - g) * GAZE_FOLLOW) : [...lookVec];
     const blinkCycle = Math.floor(frame / 90), blinkAt = blinkCycle * 90 + Math.floor(hash(blinkSeed + blinkCycle) * 60) + 10;
     const blink = !pushing && frame >= blinkAt && frame < blinkAt + 5 ? Math.sin((frame - blinkAt + 0.5) / 5 * Math.PI) : 0;
     const breathe = Math.sin(frame / plan.fps * 2 * Math.PI / 3.2) * 0.012;
@@ -271,10 +311,16 @@ export function characterTrack(plan, member, cameraAt) {
     states.push({
       frame, position:position.toArray(), facing:facing.toArray(), mirror, turnScale,
       pose:{...pose, hipDrop:pose.hipDrop - bob, head:pose.head + headSpring.x, cap:capSpring.x, squash:pose.squash * (1 + breathe)},
-      face:FACES[face] ? face : 'neutral', look:lookVec, blink, contact, heightM:def.heightM
+      face:FACES[face] ? face : 'neutral', look:lookVec, gaze:[...gaze], blink, contact, heightM:def.heightM
     });
   }
   return states;
+}
+
+// The shoulder pivot rotates with the torso about the hip (torso lean is clockwise)
+function shoulderPoint(def, side, hipY, torsoRad) {
+  const x = def.rig[`shoulder${side}`][0], h = def.rig.shoulderHeight;
+  return [x * Math.cos(torsoRad) + h * Math.sin(torsoRad), hipY - x * Math.sin(torsoRad) + h * Math.cos(torsoRad)];
 }
 
 // Forward kinematics of the key points (rig mm) for validation and IK checks: hips, neck, head centre, hands
@@ -284,8 +330,7 @@ export function rigPoints(def, pose) {
   const neck = [Math.sin(t) * def.rig.neckHeight, hipY + Math.cos(t) * def.rig.neckHeight];
   const headCenter = [neck[0] + Math.sin(t) * def.rig.headCenter, neck[1] + Math.cos(t) * def.rig.headCenter];
   const hand = side => {
-    const shoulder = def.rig[`shoulder${side}`];
-    const s = [shoulder[0] + Math.sin(t) * def.rig.shoulderHeight, hipY + Math.cos(t) * def.rig.shoulderHeight];
+    const s = shoulderPoint(def, side, hipY, t);
     const [upper, elbow] = pose[`arm${side}`];
     const a1 = MathUtils.degToRad(upper - pose.torso), a2 = a1 + MathUtils.degToRad(elbow);
     const e = [s[0] + Math.sin(a1) * def.rig.upperArm, s[1] - Math.cos(a1) * def.rig.upperArm];

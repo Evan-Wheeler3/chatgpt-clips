@@ -1,0 +1,612 @@
+{
+  "version": 1,
+  "id": "cooper",
+  "name": "Cooper (approved)",
+  "description": "The approved Hold Up cooper, reconstructed as a vector rig from characters/references/cooper-reference.png (3/4 view).",
+  "reference": "characters/references/cooper-reference.png",
+  "heightM": 1.4,
+  "render": {
+    "mode": "vector-2d",
+    "outlineRatio": 0.0085,
+    "outlinePx": [
+      3,
+      8
+    ]
+  },
+  "palette": {
+    "skin": "#FDEBD3",
+    "shirt": "#EAD1AD",
+    "cap": "#835D3A",
+    "hair": "#66472A",
+    "apron": "#A4662E",
+    "trousers": "#4A372B",
+    "line": "#1E1A16",
+    "buttons": "#DB8637",
+    "boots": "#2E2119",
+    "mouth": "#97523C",
+    "tongue": "#C9705A"
+  },
+  "paletteSource": {
+    "sampled from the sheet's palette swatches": [
+      "skin",
+      "shirt",
+      "cap",
+      "hair",
+      "apron",
+      "trousers",
+      "line",
+      "buttons"
+    ],
+    "sampled from the drawn figure (no swatch exists)": [
+      "boots",
+      "mouth"
+    ],
+    "estimated (too small to sample reliably)": [
+      "tongue"
+    ]
+  },
+  "rig": {
+    "heightMm": 1520,
+    "hipY": 470,
+    "neckHeight": 535,
+    "headCenter": 212,
+    "shoulderHeight": 488,
+    "shoulderF": [
+      72,
+      0
+    ],
+    "shoulderB": [
+      -112,
+      0
+    ],
+    "hipF": [
+      30,
+      0
+    ],
+    "hipB": [
+      -32,
+      0
+    ],
+    "upperArm": 230,
+    "forearm": 155,
+    "hand": 100,
+    "thigh": 205,
+    "shin": 185,
+    "ankle": 80
+  },
+  "forms": {
+    "head": {
+      "rx": 165,
+      "ry": 158,
+      "jaw": 0.1,
+      "offsetX": 10,
+      "height": 316,
+      "crown": 2.6
+    },
+    "neck": {
+      "width": 72,
+      "base": [
+        -24,
+        505
+      ],
+      "top": [
+        -30,
+        70
+      ]
+    },
+    "hair": {
+      "cx": -168,
+      "cy": 12,
+      "rx": 64,
+      "ry": 102,
+      "scallops": 9,
+      "amp": 0.2
+    },
+    "cap": {
+      "pivot": [
+        0,
+        130
+      ],
+      "tilt": 0,
+      "drop": 0,
+      "crown": [
+        [
+          -270,
+          97
+        ],
+        [
+          -268,
+          144
+        ],
+        [
+          -227,
+          227
+        ],
+        [
+          -153,
+          274
+        ],
+        [
+          -72,
+          296
+        ],
+        [
+          27,
+          296
+        ],
+        [
+          117,
+          261
+        ],
+        [
+          171,
+          220
+        ],
+        [
+          193,
+          184
+        ],
+        [
+          178,
+          164
+        ],
+        [
+          108,
+          148
+        ],
+        [
+          0,
+          135
+        ],
+        [
+          -126,
+          124
+        ],
+        [
+          -225,
+          95
+        ]
+      ],
+      "band": [
+        [
+          -254,
+          104
+        ],
+        [
+          -135,
+          132
+        ],
+        [
+          0,
+          146
+        ],
+        [
+          117,
+          157
+        ],
+        [
+          167,
+          170
+        ]
+      ],
+      "brim": [
+        [
+          81,
+          153
+        ],
+        [
+          153,
+          166
+        ],
+        [
+          202,
+          164
+        ],
+        [
+          216,
+          148
+        ],
+        [
+          196,
+          130
+        ],
+        [
+          144,
+          121
+        ],
+        [
+          99,
+          130
+        ],
+        [
+          72,
+          143
+        ]
+      ],
+      "seam": [],
+      "button": [
+        -74,
+        296,
+        16
+      ]
+    },
+    "torso": [
+      [
+        -127,
+        380
+      ],
+      [
+        -129,
+        468
+      ],
+      [
+        -114,
+        520
+      ],
+      [
+        -78,
+        542
+      ],
+      [
+        -29,
+        550
+      ],
+      [
+        37,
+        550
+      ],
+      [
+        83,
+        542
+      ],
+      [
+        117,
+        520
+      ],
+      [
+        131,
+        468
+      ],
+      [
+        129,
+        380
+      ],
+      [
+        124,
+        150
+      ],
+      [
+        119,
+        -30
+      ],
+      [
+        -124,
+        -30
+      ],
+      [
+        -127,
+        150
+      ]
+    ],
+    "collar": [
+      [
+        [
+          -52,
+          548
+        ],
+        [
+          -5,
+          556
+        ],
+        [
+          13,
+          500
+        ]
+      ],
+      [
+        [
+          13,
+          500
+        ],
+        [
+          29,
+          556
+        ],
+        [
+          68,
+          546
+        ]
+      ]
+    ],
+    "apron": {
+      "outline": [
+        [
+          -54,
+          440
+        ],
+        [
+          80,
+          440
+        ],
+        [
+          87,
+          300
+        ],
+        [
+          101,
+          170
+        ],
+        [
+          131,
+          40
+        ],
+        [
+          143,
+          -118
+        ],
+        [
+          134,
+          -130
+        ],
+        [
+          -124,
+          -130
+        ],
+        [
+          -134,
+          -118
+        ],
+        [
+          -125,
+          40
+        ],
+        [
+          -87,
+          170
+        ],
+        [
+          -66,
+          300
+        ]
+      ],
+      "pocket": [
+        [
+          -38,
+          168
+        ],
+        [
+          12,
+          160
+        ],
+        [
+          64,
+          168
+        ]
+      ],
+      "straps": [
+        [
+          [
+            -43,
+            436
+          ],
+          [
+            -73,
+            526
+          ]
+        ],
+        [
+          [
+            70,
+            436
+          ],
+          [
+            90,
+            524
+          ]
+        ]
+      ],
+      "strapWidth": 30,
+      "buttons": [
+        [
+          -42,
+          418
+        ],
+        [
+          68,
+          418
+        ]
+      ],
+      "buttonRadius": 13
+    },
+    "arm": {
+      "sleeve": 112,
+      "cuff": [
+        130,
+        50
+      ],
+      "cuffAt": 14,
+      "forearm": 84,
+      "hand": [
+        96,
+        108
+      ]
+    },
+    "leg": {
+      "width": 108
+    },
+    "boot": {
+      "toe": 142,
+      "heel": 56,
+      "height": 96
+    }
+  },
+  "face": {
+    "eyes": {
+      "x": [
+        24,
+        118
+      ],
+      "y": 42,
+      "w": 26,
+      "h": 50
+    },
+    "brows": {
+      "x": [
+        4,
+        112
+      ],
+      "y": 94,
+      "w": 58,
+      "thick": 13,
+      "arch": 6
+    },
+    "mouth": {
+      "x": 59,
+      "y": -58,
+      "thick": 9
+    },
+    "gazeShift": [
+      10,
+      8
+    ],
+    "turnShift": 36,
+    "nod": 7
+  },
+  "expressions": {
+    "neutral": {
+      "eyes": "oval",
+      "brows": {
+        "raise": 0,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "line",
+        "w": 32
+      }
+    },
+    "speaking": {
+      "eyes": "oval",
+      "brows": {
+        "raise": 4,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "open",
+        "w": 50,
+        "h": 34
+      }
+    },
+    "happy": {
+      "eyes": "arc",
+      "brows": {
+        "raise": 10,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "open",
+        "w": 58,
+        "h": 38
+      }
+    },
+    "surprised": {
+      "eyes": "oval",
+      "eyeScale": 1.12,
+      "brows": {
+        "raise": 16,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "o",
+        "w": 28,
+        "h": 36
+      }
+    },
+    "concerned": {
+      "eyes": "oval",
+      "brows": {
+        "raise": 8,
+        "tilt": 20
+      },
+      "mouth": {
+        "shape": "frown",
+        "w": 44
+      }
+    },
+    "thinking": {
+      "eyes": "oval",
+      "brows": {
+        "raise": [
+          2,
+          12
+        ],
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "line",
+        "w": 34,
+        "x": 8
+      }
+    },
+    "confused": {
+      "eyes": "oval",
+      "brows": {
+        "raise": [
+          14,
+          0
+        ],
+        "tilt": [
+          0,
+          -8
+        ]
+      },
+      "mouth": {
+        "shape": "o",
+        "w": 20,
+        "h": 24,
+        "x": 10
+      }
+    },
+    "determined": {
+      "eyes": "oval",
+      "brows": {
+        "raise": -6,
+        "tilt": -18
+      },
+      "mouth": {
+        "shape": "line",
+        "w": 34
+      }
+    },
+    "realization": {
+      "eyes": "oval",
+      "brows": {
+        "raise": 16,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "open",
+        "w": 54,
+        "h": 36
+      },
+      "spark": true
+    },
+    "disappointed": {
+      "eyes": "lid",
+      "brows": {
+        "raise": 0,
+        "tilt": 12
+      },
+      "mouth": {
+        "shape": "frown",
+        "w": 40
+      }
+    }
+  },
+  "faceMap": {
+    "proud": "speaking",
+    "curious": "thinking",
+    "effort": "determined"
+  },
+  "parts": {},
+  "anchors": {}
+}

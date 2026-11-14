@@ -326,7 +326,7 @@ function validateWorld(plan, samples, aspect, {errors, warnings, perFrameErrors,
 
   // Character actions should start where the viewer can see them
   for (const member of plan.cast ?? []) for (const action of member.actions) {
-    if (!['pose', 'push', 'walk'].includes(action.type)) continue;
+    if (!['pose', 'push', 'touch', 'walk'].includes(action.type)) continue;
     const sample = samples[Math.min(action.startFrame, samples.length - 1)];
     const c = sample.characters.find(o => o.id === member.id);
     const v = projectPoint(sample.camera, aspect, new Vector3(...c.position).setY(c.heightM * 0.55));

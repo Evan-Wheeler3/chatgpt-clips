@@ -1,3 +1,6 @@
+import { figureIssues } from './rig-checks.mjs';
+import { FACES } from '../storyboard/character.mjs';
+
 // Static checks on a character definition (review assistance, not approval)
 export const REQUIRED_PARTS = ['torso', 'head', 'cap', 'eyes', 'pupils', 'brows',
   ...['neutral', 'smile', 'grin', 'oh', 'grit', 'hmm'].map(m => `mouth:${m}`), 'upperArmF', 'forearmF', ...['open', 'fist', 'point', 'thumbs'].map(h => `hand:${h}`),
@@ -45,7 +48,34 @@ function validateHybrid(def) {
     metrics:{headRatio:Math.round(headRatio * 10) / 10, clothingColors:clothing.size, maxClothingSaturation:Math.round(maxSat * 100) / 100, eyeShare:Math.round(eyeShare * 1000) / 1000}};
 }
 
+// Vector definitions (one figure painted per frame): structure, palette, expressions, and the painted joints in a neutral pose
+export const VECTOR_REQUIRED = {
+  rig:['heightMm', 'hipY', 'neckHeight', 'headCenter', 'shoulderHeight', 'shoulderF', 'shoulderB', 'hipF', 'hipB', 'upperArm', 'forearm', 'hand', 'thigh', 'shin', 'ankle'],
+  palette:['skin', 'shirt', 'cap', 'hair', 'apron', 'trousers', 'line', 'buttons', 'boots', 'mouth', 'tongue'],
+  forms:['head', 'neck', 'hair', 'cap', 'torso', 'collar', 'apron', 'arm', 'leg', 'boot'],
+  expressions:['neutral', 'happy', 'surprised', 'concerned']
+};
+export const NEUTRAL_STATE = {pose:{hipDrop:0, torso:3, head:0, armF:[8, 14], armB:[-6, 12], legF:[3, 3], legB:[-3, 3], handF:'open', handB:'open', squash:1}, face:'neutral', blink:0, gaze:[0, 0]};
+function validateVector(def) {
+  const errors = [], warnings = [];
+  for (const [group, keys] of Object.entries(VECTOR_REQUIRED)) for (const key of keys) {
+    if (def[group]?.[key] === undefined) errors.push({code:group === 'palette' ? 'UNKNOWN_COLOR' : group === 'expressions' ? 'MISSING_EXPRESSION' : 'MISSING_FORM', message:`${def.id} has no ${group}.${key}`});
+  }
+  if (errors.length) return {status:'failed', errors, warnings, metrics:{}};
+  for (const [name, color] of Object.entries(def.palette)) if (!/^#[0-9a-f]{6}$/i.test(color)) errors.push({code:'UNKNOWN_COLOR', message:`${def.id}: palette.${name} "${color}" is not a colour`});
+  // Every face the storyboard can ask for must resolve to one of this character's expressions
+  for (const face of Object.keys(FACES)) if (!def.expressions[face] && !def.expressions[def.faceMap?.[face]]) errors.push({code:'MISSING_EXPRESSION', message:`${def.id}: storyboard face "${face}" has no expression or faceMap entry`});
+  for (const face of Object.keys(def.expressions)) for (const issue of figureIssues(def, {...NEUTRAL_STATE, face}).issues) errors.push({...issue, message:`${def.id} (${face}): ${issue.message}`});
+  const {figure} = figureIssues(def, NEUTRAL_STATE);
+  const head = figure.items.find(i => i.id === 'head').shapes[0].pts, chin = Math.min(...head.map(p => p[1]));
+  const headRatio = figure.bounds[3] / (figure.bounds[3] - chin);
+  if (Math.abs(figure.bounds[3] - def.rig.heightMm) > def.rig.heightMm * 0.03) warnings.push({code:'HEIGHT_MISMATCH', message:`${def.id}: painted height ${Math.round(figure.bounds[3])} mm vs rig.heightMm ${def.rig.heightMm}`});
+  return {status:errors.length ? 'failed' : warnings.length ? 'review' : 'pass', errors, warnings,
+    metrics:{headRatio:Math.round(headRatio * 100) / 100, paintedHeightMm:Math.round(figure.bounds[3]), expressions:Object.keys(def.expressions).length, parts:figure.items.length}};
+}
+
 export function validateDefinition(def) {
+  if (def.render?.mode === 'vector-2d') return validateVector(def);
   if (def.render?.mode === 'hybrid-3d') return validateHybrid(def);
   const errors = [], warnings = [];
   for (const name of REQUIRED_PARTS) if (!def.parts?.[name]) errors.push({code:'MISSING_PART', message:`${def.id} has no ${name}`});

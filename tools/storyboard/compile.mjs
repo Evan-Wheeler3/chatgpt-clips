@@ -130,13 +130,14 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
         if (!member) throw new Error(`Shot ${shot.id}: event targets unknown cast member "${event.character}"`);
         if (!CHARACTER_ACTIONS.includes(event.do)) throw new Error(`Shot ${shot.id}: unknown character action "${event.do}"`);
         if (event.do === 'pose' && !POSE_PRESETS[event.params?.preset]) throw new Error(`Shot ${shot.id}: unknown pose preset "${event.params?.preset}"`);
-        if (event.do === 'push' && !propById.has(event.params?.prop)) throw new Error(`Shot ${shot.id}: push needs params.prop`);
+        if ((event.do === 'push' || event.do === 'touch') && !propById.has(event.params?.prop)) throw new Error(`Shot ${shot.id}: ${event.do} needs params.prop`);
         const at = event.at === 'shot-start' || event.at === undefined ? {frame:shot.startFrame, word:null, wordIndex:null} : anchor(event.at, timing.eventLeadSec);
         let endFrame = at.frame;
         if (event.until) endFrame = anchor(typeof event.until === 'string' ? {at:event.until, edge:'end'} : event.until).frame;
         else if (event.duration) endFrame = at.frame + Math.round(event.duration * fps);
         else if (event.do === 'walk') throw new Error(`Shot ${shot.id}: walk needs "until" or "duration"`);
         else if (event.do === 'push') endFrame = at.frame + Math.round(0.35 * fps);
+        else if (event.do === 'touch') endFrame = at.frame + fps;
         member.actions.push({type:event.do, startFrame:at.frame, endFrame:Math.max(at.frame, endFrame), params:event.params ?? {},
           anchor:at.word ? {word:at.word, wordIndex:at.wordIndex, wordFrame:words[at.wordIndex].startFrame} : null, shot:shot.id, instant:INSTANT_CHARACTER_ACTIONS.has(event.do)});
         continue;
