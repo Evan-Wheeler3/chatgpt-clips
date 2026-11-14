@@ -1,12 +1,17 @@
 import { createHash } from 'node:crypto';
-import { readFile, writeFile, mkdir, rename, rm, access } from 'node:fs/promises';
+import { createReadStream, createWriteStream } from 'node:fs';
+import { readFile, writeFile, mkdir, rename, rm, stat } from 'node:fs/promises';
+import { Readable, Transform } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { resolve, dirname, join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tokens } from '../asset-resolver.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const API = 'https://api.polyhaven.com';
-const DOWNLOAD_HOST = 'dl.polyhaven.org';
+const API_HOSTS = ['api.polyhaven.com'];
+const DOWNLOAD_HOSTS = ['dl.polyhaven.org'];
+const MAX_REDIRECTS = 5;
 const INDEX_TTL_MS = 12 * 3600 * 1000; // Matches the API's cache-control max-age
 const MODEL_TYPE = 2;
 // The API has no per-asset license field; this site-wide statement is the license evidence
@@ -60,14 +65,35 @@ export function createPolyHavenProvider({
   cacheDir = resolve(root, 'assets/cache'),
   userAgent = 'hold-up-animation-v2/0.1.0',
   now = () => Date.now(),
-  timeoutMs = 30000
+  timeoutMs = 30000,
+  downloadTimeoutMs = 10 * 60 * 1000
 } = {}) {
   const headers = {'User-Agent':userAgent};
   const providerDir = join(cacheDir, 'polyhaven');
   let indexPromise;
 
+  // Follows redirects by hand so that every hop, not just the first URL, must be an approved HTTPS host
+  async function safeFetch(url, allowedHosts, ms) {
+    const signal = AbortSignal.timeout(ms);
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'https:' || !allowedHosts.includes(parsed.hostname)) throw new Error(`Refusing request to unapproved host: ${url}`);
+      const response = await fetchImpl(url, {headers, signal, redirect:'manual'});
+      if (response.url && !allowedHosts.includes(new URL(response.url).hostname)) {
+        await response.body?.cancel();
+        throw new Error(`Refusing response from unapproved host: ${response.url}`);
+      }
+      if (response.status < 300 || response.status > 399) return response;
+      const location = response.headers.get('location');
+      await response.body?.cancel();
+      if (!location) throw new Error(`Redirect without Location from ${url}`);
+      url = new URL(location, url).href;
+    }
+    throw new Error(`Too many redirects starting from ${url}`);
+  }
+
   async function getJson(path) {
-    const response = await fetchImpl(`${API}${path}`, {headers, signal:AbortSignal.timeout(timeoutMs)});
+    const response = await safeFetch(`${API}${path}`, API_HOSTS, timeoutMs);
     if (!response.ok) throw new Error(`Poly Haven API ${response.status} for ${path}`);
     return response.json();
   }
@@ -110,18 +136,57 @@ export function createPolyHavenProvider({
       .map(({model, match}) => toCandidate(request, model, match));
   }
 
+  // Streams to disk, hashing as it goes, and aborts as soon as the body exceeds the expected size
   async function download(file, dest) {
-    const url = new URL(file.url);
-    if (url.protocol !== 'https:' || url.hostname !== DOWNLOAD_HOST) throw new Error(`Refusing download from unapproved host: ${file.url}`);
-    const response = await fetchImpl(file.url, {headers, signal:AbortSignal.timeout(timeoutMs)});
-    if (!response.ok) throw new Error(`Download ${response.status} for ${file.url}`);
-    const data = Buffer.from(await response.arrayBuffer());
-    if (data.length !== file.size) throw new Error(`Size mismatch for ${file.path}: expected ${file.size}, got ${data.length}`);
-    const md5 = createHash('md5').update(data).digest('hex');
-    if (md5 !== file.md5) throw new Error(`MD5 mismatch for ${file.path}`);
-    await mkdir(dirname(join(dest, file.path)), {recursive:true});
-    await writeFile(join(dest, file.path), data);
-    return {path:file.path, url:file.url, size:data.length, md5, sha256:createHash('sha256').update(data).digest('hex')};
+    const response = await safeFetch(file.url, DOWNLOAD_HOSTS, downloadTimeoutMs);
+    if (!response.ok || !response.body) {
+      await response.body?.cancel();
+      throw new Error(`Download ${response.status} for ${file.url}`);
+    }
+    const declared = Number(response.headers.get('content-length'));
+    if (declared && declared !== file.size) {
+      await response.body.cancel();
+      throw new Error(`Size mismatch for ${file.path}: expected ${file.size}, server declared ${declared}`);
+    }
+    const md5 = createHash('md5'), sha256 = createHash('sha256');
+    let size = 0;
+    const meter = new Transform({transform(chunk, _encoding, callback) {
+      size += chunk.length;
+      if (size > file.size) return callback(new Error(`Size mismatch for ${file.path}: more than ${file.size} bytes received`));
+      md5.update(chunk); sha256.update(chunk);
+      callback(null, chunk);
+    }});
+    const target = join(dest, file.path);
+    await mkdir(dirname(target), {recursive:true});
+    await pipeline(Readable.fromWeb(response.body), meter, createWriteStream(target));
+    if (size !== file.size) throw new Error(`Size mismatch for ${file.path}: expected ${file.size}, got ${size}`);
+    const digest = md5.digest('hex');
+    if (digest !== file.md5) throw new Error(`MD5 mismatch for ${file.path}`);
+    return {path:file.path, url:file.url, size, md5:digest, sha256:sha256.digest('hex')};
+  }
+
+  async function sha256File(path) {
+    const hash = createHash('sha256');
+    await pipeline(createReadStream(path), hash);
+    return hash.digest('hex');
+  }
+
+  // Returns null when the cached copy matches the expected file list and every recorded size/SHA-256, else the problem
+  async function cacheProblem(dest, list) {
+    let provenance;
+    try { provenance = JSON.parse(await readFile(join(dest, 'provenance.json'), 'utf8')); }
+    catch { return 'missing or unreadable provenance.json'; }
+    const recorded = new Map((provenance.files ?? []).map(file => [file.path, file]));
+    if (recorded.size !== list.length) return 'file list differs from the API';
+    for (const file of list) {
+      const entry = recorded.get(file.path);
+      if (!entry || entry.size !== file.size || entry.md5 !== file.md5 || !/^[0-9a-f]{64}$/.test(entry.sha256 ?? '')) return `provenance does not match the API for ${file.path}`;
+      const path = join(dest, file.path);
+      try { if ((await stat(path)).size !== entry.size) return `size mismatch for ${file.path}`; }
+      catch { return `missing ${file.path}`; }
+      if (await sha256File(path) !== entry.sha256) return `SHA-256 mismatch for ${file.path}`;
+    }
+    return null;
   }
 
   async function fetchModel(id, {resolution = '1k', maxBytes = 200 * 1024 * 1024} = {}) {
@@ -138,11 +203,9 @@ export function createPolyHavenProvider({
     if (total > maxBytes) throw new Error(`${id} at ${resolution} is ${total} bytes, over the ${maxBytes} byte limit`);
 
     const dest = join(providerDir, id, info.files_hash, resolution);
-    const provenancePath = join(dest, 'provenance.json');
-    try {
-      await access(provenancePath);
-      return {status:'cached', dir:dest, provenance:JSON.parse(await readFile(provenancePath, 'utf8'))};
-    } catch { /* Not cached yet */ }
+    const cached = await stat(dest).then(() => true, () => false);
+    const repaired = cached ? await cacheProblem(dest, list) : null;
+    if (cached && !repaired) return {status:'cached', dir:dest, provenance:JSON.parse(await readFile(join(dest, 'provenance.json'), 'utf8'))};
 
     const partial = join(providerDir, '.partial', `${id}-${info.files_hash}-${resolution}-${process.pid}`);
     await rm(partial, {recursive:true, force:true});
@@ -159,8 +222,9 @@ export function createPolyHavenProvider({
       };
       await writeFile(join(partial, 'provenance.json'), JSON.stringify(provenance, null, 2) + '\n');
       await mkdir(dirname(dest), {recursive:true});
+      if (repaired) await rm(dest, {recursive:true, force:true}); // Replace the corrupted copy only after a verified redownload
       await rename(partial, dest);
-      return {status:'downloaded', dir:dest, provenance};
+      return {status:'downloaded', dir:dest, provenance, ...(repaired && {repaired})};
     } catch (err) {
       await rm(partial, {recursive:true, force:true});
       throw err;
