@@ -1,0 +1,32 @@
+{
+  "id": "saloon-1873-gunfighter",
+  "name": "gunfighter (saloon-1873)",
+  "status": "awaiting-artwork",
+  "story": "saloon-1873",
+  "slot": "gunfighter",
+  "created": "2026-11-14",
+  "request": {
+    "roles": [
+      "gunfighter"
+    ],
+    "era": {
+      "from": 1873,
+      "to": 1873
+    },
+    "description": "An adult Western gunfighter in an 1873 Kansas cattle town: confident, intimidating, still in the simple Hold Up cartoon style.",
+    "age": "adult (30s to 40s)"
+  },
+  "resolution": {
+    "decision": "new",
+    "character": null
+  },
+  "artwork": [],
+  "approvals": {},
+  "log": [
+    {
+      "on": "2026-11-14",
+      "event": "brief",
+      "decision": "new"
+    }
+  ]
+}

@@ -88,6 +88,8 @@ export function buildFigure(def, state) {
   const headCenter = [F.head.offsetX, R.headCenter];
   const Hc = q => add(neck, rot(add(headCenter, q), headAngle));
   const capPivot = F.cap.pivot;
+  // Bone frames for attachments (outfit and accessory layers): rig millimetres in each bone's own frame
+  const frames = {hip:q => add(hip, q), torso:T, head:q => Hc(q)};
   const Cp = q => Hc(add([capPivot[0], capPivot[1] - (F.cap.drop ?? 0)], rot([q[0] - capPivot[0], q[1] - capPivot[1]], (F.cap.tilt ?? 0) - (p.cap ?? 0))));
   const joints = {hip, neck, headCenter:Hc([0, 0])};
 
@@ -116,6 +118,8 @@ export function buildFigure(def, state) {
     const cuffAt = along(shoulder, a1, R.upperArm - F.arm.cuffAt);
     const [cw, ch] = F.arm.cuff;
     item(`cuff${side}`, true, fill(chaikin([[-cw / 2, -ch / 2], [cw / 2, -ch / 2], [cw / 2, ch / 2], [-cw / 2, ch / 2]], 3).map(q => add(cuffAt, rot(q, a1))), C.shirt));
+    // Limb frames: local y runs up the limb (it hangs along -y at rest), x points forward
+    Object.assign(frames, {[`upperArm${side}`]:q => add(shoulder, rot(q, a1)), [`forearm${side}`]:q => add(elbow, rot(q, a2)), [`hand${side}`]:q => add(wrist, rot(q, a2))});
     Object.assign(joints, {[`shoulder${side}`]:shoulder, [`elbow${side}`]:elbow, [`wrist${side}`]:wrist, [`hand${side}`]:H(R.hand * 0.6, 0)});
   }
 
@@ -127,11 +131,27 @@ export function buildFigure(def, state) {
     const B = F.boot, ground = -R.ankle;
     const boot = chaikin([[-B.heel, B.height + ground], [-B.heel, ground], [B.toe, ground], [B.toe, ground + B.height * 0.42], [B.toe * 0.55, ground + B.height * 0.8], [B.toe * 0.25, B.height + ground]], 3);
     item(`boot${side}`, true, fill(boot.map(q => add(ankle, q)), C.boots));
+    Object.assign(frames, {[`thigh${side}`]:q => add(top, rot(q, thigh)), [`shin${side}`]:q => add(kneeAt, rot(q, thigh - knee)), [`foot${side}`]:q => add(ankle, q)});
     Object.assign(joints, {[`hip${side}`]:top, [`knee${side}`]:kneeAt, [`ankle${side}`]:ankle, [`toe${side}`]:add(ankle, [B.toe, ground]), [`heel${side}`]:add(ankle, [-B.heel, ground])});
   }
 
   // Far side (F: the leading arm and leg) behind the body, near side (B) in front
+  frames.cap = q => Cp(q);
+  const wearing = def.wearing ?? {}, layers = [...(wearing.outfit?.layers ?? []), ...(wearing.accessories ?? []).flatMap(a => a.layers ?? [])];
+  const colors = {...C, ...(wearing.outfit?.palette ?? {}), ...Object.assign({}, ...(wearing.accessories ?? []).map(a => a.palette ?? {}))};
+  const attach = slot => {
+    for (const layer of layers.filter(l => (l.slot ?? 'body') === slot)) {
+      const frame = frames[layer.bone];
+      if (!frame) throw new Error(`Attachment ${layer.id}: unknown bone "${layer.bone}"`);
+      item(layer.id, layer.outline !== false, ...layer.shapes.map(sh => {
+        const pts = chaikin(sh.points, sh.smooth ?? 0, sh.stroke ? false : true).map(frame), color = c => colors[c] ?? c;
+        return sh.stroke ? stroke(pts, color(sh.stroke), sh.width) : fill(pts, color(sh.fill));
+      }));
+    }
+  };
+  attach('back');
   arm('F');
+  attach('heldF');
   leg('F'); leg('B');
   item('neck', true, stroke([T(F.neck.base), Hc([F.neck.top[0], -R.headCenter + F.neck.top[1]])], C.skin, F.neck.width));
   item('torso', true, fill(chaikin(F.torso, 2).map(T), C.shirt));
@@ -141,6 +161,7 @@ export function buildFigure(def, state) {
   item('pocket', false, stroke(chaikin(A.pocket, 2, false).map(T), C.line, 7));
   item('buttons', true, ...A.buttons.map(([x, y]) => fill(ellipse(x, y, A.buttonRadius, A.buttonRadius, 0, 20).map(T), C.buttons)));
   item('collar', true, ...F.collar.map(c => fill(c.map(T), C.shirt)));
+  attach('body');
 
   // Head, then face, hair and cap
   const Hd = F.head;
@@ -155,9 +176,14 @@ export function buildFigure(def, state) {
   // Reference points inside large flat areas, for colour sampling on rendered frames
   Object.assign(joints, {capSample:Cp([-60, 220]), hairSample:Hc([hair.cx - hair.rx * 0.3, hair.cy]), apronSample:T([0, 60]), cheekSample:Hc([-40, -40])});
   item('capButton', true, fill(ellipse(cap.button[0], cap.button[1], cap.button[2], cap.button[2] * 0.7, 0, 20).map(Cp), C.cap));
+  attach('head');
   arm('B');
+  attach('front');
   if (resolveExpression(def, state.face).spark) item('spark', false, stroke([Hc([168, 262]), Hc([190, 304])], C.line, 10), stroke([Hc([204, 236]), Hc([244, 258])], C.line, 10));
 
+  // An outfit may hide built-in garments it replaces (e.g. the apron and its straps)
+  const hidden = new Set(wearing.outfit?.hide ?? []);
+  if (hidden.size) for (let i = items.length - 1; i >= 0; i--) if (hidden.has(items[i].id)) items.splice(i, 1);
   let bounds = [Infinity, Infinity, -Infinity, -Infinity];
   for (const it of items) for (const s of it.shapes) {
     const pad = (s.width ?? 0) / 2;

@@ -77,8 +77,10 @@
         "evidence": "Phase 5.4 brief from the channel owner: \"The user has officially approved the new cooper character and its five-second rig demonstration. The character design is FINAL.\""
       },
       "production": {
-        "status": "pending",
-        "evidence": "Phase 5.4 render production/barrel-bilge/production-approved-cooper.mp4 awaits the owner's visual review"
+        "status": "approved",
+        "by": "channel owner",
+        "on": "2026-11-14",
+        "evidence": "Owner reviewed the full Phase 5.4 barrel-bilge render (production/barrel-bilge/production-approved-cooper.mp4) and explicitly approved its visual quality. This approves visual production quality only; commercial-use rights remain unverified (see library.rights)."
       }
     }
   },
@@ -112,5 +114,47 @@
   },
   "legacy": {
     "bram": "characters/bram.json (Phase 5 cutout, retired from production in Phase 5.4; kept for reference)"
-  }
+  },
+  "approvalLog": [
+    {
+      "version": "1.0.0",
+      "stage": "design",
+      "decision": "approved",
+      "previous": "pending",
+      "by": "channel owner",
+      "on": "2026-11-14",
+      "evidence": "Phase 5.4 brief from the channel owner: \"The user has officially approved the new cooper character and its five-second rig demonstration. The character design is FINAL.\"",
+      "definitionSha256": "cbd61768291ee0db181e77aa7f22ada769ab7db3a4ab9ab05520bc63e66737f7"
+    },
+    {
+      "version": "1.0.0",
+      "stage": "rig",
+      "decision": "approved",
+      "previous": "pending",
+      "by": "channel owner",
+      "on": "2026-11-14",
+      "evidence": "Phase 5.4 brief from the channel owner: \"The user has officially approved the new cooper character and its five-second rig demonstration. The character design is FINAL.\"",
+      "definitionSha256": "cbd61768291ee0db181e77aa7f22ada769ab7db3a4ab9ab05520bc63e66737f7"
+    },
+    {
+      "version": "1.0.0",
+      "stage": "production",
+      "decision": "pending",
+      "previous": null,
+      "by": null,
+      "on": "2026-11-14",
+      "evidence": "Phase 5.4 render awaited the owner's visual review",
+      "definitionSha256": "cbd61768291ee0db181e77aa7f22ada769ab7db3a4ab9ab05520bc63e66737f7"
+    },
+    {
+      "version": "1.0.0",
+      "stage": "production",
+      "decision": "approved",
+      "previous": "pending",
+      "by": "channel owner",
+      "on": "2026-11-14",
+      "evidence": "Owner reviewed the full Phase 5.4 barrel-bilge render (production/barrel-bilge/production-approved-cooper.mp4) and explicitly approved its visual quality. This approves visual production quality only; commercial-use rights remain unverified (see library.rights).",
+      "definitionSha256": "cbd61768291ee0db181e77aa7f22ada769ab7db3a4ab9ab05520bc63e66737f7"
+    }
+  ]
 }

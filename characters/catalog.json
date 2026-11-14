@@ -6,11 +6,11 @@
       "name": "Cooper",
       "kind": "managed",
       "version": "1.0.0",
-      "status": "rig-approved",
+      "status": "production-approved",
       "approvals": {
         "design": "approved",
         "rig": "approved",
-        "production": "pending"
+        "production": "approved"
       },
       "roles": [
         "cooper"
@@ -82,6 +82,54 @@
         "definition": "characters/cooper/character.json",
         "reference": "characters/cooper/reference.png",
         "metadata": "characters/cooper/metadata.json"
+      }
+    },
+    {
+      "id": "saloon-1873-gunfighter",
+      "name": "gunfighter (saloon-1873)",
+      "kind": "intake",
+      "status": "awaiting-artwork",
+      "roles": [
+        "gunfighter"
+      ],
+      "family": null,
+      "era": {
+        "from": 1873,
+        "to": 1873
+      },
+      "regions": [],
+      "description": "An adult Western gunfighter in an 1873 Kansas cattle town: confident, intimidating, still in the simple Hold Up cartoon style.",
+      "approvals": {
+        "design": "pending",
+        "rig": "pending",
+        "production": "pending"
+      },
+      "files": {
+        "intake": "characters/intake/saloon-1873-gunfighter/intake.json"
+      }
+    },
+    {
+      "id": "saloon-1873-protagonist",
+      "name": "protagonist (saloon-1873)",
+      "kind": "intake",
+      "status": "awaiting-artwork",
+      "roles": [
+        "time traveller"
+      ],
+      "family": null,
+      "era": {
+        "from": 2026,
+        "to": 2026
+      },
+      "regions": [],
+      "description": "An ordinary, relatable modern-day adult who wakes up in an 1873 saloon. Visually expressive, slightly nervous, built for comedic reactions.",
+      "approvals": {
+        "design": "pending",
+        "rig": "pending",
+        "production": "pending"
+      },
+      "files": {
+        "intake": "characters/intake/saloon-1873-protagonist/intake.json"
       }
     },
     {

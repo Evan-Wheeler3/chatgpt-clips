@@ -45,6 +45,13 @@
       "sailor",
       "cavalryman",
       "drummer boy"
+    ],
+    "modern": [
+      "time traveller",
+      "office worker",
+      "student",
+      "tourist",
+      "commuter"
     ]
   },
   "aliases": {
@@ -57,6 +64,7 @@
   },
   "ordinary": [
     "tradesperson",
-    "townsperson"
+    "townsperson",
+    "modern"
   ]
 }

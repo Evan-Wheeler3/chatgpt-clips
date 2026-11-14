@@ -1,0 +1,52 @@
+{
+  "story": "saloon-1873",
+  "status": "character requirements only (no story.json yet; the video is not in production)",
+  "premise": "A modern protagonist wakes up inside an 1873 Kansas saloon and accidentally spills a gunfighter's whiskey. The gunfighter challenges them to a duel outside. The narration covers historical gunfights, revolvers, quick-draw myths, shooting accuracy and reaction times. The smartest survival strategy: walk back inside and buy the gunfighter another drink.",
+  "setting": {"era": 1873, "place": "a Kansas cattle town saloon and the street outside", "townToConfirm": "owner/story to choose the town (Ellsworth, Wichita and Abilene were Kansas cattle-trade towns around 1873)"},
+  "ownerDecisions": ["the protagonist's gender and look (kept open)", "the cattle town, if the narration names one"],
+  "requests": [
+    {
+      "slot": "protagonist",
+      "role": "time traveller",
+      "description": "An ordinary, relatable modern-day adult who wakes up in an 1873 saloon. Visually expressive, slightly nervous, built for comedic reactions.",
+      "age": "adult (late 20s to 30s)",
+      "era": 2026,
+      "outfit": {"era": 2026, "description": "everyday present-day clothes, clearly modern next to the 1870s cast", "tags": ["modern", "casual"]},
+      "personality": "ordinary, likeable, nervous, quick to apologise; reacts big",
+      "silhouette": "short and soft: rounded shoulders, a slightly larger head than the gunfighter's, no hat, so the outline reads small and unthreatening beside him",
+      "contrastWith": "gunfighter",
+      "garments": ["round cartoon head", "hooded sweatshirt or plain T-shirt", "jeans", "sneakers", "mitten hands"],
+      "accessories": ["whiskey glass (spilled)", "smartphone (optional comic prop)"],
+      "expressions": {
+        "required": ["neutral", "happy", "surprised", "concerned"],
+        "role": ["panicked (wide eyes, small open mouth, raised brows)", "sheepish grin (closed eyes or side glance, wide flat smile)", "relieved (soft smile, lowered brows)", "gulp (tight wavy mouth)"]
+      }
+    },
+    {
+      "slot": "gunfighter",
+      "role": "gunfighter",
+      "description": "An adult Western gunfighter in an 1873 Kansas cattle town: confident, intimidating, still in the simple Hold Up cartoon style.",
+      "age": "adult (30s to 40s)",
+      "era": 1873,
+      "outfit": {"era": 1873, "description": "historically plausible 1870s frontier clothing", "tags": ["1870s", "frontier"]},
+      "personality": "calm, confident, menacing in stillness; dry humour; can be won over with a drink",
+      "silhouette": "tall and angular: high-crowned wide-brim hat, broad coat shoulders, long legs, a revolver at the hip, so he reads as the threat at a glance",
+      "contrastWith": "protagonist",
+      "garments": ["round cartoon head", "wide-brim high-crown felt hat", "moustache", "collarless or bib-front shirt", "waistcoat", "sack coat or long duster", "neckerchief", "wool trousers", "boots", "mitten hands"],
+      "accessories": ["cartridge belt with holster (riding high on the hip)", "revolver (holstered and in hand)", "whiskey glass"],
+      "expressions": {
+        "required": ["neutral", "happy", "surprised", "concerned"],
+        "role": ["glare (narrowed eyes, brows down and in)", "smirk (one-sided smile)", "challenge (determined, chin up)", "pleased (when handed a drink)"]
+      },
+      "historicalNotes": {
+        "status": "Research notes to verify against cited sources before the narration is written (CLAUDE.md: fact-check the story).",
+        "notes": [
+          "Revolvers in Kansas around 1873 included cap-and-ball Colts and their cartridge conversions, the Smith & Wesson Model 3 and Remingtons; the Colt Single Action Army was brand new in 1873.",
+          "Holsters rode fairly high on the belt; the low, tied-down quick-draw holster is largely a 20th-century film convention. Many men carried a pistol in a coat pocket or waistband.",
+          "Wide-brim, high-crowned felt hats (the 1865 Stetson 'Boss of the Plains' style) and bowlers were both common; avoid later Hollywood hat shapes and heavy fringe.",
+          "Several Kansas cattle towns had ordinances against carrying firearms in town, which the story may want to acknowledge."
+        ]
+      }
+    }
+  ]
+}

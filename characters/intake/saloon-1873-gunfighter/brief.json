@@ -1,0 +1,126 @@
+{
+  "story": "saloon-1873",
+  "slot": "gunfighter",
+  "kind": "new",
+  "subject": "a new character: gunfighter",
+  "premise": "A modern protagonist wakes up inside an 1873 Kansas saloon and accidentally spills a gunfighter's whiskey. The gunfighter challenges them to a duel outside. The narration covers historical gunfights, revolvers, quick-draw myths, shooting accuracy and reaction times. The smartest survival strategy: walk back inside and buy the gunfighter another drink.",
+  "character": {
+    "role": "gunfighter",
+    "age": "adult (30s to 40s)",
+    "era": 1873,
+    "personality": "calm, confident, menacing in stillness; dry humour; can be won over with a drink",
+    "description": "An adult Western gunfighter in an 1873 Kansas cattle town: confident, intimidating, still in the simple Hold Up cartoon style.",
+    "silhouette": "tall and angular: high-crowned wide-brim hat, broad coat shoulders, long legs, a revolver at the hip, so he reads as the threat at a glance",
+    "contrastWith": "protagonist"
+  },
+  "clothing": [
+    "round cartoon head",
+    "wide-brim high-crown felt hat",
+    "moustache",
+    "collarless or bib-front shirt",
+    "waistcoat",
+    "sack coat or long duster",
+    "neckerchief",
+    "wool trousers",
+    "boots",
+    "mitten hands"
+  ],
+  "accessories": [
+    "cartridge belt with holster (riding high on the hip)",
+    "revolver (holstered and in hand)",
+    "whiskey glass"
+  ],
+  "expressions": {
+    "required": [
+      "neutral",
+      "happy",
+      "surprised",
+      "concerned"
+    ],
+    "role": [
+      "glare (narrowed eyes, brows down and in)",
+      "smirk (one-sided smile)",
+      "challenge (determined, chin up)",
+      "pleased (when handed a drink)"
+    ]
+  },
+  "historicalNotes": {
+    "status": "Research notes to verify against cited sources before the narration is written (CLAUDE.md: fact-check the story).",
+    "notes": [
+      "Revolvers in Kansas around 1873 included cap-and-ball Colts and their cartridge conversions, the Smith & Wesson Model 3 and Remingtons; the Colt Single Action Army was brand new in 1873.",
+      "Holsters rode fairly high on the belt; the low, tied-down quick-draw holster is largely a 20th-century film convention. Many men carried a pistol in a coat pocket or waistband.",
+      "Wide-brim, high-crowned felt hats (the 1865 Stetson 'Boss of the Plains' style) and bowlers were both common; avoid later Hollywood hat shapes and heavy fringe.",
+      "Several Kansas cattle towns had ordinances against carrying firearms in town, which the story may want to acknowledge."
+    ]
+  },
+  "styleGuide": {
+    "version": "1.0.0",
+    "basedOn": "cooper@1.0.0",
+    "document": "docs/CHARACTER-STYLE-GUIDE.md"
+  },
+  "artworkRequirements": {
+    "formats": [
+      "png",
+      "jpg",
+      "jpeg",
+      "webp"
+    ],
+    "minLongEdgePx": 1536,
+    "minShortEdgePx": 1024,
+    "background": "plain, light and even; no scene behind the figure",
+    "views": {
+      "required": [
+        "3/4 view, full body, facing screen right"
+      ],
+      "recommended": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    "sheet": [
+      "full-body turnaround",
+      "expression row (the required set at least)",
+      "colour swatches with labels",
+      "separate drawings of removable accessories (hat, tools, weapons)"
+    ],
+    "forbidden": [
+      "copies or close imitations of another creator's characters",
+      "likeness of a real living person",
+      "logos, watermarks or text over the figure"
+    ]
+  },
+  "rig": {
+    "reuse": [
+      "skeleton and pose engine (tools/storyboard/character.mjs)",
+      "pose presets with anticipation",
+      "walk cycle",
+      "push and touch IK (object interaction)",
+      "expression system (face data + faceMap)",
+      "blinks, gaze and head turn",
+      "feet grounding",
+      "painter, card renderer and silhouette shadow",
+      "palette compensation",
+      "attachment layers on any bone (outfits, accessories)",
+      "rig checks, visual regression and approval gates"
+    ],
+    "reusableForms": [
+      "round cartoon head (head)",
+      "wool trousers (legs)",
+      "boots (boot)",
+      "mitten hands (hands)"
+    ],
+    "newArtwork": [
+      "wide-brim high-crown felt hat",
+      "moustache",
+      "collarless or bib-front shirt",
+      "waistcoat",
+      "sack coat or long duster",
+      "neckerchief",
+      "cartridge belt with holster (riding high on the hip) (accessory layer)",
+      "revolver (holstered and in hand) (accessory layer)",
+      "whiskey glass (accessory layer)"
+    ]
+  },
+  "artworkRequest": "Character design sheet for an original 2D cartoon character for \"Hold Up\", a YouTube Shorts channel. An adult Western gunfighter in an 1873 Kansas cattle town: confident, intimidating, still in the simple Hold Up cartoon style.\n\nSetting: a Kansas cattle town saloon and the street outside, 1873. Age: adult (30s to 40s). Personality: calm, confident, menacing in stillness; dry humour; can be won over with a drink.\n\nStyle: simple, bold 2D cartoon with flat colours and one thick, even, dark warm outline around every shape; no gradients, textures or hatching. Round, simple face: solid dark oval eyes with no whites, short thick dark eyebrows that carry the expression, no nose or only a tiny mark, a simple line or shape for the mouth. Stylized compact proportions about 2.9-4.2 heads tall, large readable head, simple mitten-like hands.\n\nSilhouette: tall and angular: high-crowned wide-brim hat, broad coat shoulders, long legs, a revolver at the hip, so he reads as the threat at a glance.\n\nClothing and details: wide-brim high-crown felt hat, moustache, collarless or bib-front shirt, waistcoat, sack coat or long duster, neckerchief, wool trousers, boots. Muted, period-appropriate colours, at most 5 clothing colours, one warm accent at most.\n\nAccessories, each also drawn separately: cartridge belt with holster (riding high on the hip), revolver (holstered and in hand), whiskey glass.\n\nSheet layout on a plain light background: a full-body 3/4 view facing screen right (most important), plus front, side and back views; an expression row with neutral, happy, surprised, concerned, glare, smirk, challenge, pleased; colour swatches with hex labels.\n\nDo not imitate any existing character, studio or creator; do not resemble a real person; no logos, watermarks or text over the figure."
+}

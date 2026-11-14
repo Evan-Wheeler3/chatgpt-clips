@@ -1,0 +1,32 @@
+{
+  "id": "saloon-1873-protagonist",
+  "name": "protagonist (saloon-1873)",
+  "status": "awaiting-artwork",
+  "story": "saloon-1873",
+  "slot": "protagonist",
+  "created": "2026-11-14",
+  "request": {
+    "roles": [
+      "time traveller"
+    ],
+    "era": {
+      "from": 2026,
+      "to": 2026
+    },
+    "description": "An ordinary, relatable modern-day adult who wakes up in an 1873 saloon. Visually expressive, slightly nervous, built for comedic reactions.",
+    "age": "adult (late 20s to 30s)"
+  },
+  "resolution": {
+    "decision": "new",
+    "character": null
+  },
+  "artwork": [],
+  "approvals": {},
+  "log": [
+    {
+      "on": "2026-11-14",
+      "event": "brief",
+      "decision": "new"
+    }
+  ]
+}

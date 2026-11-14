@@ -69,6 +69,8 @@ The rig is the same pose engine as Phase 5 (`tools/storyboard/character.mjs`); t
   - Scene light still tints the character through the existing environment tint.
 
 ## Reuse for future characters
+*Phase 5.5:* the library, resolver, intake workflow, approval gates and attachment layers are documented in `docs/CHARACTER-LIBRARY.md`; the style rules in `docs/CHARACTER-STYLE-GUIDE.md`.
+
 A new character is a new `characters/<id>.json` with `render.mode: "vector-2d"`. Everything else is shared:
 - **`rig`:** bone lengths and pivots in millimetres. Poses, walk, push, touch and IK scale with them.
 - **`forms`:** part shapes in their own frames: torso and apron outlines, collar, cap crown, brim and band, head radii (`crown` and `jaw` shape it), hair blob, sleeve, cuff, forearm and hand sizes, leg width, boot.

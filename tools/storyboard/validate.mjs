@@ -267,6 +267,18 @@ function validateWorld(plan, samples, aspect, {errors, warnings, perFrameErrors,
   }
   const cuts = new Set([0, ...plan.shots.map(shot => shot.startFrame)]);
 
+  // Approval gates: managed characters need design and rig approval (and approved outfits and accessories) to appear
+  // in any render; production approval is required for final delivery and flagged until then
+  for (const member of plan.cast ?? []) {
+    const a = member.approval;
+    if (!a) continue;
+    if (!a.managed) { warnings.push({code:'CHARACTER_UNMANAGED', message:`${member.id} uses ${member.character}, a legacy or experimental design outside the character library`}); continue; }
+    if (!a.definitionMatches) errors.push({code:'CHARACTER_NOT_APPROVED', message:`${member.character} ${a.version}: character.json changed after its approvals; a new design version needs new approvals`});
+    for (const stage of ['design', 'rig']) if (a[stage] !== 'approved') errors.push({code:'CHARACTER_NOT_APPROVED', message:`${member.character} ${a.version}: ${stage} approval is ${a[stage]}`});
+    if (a.production !== 'approved') warnings.push({code:'CHARACTER_PRODUCTION_PENDING', message:`${member.character} ${a.version} has no production approval yet; fine for review renders, not for final delivery`});
+    for (const v of a.variants) if (v.status !== 'approved') errors.push({code:'CHARACTER_VARIANT_NOT_APPROVED', message:`${member.character}: ${v.kind} "${v.name}" is ${v.status}`});
+  }
+
   for (const member of plan.cast ?? []) for (const action of member.actions) {
     if (action.type === 'place' && !cuts.has(action.startFrame)) errors.push({code:'PLACE_NOT_ON_CUT', shot:action.shot, message:`${member.id} is placed at frame ${action.startFrame}, which is not a cut; the viewer would see a teleport`});
     if (action.type === 'push') {

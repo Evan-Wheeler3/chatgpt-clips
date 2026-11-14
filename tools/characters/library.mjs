@@ -60,7 +60,10 @@ export async function recordDecision(id, stage, decision, {by, evidence = '', on
   }
   const earlier = STAGES.slice(0, STAGES.indexOf(stage)).filter(s => meta.approvals[version][s]?.status !== 'approved');
   if (decision === 'approved' && earlier.length) throw new Error(`${id} ${version}: approve ${earlier.join(' and ')} before ${stage}`);
+  const previous = meta.approvals[version][stage]?.status ?? 'pending';
   meta.approvals[version][stage] = {status:decision, by:by.trim(), on, evidence};
+  // Append-only audit trail: every decision, including what it replaced
+  (meta.approvalLog ??= []).push({version, stage, decision, previous, by:by.trim(), on, evidence, definitionSha256});
   await writeFile(path, JSON.stringify(meta, null, 2) + '\n');
   return approvalState(id, root);
 }
@@ -95,7 +98,7 @@ export async function buildCatalog(root = ROOT) {
       files:{definition:`characters/${id}/character.json`, reference:def.reference ?? null, metadata:`characters/${id}/metadata.json`}
     });
   }
-  for (const intake of await intakeEntries(root)) {
+  for (const intake of (await intakeEntries(root)).filter(i => i.status !== 'promoted')) {
     characters.push({id:intake.id, name:intake.name, kind:'intake', status:intake.status, roles:intake.request?.roles ?? [], family:intake.request?.family ?? null,
       era:intake.request?.era ?? null, regions:intake.request?.regions ?? [], description:intake.request?.description ?? null,
       approvals:{design:intake.approvals?.design?.status ?? 'pending', rig:'pending', production:'pending'}, files:{intake:`characters/intake/${intake.id}/intake.json`}});
