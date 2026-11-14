@@ -82,9 +82,13 @@ window.setup = async (planJson, size, issueList, qualityName) => {
     if (prop.base.grounded !== false) shadows.set(prop.id, [contactLayer(0.35), contactLayer(0.7)]);
   }
   for (const member of plan.cast ?? []) {
-    const rig = buildCharacter(member.definition, {style, quality, maxAnisotropy:renderer.capabilities.getMaxAnisotropy()});
+    const rig = buildCharacter(member.definition, {style, quality, maxAnisotropy:renderer.capabilities.getMaxAnisotropy(), outputHeight:H});
     scene.add(rig.group, rig.shadowGroup);
-    characters.set(member.id, {rig, shadow:contactLayer(style?.character?.contactShadow ?? 0.6)});
+    // Each character also lives on its own layer (1, 2, ...) so QA can render its silhouette mask alone
+    const layer = characters.size + 1;
+    rig.group.traverse(o => o.layers.enable(layer));
+    // Two-layer contact shadow: a soft pool and a tight dark patch under the feet
+    characters.set(member.id, {rig, layer, definition:member.definition, shadow:contactLayer((style?.character?.contactShadow ?? 0.6) * 0.6), feet:contactLayer(style?.character?.contactShadow ?? 0.6)});
   }
   post = createPost(renderer, scene, camera, {quality, style, width:W, height:H});
   out = document.createElement('canvas'); out.width = W; out.height = H;
@@ -111,6 +115,22 @@ function placeContactShadows(frame) {
   }
 }
 
+// Consistent, gentle lighting response for flat-tinted characters: the environment's key colour plus nearby
+// practical warmth, divided by exposure so authored colours survive tone mapping
+const tintScratch = new THREE.Color();
+function characterTint(c) {
+  const t = tintScratch.set(1, 1, 1);
+  if (plan.environment && quality.environment) {
+    t.lerp(new THREE.Color(plan.environment.lighting.key.color), 0.14).multiplyScalar(0.96);
+    for (const p of plan.environment.lighting.practicals) {
+      const d = Math.hypot(p.position[0] - c.position[0], p.position[2] - c.position[2]);
+      if (d < p.distance) t.add(new THREE.Color(p.color).multiplyScalar(0.1 * (1 - d / p.distance) ** 2));
+    }
+  }
+  if (quality.post !== 'none') t.multiplyScalar(1 / renderer.toneMappingExposure);
+  return t;
+}
+
 function draw(frame) {
   const s = samplePlan(plan, frame);
   for (const p of s.props) {
@@ -124,11 +144,15 @@ function draw(frame) {
   placeContactShadows(frame);
   const lightDir = keyLight ? keyLight.target.position.clone().sub(keyLight.position).normalize() : new THREE.Vector3(0, -1, 0);
   for (const c of s.characters) {
-    const {rig, shadow} = characters.get(c.id);
-    rig.apply(c, s.camera.position, lightDir);
-    // Feet contact shadow follows the character and tightens when crouching
+    const {rig, shadow, feet} = characters.get(c.id);
+    rig.apply(c, s.camera.position, lightDir, characterTint(c));
     shadow.position.set(c.position[0], 0.008, c.position[2]);
     shadow.scale.set(0.55 * c.heightM, 0.32 * c.heightM, 1);
+    // The tight patch widens with the stance (push, walk) so both feet stay grounded
+    const stance = 0.16 + Math.abs(Math.sin(THREE.MathUtils.degToRad((c.pose.legF[0] - c.pose.legB[0]) / 2))) * c.heightM * 0.45;
+    feet.position.set(c.position[0], 0.009, c.position[2]);
+    feet.scale.set(stance * 1.6, 0.12 * c.heightM + 0.05, 1);
+    feet.rotation.z = Math.atan2(-c.facing[2], c.facing[0]); // Flat plane: local y is world -z
   }
   env?.update(frame, plan.fps);
   camera.fov = s.camera.fov; camera.updateProjectionMatrix();
@@ -270,6 +294,79 @@ window.qaFrames = frames => frames.map(frame => {
   const info = renderer.info;
   return {frame, shot:s.shot.id, meanLuma:sum / n, clippedHigh:high / n, crushedLow:low / n, subject, characters:chars,
     renderer:{calls:info.render.calls, triangles:info.render.triangles, textures:info.memory.textures, geometries:info.memory.geometries}};
+});
+
+// ---- Character readability metrics on rendered pixels (review assistance) ----
+const toLab = (r, g, b) => {
+  const lin = c => (c /= 255) <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  const [R, G, B] = [lin(r), lin(g), lin(b)];
+  const f = t => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+  const x = f((0.4124 * R + 0.3576 * G + 0.1805 * B) / 0.9505), y = f(0.2126 * R + 0.7152 * G + 0.0722 * B), z = f((0.0193 * R + 0.1192 * G + 0.9505 * B) / 1.089);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+};
+let maskTarget;
+function characterMask(layer) {
+  maskTarget ??= new THREE.WebGLRenderTarget(W, H);
+  const background = scene.background, fogged = scene.fog;
+  scene.background = null; scene.fog = null;
+  renderer.setRenderTarget(maskTarget); renderer.setClearColor(0x000000, 0); renderer.clear();
+  camera.layers.set(layer);
+  renderer.render(scene, camera);
+  camera.layers.set(0);
+  renderer.setRenderTarget(null);
+  scene.background = background; scene.fog = fogged;
+  const px = new Uint8Array(W * H * 4);
+  renderer.readRenderTargetPixels(maskTarget, 0, 0, W, H, px);
+  const mask = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) mask[(H - 1 - y) * W + x] = px[(y * W + x) * 4 + 3] > 127 ? 1 : 0; // GL rows are bottom-up
+  return mask;
+}
+function pieces(mask, minArea) {
+  const seen = new Uint8Array(mask.length); let count = 0;
+  for (let i = 0; i < mask.length; i++) {
+    if (!mask[i] || seen[i]) continue;
+    let area = 0; const stack = [i]; seen[i] = 1;
+    while (stack.length) {
+      const j = stack.pop(); area++;
+      const x = j % W, y = (j - x) / W;
+      for (const k of [x > 0 ? j - 1 : -1, x < W - 1 ? j + 1 : -1, y > 0 ? j - W : -1, y < H - 1 ? j + W : -1]) if (k >= 0 && mask[k] && !seen[k]) { seen[k] = 1; stack.push(k); }
+    }
+    if (area >= minArea) count++;
+  }
+  return count;
+}
+window.characterMetrics = frames => frames.map(frame => {
+  const s = compose(frame, false);
+  const data = ctx.getImageData(0, 0, W, H).data;
+  const luma = i => (0.2126 * data[i * 4] + 0.7152 * data[i * 4 + 1] + 0.0722 * data[i * 4 + 2]) / 255;
+  return {frame, shot:s.shot.id, characters:s.characters.map(c => {
+    const entry = characters.get(c.id);
+    const mask = characterMask(entry.layer);
+    let area = 0; for (const m of mask) area += m;
+    if (area < 300) return {id:c.id, visible:false};
+    // Silhouette edge: luminance step from each boundary pixel to the background two pixels outside it
+    let edgeSum = 0, edgeN = 0, inLab = [0, 0, 0], inN = 0, ringLab = [0, 0, 0], ringN = 0;
+    for (let y = 3; y < H - 3; y += 1) for (let x = 3; x < W - 3; x += 1) {
+      const i = y * W + x;
+      if (mask[i]) {
+        const outside = [[1, 0], [-1, 0], [0, 1], [0, -1]].find(([dx, dy]) => !mask[i + dx + dy * W]);
+        if (outside) { const o = i + outside[0] * 3 + outside[1] * 3 * W; if (!mask[o]) { edgeSum += Math.abs(luma(i) - luma(o)); edgeN++; } }
+        else if ((x + y) % 3 === 0 && mask[i + 3] && mask[i - 3] && mask[i + 3 * W] && mask[i - 3 * W]) { const l = toLab(data[i * 4], data[i * 4 + 1], data[i * 4 + 2]); inLab = inLab.map((v, k) => v + l[k]); inN++; }
+      } else if ((x + y) % 3 === 0 && (mask[i + 8] || mask[i - 8] || mask[i + 8 * W] || mask[i - 8 * W])) { const l = toLab(data[i * 4], data[i * 4 + 1], data[i * 4 + 2]); ringLab = ringLab.map((v, k) => v + l[k]); ringN++; }
+    }
+    inLab = inLab.map(v => v / Math.max(1, inN)); ringLab = ringLab.map(v => v / Math.max(1, ringN));
+    // Face size on a phone: head height projected, converted to points on a 390-pt-wide portrait screen
+    const def = entry.definition, units = def.heightM / def.rig.heightMm;
+    const headBounds = def.parts.head.shapes.reduce((a, sh) => { const b = sh.ellipse ? [sh.ellipse[1] - sh.ellipse[3], sh.ellipse[1] + sh.ellipse[3]] : (() => { const n = sh.path.match(/-?\d+(\.\d+)?/g).map(Number).filter((_, k) => k % 2 === 1); return [Math.min(...n), Math.max(...n)]; })(); return [Math.min(a[0], b[0]), Math.max(a[1], b[1])]; }, [Infinity, -Infinity]);
+    const headMm = headBounds[1] - headBounds[0];
+    const center = new THREE.Vector3(...c.position).setY((def.rig.hipY - c.pose.hipDrop + def.rig.neckHeight + def.rig.headCenter) * units);
+    const top = center.clone().setY(center.y + headMm * units / 2).project(camera), bottom = center.clone().setY(center.y - headMm * units / 2).project(camera);
+    const headPx = Math.abs(top.y - bottom.y) / 2 * H;
+    const toPoints = 390 / W;
+    return {id:c.id, visible:true, areaFraction:area / (W * H), pieces:pieces(mask, area * 0.004),
+      edgeContrast:edgeSum / Math.max(1, edgeN), colorContrast:Math.hypot(...inLab.map((v, k) => v - ringLab[k])), lab:inLab,
+      headPoints:headPx * toPoints, eyePoints:headPx * toPoints * 0.14};
+  })};
 });
 
 window.ready = true;

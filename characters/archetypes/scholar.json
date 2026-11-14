@@ -1,0 +1,50 @@
+{
+  "name": "Scholar (1890s chemist)",
+  "description": "A chemist of the 1890s: hair in a bun, long sleeves, high-necked bodice and long skirt.",
+  "heightMm": 1560,
+  "headRatio": 5.0,
+  "legRatio": 0.47,
+  "build": {
+    "shoulders": 0.85,
+    "hips": 1.0,
+    "limbs": 0.85
+  },
+  "hair": {
+    "style": "bun"
+  },
+  "face": {},
+  "hat": "none",
+  "clothing": {
+    "sleeves": "long",
+    "waistcoat": true,
+    "skirt": true
+  },
+  "palette": {
+    "skin": "#8a5a3c",
+    "skinShade": "#6e452d",
+    "hair": "#1d1512",
+    "hairShade": "#120d0b",
+    "hat": "#1d1512",
+    "shirt": "#e8e2d6",
+    "shirtShade": "#c9c2b4",
+    "vest": "#3c4a5a",
+    "vestShade": "#2c3846",
+    "accent": "#7d2f2f",
+    "skirt": "#4b3a48",
+    "skirtShade": "#382b36",
+    "stockings": "#2a2226",
+    "stockingsShade": "#1d171a",
+    "trousers": "#4b3a48",
+    "trousersShade": "#382b36",
+    "boots": "#1e1816",
+    "bootsShade": "#141010",
+    "bootShade": "#141010",
+    "eyeWhite": "#f3ede2",
+    "pupil": "#1d1714",
+    "mouth": "#4a1f18",
+    "teeth": "#f3ede2",
+    "tongue": "#a2493c",
+    "highlight": "#ffffff",
+    "line": "#1d1712"
+  }
+}

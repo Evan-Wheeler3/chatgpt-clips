@@ -107,13 +107,15 @@ function characterPlane(camera, position) {
 export function characterTrack(plan, member, cameraAt) {
   const def = member.definition;
   const units = def.heightM / def.rig.heightMm; // metres per rig millimetre
+  // Pose presets are authored for a 410 mm hip height; crouch depth and bob scale with each body
+  const bodyScale = def.rig.hipY / 410;
   const actions = [...member.actions].sort((a, b) => a.startFrame - b.startFrame);
   const states = [];
   let position = new Vector3(member.start.position[0], 0, member.start.position.at(-1));
   let facing = new Vector3(1, 0, 0), mirror = null, turnFrom = null, turnStart = -Infinity;
   let pose = {...NEUTRAL}, poseFrom = {...NEUTRAL}, poseTarget = {...NEUTRAL}, poseStart = 0, poseFrames = 1, poseEase = 'settle';
   let face = 'neutral', look = [0, 0], lookTarget = null;
-  let walk = null, walkPhase = 0;
+  let walk = null, walkPhase = 0, step = null;
   let headSpring = {x:0, v:0}, capSpring = {x:0, v:0}, lastTorso = NEUTRAL.torso, lastX = 0;
   if (member.start.face) {
     const p = targetPoint(plan, member.start.face, 0, cameraAt(0));
@@ -132,7 +134,7 @@ export function characterTrack(plan, member, cameraAt) {
         position = resolvePlacement(plan, p, frame);
         if (p.face) { const t = targetPoint(plan, p.face, frame, camera); if (t) facing = t.clone().sub(position).setY(0).normalize(); }
         headSpring = {x:0, v:0}; capSpring = {x:0, v:0}; mirror = null; // A placement happens on a cut: reset springs and facing
-        walk = null; // ...and cancels any walk still in progress, so the placement wins
+        walk = null; step = null; // ...and cancels any walk or step still in progress, so the placement wins
       } else if (action.type === 'walk') {
         const to = new Vector3(p.to[0], 0, p.to.at(-1));
         walk = {from:position.clone(), to, start:frame, end:action.endFrame, stride:p.stride ?? 0.5};
@@ -155,13 +157,25 @@ export function characterTrack(plan, member, cameraAt) {
       && !actions.some(b => (b.type === 'pose' || b.type === 'push') && b.startFrame > a.startFrame && b.startFrame <= frame));
     if (releasing && frame === releasing.endFrame) { poseFrom = {...pose}; poseTarget = {...NEUTRAL}; poseStart = frame; poseFrames = RELEASE_FRAMES; poseEase = 'dolly'; face = face === 'effort' ? 'proud' : face; }
     pose = mixPose(poseFrom, poseTarget, ease(poseEase, (frame - poseStart + 1) / poseFrames));
+    pose.hipDrop *= bodyScale;
     if (upcoming) {
       const lead = upcoming.type === 'push' ? 10 : 5;
       const k = ease('sine', 1 - (upcoming.startFrame - frame) / lead);
       const wind = upcoming.type === 'push' ? preset('ready') : {...pose, ...(ANTICIPATION[upcoming.params?.preset] ?? {})};
-      pose = mixPose(pose, wind, k * (upcoming.type === 'push' ? 1 : 0.6));
-      if (upcoming.type === 'push') face = 'effort';
+      pose = mixPose(pose, {...wind, hipDrop:(wind.hipDrop ?? 0) * (upcoming.type === 'push' ? bodyScale : 1)}, k * (upcoming.type === 'push' ? 1 : 0.6));
+      if (upcoming.type === 'push') {
+        face = 'effort';
+        // Step into the push: if the prop is beyond comfortable reach, lunge toward it during the wind-up
+        if (!step || step.action !== upcoming) {
+          const box = propWorldBox(propById(plan, upcoming.params.prop), upcoming.startFrame);
+          const flat = box && box.clone(); if (flat) { flat.min.y = -1; flat.max.y = 1; }
+          const gap = flat ? flat.distanceToPoint(position) : 0;
+          const lunge = MathUtils.clamp(gap - def.heightM * 0.3, 0, 0.4);
+          step = {action:upcoming, from:position.clone(), to:position.clone().addScaledVector(facing, lunge), start:frame, end:upcoming.startFrame};
+        }
+      }
     }
+    if (step && frame <= step.end + 1 && !walk) position = step.from.clone().lerp(step.to, ease('cubic', Math.min(1, (frame - step.start + 1) / Math.max(1, step.end - step.start + 1))));
 
     // Locomotion: stride-driven cycle so feet never slide; bob and counter-swing arms
     let bob = 0;
@@ -177,7 +191,7 @@ export function characterTrack(plan, member, cameraAt) {
       pose.armF = [pose.armF[0] - 18 * s * moving, pose.armF[1]];
       pose.armB = [pose.armB[0] + 18 * s * moving, pose.armB[1]];
       pose.torso += 5 * moving;
-      bob = -14 * Math.abs(Math.cos(walkPhase * Math.PI)) * moving;
+      bob = -14 * bodyScale * Math.abs(Math.cos(walkPhase * Math.PI)) * moving;
       if (u >= 1) walk = null;
     }
 
@@ -190,24 +204,31 @@ export function characterTrack(plan, member, cameraAt) {
       const box = propWorldBox(propById(plan, pushing.params.prop), frame);
       if (box) {
         const height = box.min.y + (box.max.y - box.min.y) * (pushing.params.height ?? 0.55);
-        // The edge of the prop's silhouette nearest the character, along the camera's right axis
-        const center = box.getCenter(new Vector3());
-        const halfWidth = Math.abs(right.x) * (box.max.x - box.min.x) / 2 + Math.abs(right.z) * (box.max.z - box.min.z) / 2;
-        const edge = center.clone().setY(height).addScaledVector(right, -screenSign * halfWidth);
+        // The point on the prop nearest the character's chest, at the push height: hands go where the body actually is
+        const chest = position.clone().setY(height).addScaledVector(facing, 0.05);
+        const edge = box.clampPoint(chest, new Vector3()).setY(height);
         const hit = new Ray(camera.position.clone(), edge.clone().sub(camera.position).normalize()).intersectPlane(plane, new Vector3());
         if (hit) {
           const local = hit.clone().sub(position);
           const along = local.dot(right) * screenSign / units, up = local.y / units;
-          const hipY = def.rig.hipY - pose.hipDrop + bob;
-          const torsoRad = MathUtils.degToRad(pose.torso);
-          for (const side of ['F', 'B']) {
-            const shoulder = def.rig[`shoulder${side}`];
-            const len = def.rig.shoulderHeight;
-            const sx = shoulder[0] + Math.sin(torsoRad) * len, sy = hipY + Math.cos(torsoRad) * len;
-            const solved = solveTwoBone({x:along - sx, y:up - sy}, def.rig.upperArm, def.rig.forearm + def.rig.hand * 0.6);
-            // Arms hang from the torso, which leans forward (clockwise): local swing = absolute + lean
-            pose[`arm${side}`] = [solved.upper + pose.torso, solved.elbow];
-            contact = {point:edge.toArray(), shortfallM:Math.max(contact?.shortfallM ?? 0, solved.shortfall * units), prop:pushing.params.prop};
+          // Adaptive reach: bend further over the prop (lean, then crouch) until both hands arrive or the body's limits are hit
+          for (let attempt = 0; attempt < 12; attempt++) {
+            const hipY = def.rig.hipY - pose.hipDrop + bob;
+            const torsoRad = MathUtils.degToRad(pose.torso);
+            let worst = 0;
+            for (const side of ['F', 'B']) {
+              const shoulder = def.rig[`shoulder${side}`];
+              const len = def.rig.shoulderHeight;
+              const sx = shoulder[0] + Math.sin(torsoRad) * len, sy = hipY + Math.cos(torsoRad) * len;
+              const solved = solveTwoBone({x:along - sx, y:up - sy}, def.rig.upperArm, def.rig.forearm + def.rig.hand * 0.6);
+              // Arms hang from the torso, which leans forward (clockwise): local swing = absolute + lean
+              pose[`arm${side}`] = [solved.upper + pose.torso, solved.elbow];
+              worst = Math.max(worst, solved.shortfall);
+            }
+            contact = {point:edge.toArray(), shortfallM:worst * units, prop:pushing.params.prop};
+            if (worst <= 0 || (pose.torso >= 66 && pose.hipDrop >= def.rig.hipY * 0.45)) break;
+            if (pose.torso < 66) pose.torso = Math.min(66, pose.torso + 5);
+            else pose.hipDrop = Math.min(def.rig.hipY * 0.45, pose.hipDrop + def.rig.hipY * 0.04);
           }
         }
       }

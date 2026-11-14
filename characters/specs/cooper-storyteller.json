@@ -1,0 +1,57 @@
+{
+  "family": "storyteller",
+  "person": {
+    "id": "cooper-storyteller",
+    "name": "Silas Brack",
+    "description": "Candidate B (stylized storyteller): a stocky master cooper with heavy forearms, a moustache and an expressive lidded face; earthy palette with one teal accent.",
+    "heightMm": 1500,
+    "headRatio": 4.1,
+    "legRatio": 0.43,
+    "build": {
+      "shoulders": 1.25,
+      "hips": 1.1,
+      "limbs": 1.15,
+      "forearms": 1.35,
+      "belly": 0.5,
+      "legs": 1.05
+    },
+    "hair": {
+      "style": "receding"
+    },
+    "face": {
+      "mustache": true,
+      "jaw": 0.08
+    },
+    "hat": "none",
+    "clothing": {
+      "sleeves": "rolled",
+      "apron": true,
+      "apronLength": 0.85,
+      "neckerchief": true
+    },
+    "palette": {
+      "skin": "#dca688",
+      "skinShade": "#b87e62",
+      "hair": "#4a2b1d",
+      "hairShade": "#33190f",
+      "shirt": "#7d8c96",
+      "shirtShade": "#65737c",
+      "apron": "#8d5a35",
+      "apronShade": "#6b4123",
+      "accent": "#b8862f",
+      "trousers": "#2b2a29",
+      "trousersShade": "#1f1e1d",
+      "boots": "#2b1f17",
+      "bootsShade": "#1e150f",
+      "bootShade": "#1e150f",
+      "hat": "#2b2a29",
+      "eyeWhite": "#f3ece0",
+      "pupil": "#231711",
+      "mouth": "#3e1a14",
+      "teeth": "#f3ece0",
+      "tongue": "#8a3a2e",
+      "highlight": "#fff6e6",
+      "line": "#24160e"
+    }
+  }
+}

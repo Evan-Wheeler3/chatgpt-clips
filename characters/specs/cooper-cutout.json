@@ -1,0 +1,55 @@
+{
+  "family": "cutout",
+  "person": {
+    "id": "cooper-cutout",
+    "name": "Otto Krell",
+    "description": "Candidate C (graphic cutout): a tall, lanky cooper in a bowler hat; squared head, wedge nose, flat colours, bold outline and visible brad joints like a paper puppet.",
+    "heightMm": 1640,
+    "headRatio": 4.7,
+    "legRatio": 0.5,
+    "build": {
+      "shoulders": 0.95,
+      "hips": 0.85,
+      "limbs": 0.85,
+      "legs": 0.9
+    },
+    "hair": {
+      "style": "block"
+    },
+    "face": {
+      "sideburns": true,
+      "squareness": 1.0
+    },
+    "hat": "bowler",
+    "clothing": {
+      "sleeves": "rolled",
+      "apron": true,
+      "apronLength": 0.8,
+      "neckerchief": true
+    },
+    "palette": {
+      "skin": "#e6b48f",
+      "skinShade": "#c99372",
+      "hair": "#4a3426",
+      "hairShade": "#33241a",
+      "hat": "#121212",
+      "shirt": "#f1e8d4",
+      "shirtShade": "#d6ccb6",
+      "apron": "#3d6d82",
+      "apronShade": "#2c5466",
+      "accent": "#b84a32",
+      "trousers": "#1c1714",
+      "trousersShade": "#141009",
+      "boots": "#121212",
+      "bootsShade": "#0b0b0b",
+      "bootShade": "#0b0b0b",
+      "eyeWhite": "#ffffff",
+      "pupil": "#101010",
+      "mouth": "#2a1512",
+      "teeth": "#ffffff",
+      "tongue": "#b84a32",
+      "highlight": "#ffffff",
+      "line": "#0f0f0f"
+    }
+  }
+}

@@ -15,7 +15,9 @@
     "assets:register": "node tools/register-asset.mjs",
     "test:integration": "HOLDUP_INTEGRATION=1 node --test 'tests/integration/*.test.mjs'",
     "storyboard": "node tools/storyboard.mjs",
-    "textures:register": "node tools/register-texture.mjs"
+    "textures:register": "node tools/register-texture.mjs",
+    "characters:build": "node tools/characters/build.mjs",
+    "characters:lab": "node tools/character-lab.mjs"
   },
   "dependencies": {
     "@gltf-transform/core": "4.5.1",

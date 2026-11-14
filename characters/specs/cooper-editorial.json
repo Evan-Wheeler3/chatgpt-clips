@@ -1,0 +1,52 @@
+{
+  "family": "editorial",
+  "person": {
+    "id": "cooper-editorial",
+    "name": "Ezra Vale",
+    "description": "Candidate A (minimal editorial): a lean young cooper drawn with clean geometric shapes, dot eyes, a restrained face and a four-colour palette.",
+    "heightMm": 1600,
+    "headRatio": 5.4,
+    "legRatio": 0.47,
+    "build": {
+      "shoulders": 1.0,
+      "hips": 0.95,
+      "limbs": 0.9
+    },
+    "hair": {
+      "style": "side-part"
+    },
+    "face": {
+      "sideburns": true
+    },
+    "hat": "none",
+    "clothing": {
+      "sleeves": "rolled",
+      "apron": true,
+      "apronLength": 0.8
+    },
+    "palette": {
+      "skin": "#d4a184",
+      "skinShade": "#b9866b",
+      "hair": "#2a2420",
+      "hairShade": "#1c1714",
+      "shirt": "#e6e0d2",
+      "shirtShade": "#c9c2b2",
+      "apron": "#3a302a",
+      "apronShade": "#2a221d",
+      "trousers": "#5a6370",
+      "trousersShade": "#464e5a",
+      "boots": "#1e1b19",
+      "bootsShade": "#141210",
+      "bootShade": "#141210",
+      "accent": "#3a302a",
+      "hat": "#2a2420",
+      "eyeWhite": "#f4efe6",
+      "pupil": "#1b1a19",
+      "mouth": "#6b3a30",
+      "teeth": "#f4efe6",
+      "tongue": "#b65a4c",
+      "highlight": "#ffffff",
+      "line": "#1b1f26"
+    }
+  }
+}

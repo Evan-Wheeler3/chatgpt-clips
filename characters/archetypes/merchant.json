@@ -1,0 +1,52 @@
+{
+  "name": "Merchant (portly)",
+  "description": "A prosperous merchant: top hat, frock coat, waistcoat and a generous belly.",
+  "heightMm": 1620,
+  "headRatio": 4.8,
+  "legRatio": 0.45,
+  "build": {
+    "shoulders": 1.1,
+    "hips": 1.25,
+    "limbs": 1.05,
+    "belly": 1.0
+  },
+  "hair": {
+    "style": "side-part"
+  },
+  "face": {
+    "mustache": true,
+    "sideburns": true
+  },
+  "hat": "tophat",
+  "clothing": {
+    "sleeves": "long",
+    "coat": true,
+    "waistcoat": true
+  },
+  "palette": {
+    "skin": "#ecc1a0",
+    "skinShade": "#cf9f7f",
+    "hair": "#3c2c22",
+    "hairShade": "#2a1f18",
+    "hat": "#1a1a1c",
+    "shirt": "#efeae0",
+    "shirtShade": "#d0cbc0",
+    "coat": "#262a33",
+    "coatShade": "#1a1d24",
+    "vest": "#6b2e2e",
+    "vestShade": "#4f2121",
+    "accent": "#6b2e2e",
+    "trousers": "#4a4a50",
+    "trousersShade": "#36363b",
+    "boots": "#141414",
+    "bootsShade": "#0c0c0c",
+    "bootShade": "#0c0c0c",
+    "eyeWhite": "#f3ede2",
+    "pupil": "#1d1714",
+    "mouth": "#4a1f18",
+    "teeth": "#f3ede2",
+    "tongue": "#a2493c",
+    "highlight": "#ffffff",
+    "line": "#1d1712"
+  }
+}

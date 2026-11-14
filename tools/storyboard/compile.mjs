@@ -83,7 +83,7 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
   for (const member of story.cast ?? []) {
     if (!/^[a-z][a-z0-9-]*$/.test(member.id ?? '') || propById.has(member.id)) throw new Error(`Invalid or duplicate cast id: ${member.id}`);
     const definition = JSON.parse(await readFile(resolve(rootDir, 'characters', `${member.character}.json`), 'utf8'));
-    if (definition.version !== 1 || definition.id !== member.character) throw new Error(`Character ${member.character}: bad definition`);
+    if (definition.version !== 1 || definition.id !== member.character.split('/').pop()) throw new Error(`Character ${member.character}: bad definition`);
     if (!Array.isArray(member.start?.position)) throw new Error(`Cast ${member.id}: needs start.position [x, z]`);
     cast.push({id:member.id, character:member.character, definition, start:member.start, actions:[]});
   }

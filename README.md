@@ -16,6 +16,7 @@ Improve pacing, voice performance, camera direction and environment quality whil
 - [ ] Add Blender batch conversion for formats/repairs gltf-transform cannot handle, and optional MCP fallback
 - [x] Narration-timed storyboard: measured word timing (whisper.cpp), word-anchored shot plans, reusable camera behaviors, validation and a low-res vertical animatic (`stories/barrel-bilge` demo); see `docs/STORYBOARD.md`
 - [x] Environments, Hold Up art direction, original 2D characters in 3D, animation presets, preview/production quality and pixel QA (see `docs/VISUALS.md`)
+- [ ] Character art direction (Phase 5.1): three candidate directions built and rendered for review; **awaiting human selection** (see `docs/CHARACTERS.md`)
 - [ ] Final voice, captions and sound design (Phase 6)
 - [ ] End-to-end 60–70 s production and comparison against baseline
 

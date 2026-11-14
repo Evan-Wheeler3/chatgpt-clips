@@ -79,6 +79,8 @@ Misses are recorded in `missing`, flagged in the overlay and raised by validatio
 **Post:** neutral tone mapping, then bloom (production; threshold 1.05, so only windows and lantern flames bloom, never sunlit faces), then a display-space grade (contrast, saturation, cool shadow and warm highlight split toning, vignette, grain).
 
 ## 2D characters in 3D (`characters/*.json`, `tools/render/character-rig.mjs`, `tools/storyboard/character.mjs`)
+Phase 5.1 adds the character design system, three candidate directions and the character art specification: see `docs/CHARACTERS.md`. Bram, described below, is the Phase 5 baseline.
+
 **Design:** original, drawn from SVG paths in each part's own frame. Bram is a cooper's apprentice with a big head, compact body, cap, apron and rolled sleeves. Parts:
 - torso, head, cap, eyes and pupils, brows;
 - mouth variants (neutral, smile, grin, oh, grit, hmm);

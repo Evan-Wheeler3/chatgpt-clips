@@ -1,0 +1,49 @@
+{
+  "name": "Elder (sailor)",
+  "description": "An old sailor: full grey beard, knit cap replaced by a flat cap, heavy wool coat.",
+  "age": "elder",
+  "heightMm": 1580,
+  "headRatio": 4.6,
+  "legRatio": 0.45,
+  "build": {
+    "shoulders": 1.1,
+    "hips": 1.05,
+    "limbs": 1.0,
+    "belly": 0.3
+  },
+  "hair": {
+    "style": "short"
+  },
+  "face": {
+    "beard": true
+  },
+  "hat": "flatcap",
+  "clothing": {
+    "sleeves": "long",
+    "coat": true
+  },
+  "palette": {
+    "skin": "#c99677",
+    "skinShade": "#a8785b",
+    "hair": "#b9b4ad",
+    "hairShade": "#8f8a84",
+    "hat": "#2e3a46",
+    "shirt": "#d9d2c4",
+    "shirtShade": "#bab3a5",
+    "coat": "#2e3a46",
+    "coatShade": "#222c36",
+    "accent": "#8a6a2c",
+    "trousers": "#3d3a36",
+    "trousersShade": "#2c2a27",
+    "boots": "#231b16",
+    "bootsShade": "#17120e",
+    "bootShade": "#17120e",
+    "eyeWhite": "#f3ede2",
+    "pupil": "#1d1714",
+    "mouth": "#4a1f18",
+    "teeth": "#f3ede2",
+    "tongue": "#a2493c",
+    "highlight": "#ffffff",
+    "line": "#1d1712"
+  }
+}

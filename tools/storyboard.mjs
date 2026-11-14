@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { resolve, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { narrate } from './narration/narrate.mjs';
-import { compileFiles } from './storyboard/compile.mjs';
+import { compileStory } from './storyboard/compile.mjs';
 import { validatePlan } from './storyboard/validate.mjs';
 import { renderAnimatic } from './storyboard/animatic.mjs';
 import { renderQA } from './render/qa.mjs';
@@ -13,7 +13,8 @@ const exists = path => access(path).then(() => true, () => false);
 
 // Voice first: narrate once, then iterate on story.json (cuts, moves, events) and re-run without touching models
 async function main(args) {
-  let storyPath, audioPath, narrateNow = false, render = false, scale, strict = false, quality = 'animatic', qa = false, compare = null;
+  let storyPath, audioPath, narrateNow = false, render = false, scale, strict = false, quality = 'animatic', qa = false, compare = null, name;
+  const recast = {};
   for (let i=0; i<args.length; i++) {
     if (args[i] === '--story') storyPath=args[++i];
     else if (args[i] === '--narrate') narrateNow=true;
@@ -24,6 +25,9 @@ async function main(args) {
     else if (args[i] === '--quality') quality=args[++i];
     else if (args[i] === '--qa') qa=true;
     else if (args[i] === '--compare') compare=args[++i].split(',');
+    // --recast bram=cooper-editorial renders the same story with another character design (story.json is untouched)
+    else if (args[i] === '--recast') { const [id, character] = args[++i].split('='); recast[id] = character; }
+    else if (args[i] === '--name') name=args[++i];
     else throw new Error(`Unknown argument: ${args[i]}`);
   }
   if (!storyPath) throw new Error('Provide --story stories/<slug>/story.json');
@@ -36,13 +40,21 @@ async function main(args) {
     console.error(`narration: ${words.audio.durationSec.toFixed(2)} s, ${words.quality.exact}/${words.quality.scriptWords} words matched exactly`);
   } else if (!await exists(wordsPath)) throw new Error(`No ${relative(process.cwd(), wordsPath)}; run once with --narrate (or --audio <file>)`);
 
-  const plan = await compileFiles(resolve(process.cwd(), storyPath), wordsPath);
+  for (const [id, character] of Object.entries(recast)) {
+    const member = story.cast?.find(m => m.id === id);
+    if (!member) throw new Error(`--recast: no cast member "${id}"`);
+    member.character = character;
+  }
+  const [storyBytes, wordsBytes] = await Promise.all([readFile(resolve(process.cwd(), storyPath)), readFile(wordsPath)]);
+  const plan = await compileStory(story, JSON.parse(wordsBytes), {storyBytes, wordsBytes});
   const validation = validatePlan(plan);
-  await writeFile(join(outDir, 'shots.json'), JSON.stringify(plan, null, 2) + '\n');
-  await writeFile(join(outDir, 'validation.json'), JSON.stringify(validation, null, 2) + '\n');
+  // Recast renders are comparisons: they never overwrite the story's own plan and validation
+  const suffix = Object.keys(recast).length ? `-${Object.values(recast).join('-')}` : '';
+  await writeFile(join(outDir, `shots${suffix}.json`), JSON.stringify(plan, null, 2) + '\n');
+  await writeFile(join(outDir, `validation${suffix}.json`), JSON.stringify(validation, null, 2) + '\n');
   let animatic = null;
   if (render) {
-    animatic = await renderAnimatic(plan, {outDir, audioPath:join(outDir, 'narration.wav'), scale, quality, issues:[...validation.errors, ...validation.warnings],
+    animatic = await renderAnimatic(plan, {outDir, audioPath:join(outDir, 'narration.wav'), scale, quality, name, issues:[...validation.errors, ...validation.warnings],
       onProgress:(done, total) => process.stderr.write(`\rrendering ${done}/${total}`)});
     process.stderr.write('\n');
   }
@@ -63,7 +75,7 @@ async function main(args) {
     environment:plan.environment && {id:plan.environment.id, cache:plan.environment.cache, budget:plan.environment.budget, missing:plan.environment.missing},
     cast:(plan.cast ?? []).map(member => member.id),
     qa:qaReport && {status:qaReport.status, summary:qaReport.summary, warnings:qaReport.warnings.map(w => `${w.code} ${w.shot ?? ''}: ${w.message}`), ms:qaReport.ms},
-    outputs:{plan:rel(join(outDir, 'shots.json')), validation:rel(join(outDir, 'validation.json')),
+    outputs:{plan:rel(join(outDir, `shots${suffix}.json`)), validation:rel(join(outDir, `validation${suffix}.json`)),
       ...(animatic && {video:rel(animatic.video), storyboard:rel(animatic.sheet), quality:animatic.quality, gpu:animatic.gpu, size:animatic.size, renderMs:animatic.renderMs}),
       ...(comparison && {comparisonVideo:rel(comparison.video), comparisonStills:rel(comparison.stills)})}
   }, null, 2) + '\n');

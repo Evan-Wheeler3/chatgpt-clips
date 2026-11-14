@@ -21,9 +21,14 @@ function shapeBounds(shape) {
   return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
 }
 
+const FACE_PARTS = /^(head|eyes|pupils|brows|mouth:)/;
+
 function drawPart(part, def, outlineColor, pxPerMm) {
-  const pad = def.outlineMm + 4;
-  const b = part.shapes.map(shapeBounds).reduce((a, s) => [Math.min(a[0], s[0]), Math.min(a[1], s[1]), Math.max(a[2], s[2]), Math.max(a[3], s[3])], [Infinity, Infinity, -Infinity, -Infinity]);
+  // Flat-tinted designs get their outer contour from the shader, so leave room for it around every part
+  const pad = def.render?.mode === 'flat-tinted' ? 34 : def.outlineMm + 4;
+  const b = part.shapes.length
+    ? part.shapes.map(shapeBounds).reduce((a, s) => [Math.min(a[0], s[0]), Math.min(a[1], s[1]), Math.max(a[2], s[2]), Math.max(a[3], s[3])], [Infinity, Infinity, -Infinity, -Infinity])
+    : [0, 0, 1, 1]; // An empty part (e.g. legs under a long skirt) is a transparent stub
   const bounds = [b[0] - pad, b[1] - pad, b[2] + pad, b[3] + pad];
   const w = bounds[2] - bounds[0], h = bounds[3] - bounds[1];
   const canvas = document.createElement('canvas');
@@ -32,32 +37,71 @@ function drawPart(part, def, outlineColor, pxPerMm) {
   g.scale(canvas.width / w, canvas.height / h);
   g.translate(-bounds[0], -bounds[1]);
   g.lineJoin = 'round'; g.lineCap = 'round';
-  const colorOf = name => name === 'outline' ? outlineColor : def.palette[name] ?? name;
+  const colorOf = name => name === 'outline' || name === 'line' ? outlineColor : def.palette[name] ?? name;
+  let base = null;
   for (const shape of part.shapes) {
     const path = new Path2D();
     if (shape.ellipse) { const [cx, cy, rx, ry] = shape.ellipse; path.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); }
     else path.addPath(new Path2D(shape.path));
+    // clip: true confines cel shading to the last full shape, so shadows never spill past the silhouette
+    g.save();
+    if (shape.clip && base) g.clip(base);
+    else if (shape.fill && !shape.clip) base = path;
     g.globalAlpha = shape.alpha ?? 1;
     if (shape.fill) {
       g.fillStyle = colorOf(shape.fill); g.fill(path);
-      if (shape.line !== false) { g.globalAlpha = 1; g.strokeStyle = outlineColor; g.lineWidth = def.outlineMm * (shape.lineScale ?? 1); g.stroke(path); }
+      if (shape.line !== false && def.outlineMm > 0) { g.globalAlpha = 1; g.strokeStyle = outlineColor; g.lineWidth = def.outlineMm * (shape.lineScale ?? 1); g.stroke(path); }
     }
     if (shape.stroke) {
       g.globalAlpha = 1;
-      if (shape.stroke !== 'outline') { g.strokeStyle = outlineColor; g.lineWidth = shape.width + def.outlineMm * 0.9; g.stroke(path); }
+      if (shape.stroke !== 'outline' && shape.stroke !== 'line' && def.outlineMm > 0) { g.strokeStyle = outlineColor; g.lineWidth = shape.width + def.outlineMm * 0.9; g.stroke(path); }
       g.strokeStyle = colorOf(shape.stroke); g.lineWidth = shape.width; g.stroke(path);
     }
+    g.restore();
   }
   return {canvas, bounds};
 }
 
-export function buildCharacter(def, {style, quality, maxAnisotropy = 4}) {
-  const outline = style.palette.outline ?? '#1f140d';
+// Flat-tinted cutout shading: authored colours × a gentle environment tint, plus a constant-pixel outer contour
+// found by probing the part's alpha around each transparent texel (so line weight holds at any camera distance)
+function flatMaterial(texture, {outlineColor, outlinePx}) {
+  return new THREE.ShaderMaterial({
+    uniforms:{map:{value:texture}, tint:{value:new THREE.Color(1, 1, 1)}, outlineColor:{value:new THREE.Color(outlineColor)}, outlinePx:{value:outlinePx},
+      ...THREE.UniformsLib.fog},
+    vertexShader:`varying vec2 vUv;
+#include <fog_pars_vertex>
+void main() { vUv = uv; vec4 mvPosition = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mvPosition;
+#include <fog_vertex>
+}`,
+    fragmentShader:`uniform sampler2D map; uniform vec3 tint; uniform vec3 outlineColor; uniform float outlinePx; varying vec2 vUv;
+#include <fog_pars_fragment>
+void main() {
+  vec4 c = texture2D(map, vUv);
+  if (c.a < 0.5) {
+    if (outlinePx <= 0.0) discard;
+    vec2 px = fwidth(vUv) * outlinePx;
+    float a = 0.0;
+    for (int i = 0; i < 12; i++) { float t = float(i) * 0.5235988; a = max(a, texture2D(map, vUv + vec2(cos(t), sin(t)) * px).a); }
+    if (a < 0.5) discard;
+    gl_FragColor = vec4(outlineColor, 1.0);
+  } else gl_FragColor = vec4(c.rgb * tint, 1.0);
+#include <colorspace_fragment>
+#include <fog_fragment>
+}`,
+    side:THREE.DoubleSide, fog:true, toneMapped:false
+  });
+}
+
+export function buildCharacter(def, {style, quality, maxAnisotropy = 4, outputHeight = 1920}) {
+  const flat = def.render?.mode === 'flat-tinted';
+  const outline = flat ? def.render.outlineColor ?? def.palette.line : style.palette.outline ?? '#1f140d';
   const units = def.heightM / def.rig.heightMm;
   const textures = {};
   const parts = {};
   for (const [name, part] of Object.entries(def.parts)) {
-    const {canvas, bounds} = drawPart(part, def, outline, quality.pxPerMm * UNITS_PX);
+    // Face parts get extra texture density so features stay crisp at phone size
+    const density = quality.pxPerMm * UNITS_PX * (flat && FACE_PARTS.test(name) ? 1.6 : 1);
+    const {canvas, bounds} = drawPart(part, def, outline, density);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = maxAnisotropy;
@@ -81,6 +125,9 @@ export function buildCharacter(def, {style, quality, maxAnisotropy = 4}) {
       let material;
       if (shadowOnly) {
         material = new THREE.MeshBasicMaterial({colorWrite:false, depthWrite:false, side:THREE.DoubleSide});
+      } else if (flat) {
+        material = flatMaterial(textures[name], {outlineColor:outline, outlinePx:Math.max(1, def.render.outlinePx * outputHeight / 1920)});
+        material.polygonOffset = true; material.polygonOffsetFactor = -part.z * 0.02;
       } else {
         material = new THREE.MeshStandardMaterial({map:textures[name], alphaTest:0.5, side:THREE.DoubleSide, roughness:1, metalness:0,
           emissive:new THREE.Color('#ffffff'), emissiveMap:textures[name], emissiveIntensity:style.character.selfLight});
@@ -112,7 +159,8 @@ export function buildCharacter(def, {style, quality, maxAnisotropy = 4}) {
     b.pupils.position.set(A.pupils[0] + state.look[0] * 11, -A.pupils[1] + state.look[1] * 9, 0);
     b.pupils.scale.set(1, Math.max(0.08, 1 - state.blink), 1);
     const face = FACES[state.face] ?? FACES.neutral;
-    b.brows.position.set(A.brows[0], -A.brows[1] + face.brow, 0); b.brows.rotation.z = rad(face.browTilt);
+    const range = def.expressionScale ?? 1; // Restrained families move brows less
+    b.brows.position.set(A.brows[0], -A.brows[1] + face.brow * range, 0); b.brows.rotation.z = rad(face.browTilt * range);
     b.mouth.position.set(A.mouth[0], -A.mouth[1], 0);
     for (const [name, mesh] of Object.entries(rig.meshes)) {
       if (name.startsWith('mouth:')) mesh.visible = name === `mouth:${face.mouth}`;
@@ -134,7 +182,8 @@ export function buildCharacter(def, {style, quality, maxAnisotropy = 4}) {
 
   return {
     group:visible.root, shadowGroup:shadow.root,
-    apply(state, cameraPosition, lightDirection) {
+    apply(state, cameraPosition, lightDirection, tint) {
+      if (flat && tint) for (const mesh of Object.values(visible.meshes)) mesh.material.uniforms.tint.value.copy(tint);
       for (const [rig, facing] of [[visible, cameraPosition.clone().sub(new THREE.Vector3(...state.position))], [shadow, lightDirection.clone().negate()]]) {
         rig.root.position.set(...state.position);
         rig.yaw.rotation.y = Math.atan2(facing.x, facing.z);

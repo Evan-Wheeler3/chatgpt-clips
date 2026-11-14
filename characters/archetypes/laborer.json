@@ -1,0 +1,46 @@
+{
+  "name": "Laborer (dock worker)",
+  "description": "A broad-shouldered dock worker: shaved head, rolled sleeves, neckerchief, heavy boots.",
+  "heightMm": 1700,
+  "headRatio": 5.2,
+  "legRatio": 0.47,
+  "build": {
+    "shoulders": 1.3,
+    "hips": 1.05,
+    "limbs": 1.2,
+    "forearms": 1.3
+  },
+  "hair": {
+    "style": "receding"
+  },
+  "face": {
+    "jaw": 0.1
+  },
+  "hat": "none",
+  "clothing": {
+    "sleeves": "rolled",
+    "neckerchief": true
+  },
+  "palette": {
+    "skin": "#6b442e",
+    "skinShade": "#523322",
+    "hair": "#1a1412",
+    "hairShade": "#100c0a",
+    "hat": "#1a1412",
+    "shirt": "#a9b3b8",
+    "shirtShade": "#8b959a",
+    "accent": "#a0452e",
+    "trousers": "#3b3530",
+    "trousersShade": "#2a2622",
+    "boots": "#241c16",
+    "bootsShade": "#17120e",
+    "bootShade": "#17120e",
+    "eyeWhite": "#f3ede2",
+    "pupil": "#1d1714",
+    "mouth": "#4a1f18",
+    "teeth": "#f3ede2",
+    "tongue": "#a2493c",
+    "highlight": "#ffffff",
+    "line": "#1d1712"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "Apprentice (teen)",
+  "description": "A teenage workshop apprentice: slight build, flat cap, waistcoat over rolled sleeves.",
+  "age": "teen",
+  "heightMm": 1450,
+  "headRatio": 4.6,
+  "legRatio": 0.46,
+  "build": {
+    "shoulders": 0.85,
+    "hips": 0.85,
+    "limbs": 0.85
+  },
+  "hair": {
+    "style": "short"
+  },
+  "face": {},
+  "hat": "flatcap",
+  "clothing": {
+    "sleeves": "rolled",
+    "waistcoat": true
+  },
+  "palette": {
+    "skin": "#e2b18f",
+    "skinShade": "#c39070",
+    "hair": "#6b4a2e",
+    "hairShade": "#4e351f",
+    "hat": "#4b4f55",
+    "shirt": "#ddd6c6",
+    "shirtShade": "#bdb6a6",
+    "vest": "#5c4636",
+    "vestShade": "#45332a",
+    "accent": "#5c4636",
+    "trousers": "#3f4652",
+    "trousersShade": "#2f3540",
+    "boots": "#2a211b",
+    "bootsShade": "#1c1611",
+    "bootShade": "#1c1611",
+    "eyeWhite": "#f3ede2",
+    "pupil": "#1d1714",
+    "mouth": "#4a1f18",
+    "teeth": "#f3ede2",
+    "tongue": "#a2493c",
+    "highlight": "#ffffff",
+    "line": "#1d1712"
+  }
+}
