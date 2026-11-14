@@ -1,0 +1,419 @@
+{
+  "note": "Hold Up audio catalog. Generated assets come from tools/audio/synth.mjs; imported recordings from tools/audio/import.mjs (with license evidence).",
+  "assets": [
+    {
+      "id": "barrel-thud",
+      "description": "A heavy, hollow wooden barrel being shoved or set down",
+      "category": "impact",
+      "file": "audio/sfx/barrel-thud.wav",
+      "durationSec": 0.9,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#woodImpact",
+        "params": {
+          "f0": 92,
+          "decay": 0.32
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -4,
+      "loop": null,
+      "sha256": "48feaf73f68e9b03550797bcebb748adc69c7976a466efc7d5747a14185fef7e"
+    },
+    {
+      "id": "wood-knock-light",
+      "description": "A light knock on wood (a hand on a barrel, a small bump)",
+      "category": "impact",
+      "file": "audio/sfx/wood-knock-light.wav",
+      "durationSec": 0.35,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#woodImpact",
+        "params": {
+          "f0": 390,
+          "decay": 0.06
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -10,
+      "loop": null,
+      "sha256": "20b54b315fbd14e568a5becbbd52c48616c2f9d96999b267bb20ef6ccfa2f31c"
+    },
+    {
+      "id": "wood-tok",
+      "description": "A crisp wooden \"tok\" for comedic emphasis",
+      "category": "comedic",
+      "file": "audio/sfx/wood-tok.wav",
+      "durationSec": 0.2,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#woodImpact",
+        "params": {
+          "f0": 880
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -12,
+      "loop": null,
+      "sha256": "1bc2f57e56451dace207f40b95771d4f8772bd8d1ed231e4ac532c6e54b2578d"
+    },
+    {
+      "id": "wood-creak-1",
+      "description": "A short wooden creak (variant 1)",
+      "category": "wood",
+      "file": "audio/sfx/wood-creak-1.wav",
+      "durationSec": 0.85,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#creak",
+        "params": {
+          "variant": 1
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -16,
+      "loop": null,
+      "sha256": "e6eec9571a2ebe96f9c013b84e058a2b51d2b4017ccaec589dc5d33b528a1a58"
+    },
+    {
+      "id": "wood-creak-2",
+      "description": "A short wooden creak (variant 2)",
+      "category": "wood",
+      "file": "audio/sfx/wood-creak-2.wav",
+      "durationSec": 1,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#creak",
+        "params": {
+          "variant": 2
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -16,
+      "loop": null,
+      "sha256": "8edd83a3480d77776cca2d596043a5d682cc242ca4c74fa0c7a9ca34d2bc88a7"
+    },
+    {
+      "id": "wood-creak-3",
+      "description": "A short wooden creak (variant 3)",
+      "category": "wood",
+      "file": "audio/sfx/wood-creak-3.wav",
+      "durationSec": 1.15,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#creak",
+        "params": {
+          "variant": 3
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -16,
+      "loop": null,
+      "sha256": "f17adbdb463c8b66579847e776603be2703b8967e22aa710300959db4f6adbae"
+    },
+    {
+      "id": "barrel-scrape",
+      "description": "A wooden barrel pivoting or dragging on stone",
+      "category": "movement",
+      "file": "audio/sfx/barrel-scrape.wav",
+      "durationSec": 2.4,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#scrape",
+        "params": {
+          "duration": 2.4
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -12,
+      "loop": null,
+      "sha256": "f0b31a19314932cc3d964c6c5bf9de786681b50cb796769f7632b4a4acab31e7"
+    },
+    {
+      "id": "barrel-roll-loop",
+      "description": "A barrel rolling over cobbles (seamless loop; follow the barrel speed)",
+      "category": "movement",
+      "file": "audio/sfx/barrel-roll-loop.wav",
+      "durationSec": 2.6,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#rollLoop",
+        "params": {
+          "knockEvery": 0.16
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -10,
+      "loop": {
+        "seamless": true
+      },
+      "sha256": "6dbbec58e6865c6ee5b66ae252383c18175f5e636be3b5922192be961ac6da51"
+    },
+    {
+      "id": "footstep-stone-1",
+      "description": "A footstep on stone (variant 1)",
+      "category": "footsteps",
+      "file": "audio/sfx/footstep-stone-1.wav",
+      "durationSec": 0.32,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#footstep",
+        "params": {
+          "variant": 1
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -18,
+      "loop": null,
+      "sha256": "7482ffe99880f456db4d975bd222ac57fc66fcf1e03911802a8009c7f3866ad9"
+    },
+    {
+      "id": "footstep-stone-2",
+      "description": "A footstep on stone (variant 2)",
+      "category": "footsteps",
+      "file": "audio/sfx/footstep-stone-2.wav",
+      "durationSec": 0.32,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#footstep",
+        "params": {
+          "variant": 2
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -18,
+      "loop": null,
+      "sha256": "166b1c03753b7be7d65e7b178743c862c382205e51d2b938bc54ce65aed9a8a3"
+    },
+    {
+      "id": "footstep-stone-3",
+      "description": "A footstep on stone (variant 3)",
+      "category": "footsteps",
+      "file": "audio/sfx/footstep-stone-3.wav",
+      "durationSec": 0.32,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#footstep",
+        "params": {
+          "variant": 3
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -18,
+      "loop": null,
+      "sha256": "33e068b7ac0b4b339de13cfe5f0dcff1e8ba634589475d9a173b7d2ba92b11af"
+    },
+    {
+      "id": "footstep-stone-4",
+      "description": "A footstep on stone (variant 4)",
+      "category": "footsteps",
+      "file": "audio/sfx/footstep-stone-4.wav",
+      "durationSec": 0.32,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#footstep",
+        "params": {
+          "variant": 4
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -18,
+      "loop": null,
+      "sha256": "a6418f3a77e4b3d28557fb05a3ad2616f08fae92da82acdd33f7545d9ba4394a"
+    },
+    {
+      "id": "cloth-rustle-1",
+      "description": "Clothing movement for a gesture (variant 1)",
+      "category": "clothing",
+      "file": "audio/sfx/cloth-rustle-1.wav",
+      "durationSec": 0.39,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#cloth",
+        "params": {
+          "variant": 1
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -24,
+      "loop": null,
+      "sha256": "a08b6bcbf5d86107c9b99cc2e015016d0eac13dacbbc4b4cc2bc740e610bc517"
+    },
+    {
+      "id": "cloth-rustle-2",
+      "description": "Clothing movement for a gesture (variant 2)",
+      "category": "clothing",
+      "file": "audio/sfx/cloth-rustle-2.wav",
+      "durationSec": 0.44,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#cloth",
+        "params": {
+          "variant": 2
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -24,
+      "loop": null,
+      "sha256": "bfc3d98330b0af21b943b4368a6da5af27a9f8b5440f950f57e211db2865db5d"
+    },
+    {
+      "id": "cloth-rustle-3",
+      "description": "Clothing movement for a gesture (variant 3)",
+      "category": "clothing",
+      "file": "audio/sfx/cloth-rustle-3.wav",
+      "durationSec": 0.49,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#cloth",
+        "params": {
+          "variant": 3
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -24,
+      "loop": null,
+      "sha256": "a4d3cb4d521a8218b50824c139060f106c3bc63758917e0d37344d72ed83dd94"
+    },
+    {
+      "id": "whoosh-soft",
+      "description": "A soft air whoosh for a whip pan",
+      "category": "transition",
+      "file": "audio/sfx/whoosh-soft.wav",
+      "durationSec": 0.5,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#whoosh",
+        "params": {
+          "duration": 0.5
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -16,
+      "loop": null,
+      "sha256": "d1c2a6b717cedd857ca7201df21ba19a237681598f7320d52cd4446fcfaddbb2"
+    },
+    {
+      "id": "room-tone-workshop",
+      "description": "Quiet room tone of a large brick workshop (seamless loop)",
+      "category": "ambience",
+      "file": "audio/sfx/room-tone-workshop.wav",
+      "durationSec": 12,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#roomTone",
+        "params": {
+          "duration": 12
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -20,
+      "loop": {
+        "seamless": true
+      },
+      "sha256": "4bb041709cceb995d4020206fde81d3cccb574406c5a55abdbb043200fdf9b15"
+    }
+  ]
+}

@@ -21,6 +21,7 @@ Original `SKILL.md` is a detailed instruction set for a particular bridge short.
    5.5 Character library, resolver, image-first intake, approval gates and rig attachments: see `docs/CHARACTER-LIBRARY.md` and `docs/CHARACTER-STYLE-GUIDE.md`.
 6. Final voice, captions, sound design and audio QA; Remotion composition.
    6.1 Narration engine: free local voice cloning of the owner's voice (Qwen3-TTS 0.6B via mlx-audio; macOS say fallback; recordings), voice profiles, delivery markup, forced-aligner word timing (whisper fallback), takes and narration sync reports. The owner approved the narrator and the natural-voice barrel-bilge render. See `docs/NARRATION.md`.
+   6.2 Burned-in Hold Up captions (word-synced groups, emphasis, per-shot safe placement), a generated CC0 sound library with licence-checked imports, animation-driven sound effects, ambience, optional ducked music, a local mixer mastered to −14 LUFS, and caption and audio QA. See `docs/CAPTIONS-AUDIO.md`.
 6. Benchmarked end-to-end sample and iteration.
 
 ## Data contracts

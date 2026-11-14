@@ -10,6 +10,7 @@ import { buildEnvironment } from './environment.mjs';
 import { buildCharacter } from './character-rig.mjs';
 import { buildHybridCharacter } from './character-hybrid.mjs';
 import { buildVectorCharacter } from './character-vector.mjs';
+import { drawCaptions } from './captions.mjs';
 
 let plan, quality, renderer, scene, camera, out, ctx, post, env = null, W, H, issues = [], keyLight;
 const groups = new Map(), shadows = new Map(), characters = new Map();
@@ -54,6 +55,8 @@ window.setup = async (planJson, size, issueList, qualityName) => {
   plan = planJson; W = size.width; H = size.height; issues = issueList;
   quality = {name:qualityName, ...QUALITY[qualityName]};
   const style = plan.style;
+  // The caption font is a local system font; make sure it is loaded before the first frame is drawn
+  if (plan.captions?.enabled) { const f = plan.captions.style.font; await document.fonts.load(`${f.weight} ${f.sizePx}px ${f.family}`).catch(() => {}); }
   renderer = new THREE.WebGLRenderer({antialias:quality.post === 'none', preserveDrawingBuffer:true});
   renderer.setPixelRatio(1); renderer.setSize(W, H);
   renderer.toneMapping = THREE.NeutralToneMapping;
@@ -194,8 +197,10 @@ function hud(s, frame) {
   // Safe area for the subject, and the caption band reserved for Phase 6 captions
   ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.setLineDash([4 * u, 4 * u]);
   ctx.strokeRect(W * 0.1, H * 0.12, W * 0.8, H * 0.63); ctx.setLineDash([]);
+  // Stories without production captions (e.g. character reviews on a synthetic beat timeline) keep the review overlay's
+  // sentence captions, as before Phase 6.2
   const words = plan.words, current = s.word;
-  if (current) {
+  if (current && !plan.captions?.enabled) {
     let a = current.i, b = current.i;
     while (a > 0 && !/[.?!:]$/.test(words[a - 1].text)) a--;
     while (b < words.length - 1 && !/[.?!:]$/.test(words[b].text)) b++;
@@ -238,8 +243,12 @@ function compose(frame, withHud = quality.hud) {
     ctx.globalAlpha = 1; draw(frame);
   }
   if (withHud) hud(s, frame);
+  // Burned-in captions (all qualities): the plan's groups, timing, placement and style
+  lastCaption = plan.captions?.enabled && quality.captions !== false ? drawCaptions(ctx, plan.captions, frame / plan.fps, {width:W, height:H}) : null;
   return s;
 }
+let lastCaption = null;
+window.captionFrames = frames => frames.map(frame => { compose(frame, false); return {frame, caption:lastCaption}; });
 
 window.renderFrames = (frames, format = 'image/jpeg') => frames.map(frame => { compose(frame); return out.toDataURL(format, 0.9); });
 

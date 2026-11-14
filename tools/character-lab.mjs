@@ -26,7 +26,7 @@ export const POSES = [
 
 export function labStory(character) {
   return {
-    version:1, slug:'character-lab', fps:30, size:{width:1080, height:1920}, stage:STUDIO,
+    version:1, slug:'character-lab', captions:false, fps:30, size:{width:1080, height:1920}, stage:STUDIO,
     props:[{id:'barrel', asset:{query:'wooden barrel', style:'realistic'}, position:[0, 0, 0], rotation:[0, 15, 0]}],
     cast:[{id:'lead', character, start:{position:[-0.95, 0.25], face:[1, 0.25]}}],
     beats:[{id:'lab', purpose:'Character design review', shots:[

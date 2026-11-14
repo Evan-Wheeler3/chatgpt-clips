@@ -26,7 +26,7 @@ export const STILLS = [
 
 export function studioStory(character) {
   return {
-    version:1, slug:'character-experiment', fps:30, size:{width:1080, height:1920}, stage:STUDIO,
+    version:1, slug:'character-experiment', captions:false, fps:30, size:{width:1080, height:1920}, stage:STUDIO,
     props:[
       {id:'frame-body', asset:{query:'wooden barrel'}, position:[0, 0, -0.7], visible:false},
       {id:'frame-head', asset:{query:'wooden barrel'}, position:[0, 1.02, -0.05], scale:0.42, grounded:false, visible:false},

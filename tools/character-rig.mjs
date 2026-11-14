@@ -29,7 +29,7 @@ export function studioStory(character) {
   const close = (face, i) => ({id:`face-${face}`, start:`t${4 + i * 4}`, purpose:`Head and shoulders, ${face}`, subject:'frame-head', transition:{type:'cut', motivation:'Expression'},
     camera:{move:'hold', framing:'medium', azimuth:12, elevation:2}, events:[{character:'lead', at:'shot-start', do:'expression', params:{face}}]});
   return {
-    version:1, slug:'character-rig', fps:30, size:{width:1080, height:1920}, stage:STUDIO,
+    version:1, slug:'character-rig', captions:false, fps:30, size:{width:1080, height:1920}, stage:STUDIO,
     props:[
       {id:'frame-body', asset:{query:'wooden barrel'}, position:[0, 0, -0.6], visible:false},
       {id:'frame-head', asset:{query:'wooden barrel'}, position:[-0.03, 1.08, -0.05], scale:0.62, grounded:false, visible:false},
@@ -52,7 +52,7 @@ export function studioStory(character) {
 // The five-second rig test: neutral, look at the barrel, raise an arm, hand on the barrel, back to neutral
 export function rigTestStory(character) {
   return {
-    version:1, slug:'character-rig-test', fps:30, size:{width:1080, height:1920},
+    version:1, slug:'character-rig-test', captions:false, fps:30, size:{width:1080, height:1920},
     // Exactly five seconds (the synthetic audio is 5 s long, so no tail); one held shot is intended
     timing:{tailSec:0, maxShotSec:6},
     environment:{id:'cooperage-storehouse'}, style:{id:'hold-up'},

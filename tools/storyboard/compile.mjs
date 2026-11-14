@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { readGlbShape, cachedShape } from './shape.mjs';
 import { compileEnvironment, loadStyle } from '../environment/compile.mjs';
 import { loadCharacter, loadWearing, castApproval } from '../characters/load.mjs';
+import { planCaptions } from '../captions/plan.mjs';
 import { CHARACTER_ACTIONS, INSTANT_CHARACTER_ACTIONS, POSE_PRESETS } from './character.mjs';
 import { resolveAssets } from '../asset-resolver.mjs';
 import { resolveAnchor } from './anchors.mjs';
@@ -165,12 +166,15 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
   for (const prop of props) prop.actions.sort((a, b) => a.startFrame - b.startFrame);
   for (const member of cast) member.actions.sort((a, b) => a.startFrame - b.startFrame);
 
-  return {
+  const plan = {
     version:1, slug:story.slug, title:story.title ?? story.slug, fps, size:story.size ?? {width:1080, height:1920}, durationFrames, timing,
     audio:{file:wordsDoc.audio?.file ?? null, sha256:wordsDoc.audio?.sha256 ?? null, durationSec:wordsDoc.audio?.durationSec ?? null},
     words, stage:story.stage ?? {}, props, shots, missingAssets, style, environment, cast,
     sources:{story:storyBytes ? sha256(storyBytes) : null, words:wordsBytes ? sha256(wordsBytes) : null, narration:wordsDoc.source ?? null, aligner:wordsDoc.aligner ?? null}
   };
+  // Captions are planned from the measured words and the staged shots (story.captions: false turns them off)
+  plan.captions = planCaptions(plan, story);
+  return plan;
 }
 
 export async function compileFiles(storyPath, wordsPath, options = {}) {

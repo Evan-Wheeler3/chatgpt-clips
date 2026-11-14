@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { narrate } from './narration/narrate.mjs';
 import { loadVoiceProfile, authorize } from './narration/tts.mjs';
 import { narrationSync } from './narration/sync.mjs';
+import { mixStory, audioQA } from './audio/mix.mjs';
+import { captionQA } from './captions/qa.mjs';
 import { compileStory } from './storyboard/compile.mjs';
 import { validatePlan } from './storyboard/validate.mjs';
 import { renderAnimatic } from './storyboard/animatic.mjs';
@@ -83,10 +85,25 @@ async function main(args) {
   await writeFile(join(outDir, `shots${suffix}.json`), JSON.stringify(plan, null, 2) + '\n');
   await writeFile(join(outDir, `validation${suffix}.json`), JSON.stringify(validation, null, 2) + '\n');
   let animatic = null;
+  let mix = null, mixQA = null, captionReport = null;
   if (render) {
-    animatic = await renderAnimatic(plan, {outDir, audioPath:join(outDir, 'narration.wav'), scale, quality, name, issues:[...validation.errors, ...validation.warnings],
+    // Stories with an audio block render with their mix (narration + effects + ambience + music); others with narration only
+    const base = name ?? (quality === 'animatic' ? 'animatic' : quality);
+    if (story.audio) {
+      mix = await mixStory({plan, story, narrationFile:join(outDir, 'narration.wav'), outDir:join(outDir, 'audio', base)});
+      console.error(`mix: ${mix.report.events.length} effects${mix.report.ambience ? `, ambience ${mix.report.ambience.profile}` : ''}${mix.report.music ? `, music ${mix.report.music.asset}` : ''}`);
+    }
+    animatic = await renderAnimatic(plan, {outDir, audioPath:mix?.file ?? join(outDir, 'narration.wav'), scale, quality, name, issues:[...validation.errors, ...validation.warnings],
       onProgress:(done, total) => process.stderr.write(`\rrendering ${done}/${total}`)});
     process.stderr.write('\n');
+    if (mix) {
+      mixQA = await audioQA({mixFile:mix.file, stems:mix.stems, plan, videoFile:animatic.video});
+      await writeFile(join(outDir, `qa-audio-${base}.json`), JSON.stringify(mixQA, null, 2) + '\n');
+    }
+    if (plan.captions?.enabled) {
+      captionReport = await captionQA(plan, {quality});
+      await writeFile(join(outDir, `qa-captions-${base}.json`), JSON.stringify(captionReport, null, 2) + '\n');
+    }
   }
   let qaReport = null;
   if (qa) {
@@ -104,6 +121,8 @@ async function main(args) {
     shots:plan.shots.map(s => `${s.id} ${(s.startFrame / plan.fps).toFixed(2)}-${(s.endFrame / plan.fps).toFixed(2)}s ${s.transition.type}->${s.camera.behavior} move f${s.camera.window.join('-')}`),
     environment:plan.environment && {id:plan.environment.id, cache:plan.environment.cache, budget:plan.environment.budget, missing:plan.environment.missing},
     cast:(plan.cast ?? []).map(member => member.id),
+    audioQA:mixQA && {status:mixQA.status, integratedLufs:mixQA.integratedLufs, truePeakDb:mixQA.truePeakDb, narrationClarityDb:mixQA.narrationClarityDb, video:mixQA.video, issues:mixQA.issues.map(i => i.code)},
+    captionQA:captionReport && {status:captionReport.status, issues:captionReport.issues.map(i => `${i.code}: ${i.message}`), warnings:captionReport.warnings.map(w => `${w.code}: ${w.message}`)},
     narrationSync:syncReport && {status:syncReport.status, durationSec:syncReport.durationSec, conflicts:syncReport.conflicts.map(c => `${c.code} ${c.shot ?? ''}: ${c.message}`)},
     qa:qaReport && {status:qaReport.status, summary:qaReport.summary, warnings:qaReport.warnings.map(w => `${w.code} ${w.shot ?? ''}: ${w.message}`), ms:qaReport.ms},
     outputs:{plan:rel(join(outDir, `shots${suffix}.json`)), validation:rel(join(outDir, `validation${suffix}.json`)),

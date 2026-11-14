@@ -15,6 +15,29 @@
       "rate": 165
     }
   },
+  "captions": {
+    "style": "hold-up",
+    "emphasize": [
+      "bulge",
+      "roll",
+      "turn"
+    ]
+  },
+  "audio": {
+    "ambience": {
+      "profile": "workshop"
+    },
+    "auto": true,
+    "sfx": [
+      {
+        "id": "staves-tension",
+        "at": "squeeze",
+        "asset": "wood-creak-3",
+        "gainDb": 0,
+        "reason": "the staves creak under the hoops' squeeze"
+      }
+    ]
+  },
   "stage": {
     "background": "#2a231c",
     "fog": {

@@ -12,7 +12,7 @@ const threeDir = resolve(root, 'node_modules/three');
 // Only these browser modules are served; everything else under tools/ stays private
 const BROWSER_MODULES = new Set([
   'tools/storyboard/easing.mjs', 'tools/storyboard/actions.mjs', 'tools/storyboard/camera.mjs', 'tools/storyboard/sample.mjs', 'tools/storyboard/character.mjs',
-  'tools/render/page.mjs', 'tools/render/quality.mjs', 'tools/render/stylize.mjs', 'tools/render/post.mjs', 'tools/render/environment.mjs', 'tools/render/character-rig.mjs', 'tools/render/character-hybrid.mjs', 'tools/render/character-vector.mjs', 'tools/characters/figure.mjs', 'tools/characters/display.mjs'
+  'tools/render/page.mjs', 'tools/render/quality.mjs', 'tools/render/stylize.mjs', 'tools/render/post.mjs', 'tools/render/environment.mjs', 'tools/render/character-rig.mjs', 'tools/render/character-hybrid.mjs', 'tools/render/character-vector.mjs', 'tools/characters/figure.mjs', 'tools/characters/display.mjs', 'tools/render/captions.mjs'
 ]);
 const BATCH = 12;
 const GPU_ARGS = {
