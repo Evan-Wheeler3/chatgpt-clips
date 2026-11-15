@@ -30,6 +30,8 @@ test('the cooper rig has every part, a complete expression set, and passes defin
   for (const joint of ['hip', 'neck', 'headCenter', 'shoulderF', 'elbowF', 'wristF', 'handF', 'shoulderB', 'elbowB', 'wristB', 'handB', 'hipF', 'kneeF', 'ankleF', 'hipB', 'kneeB', 'ankleB']) assert.ok(figure.joints[joint], joint);
   // Every storyboard face resolves to one of the approved expressions
   for (const face of Object.keys(FACES)) assert.ok(def.expressions[resolveExpression(def, face).name], face);
+  // Faces added after the cooper was approved fall back to his existing art (his definition is untouched)
+  assert.equal(resolveExpression(def, 'relieved').name, 'happy');
 });
 
 test('definition checks catch missing forms, missing expressions and detached joints', async () => {

@@ -106,7 +106,7 @@ The natural pause after "stop?" measures 0.48 s; the click needs at least 0.30 s
 **9 · `stops`** (21.17–23.10, 1.93 s)
 - **Narration:** "And the gas stops flowing."
 - **Composition:** exterior: the nozzle at rest in the filler neck, lever down, no drips.
-- **Character animation** (owner adjustment): **subtle relief**. Concerned → a soft smile on "flowing", brows easing down, a small exhale and shoulder drop; no gesture. It uses the existing soft `happy` face now and the dedicated `relieved` expression once `hold-up-protagonist` is rigged (Phase 7B).
+- **Character animation** (owner adjustment): **subtle relief**. Concerned → a soft smile on "flowing", brows easing down, a small exhale and shoulder drop; no gesture. It uses the storyboard face `relieved` (added in Phase 7B). The new protagonist draws it from his own sheet; older characters such as the cooper fall back to their approved `happy` art, unchanged.
 - **Camera:** pullback, close → medium, eased to settle.
 - **Captions:** lower.
 

@@ -44,7 +44,9 @@ export const FACES = {
   confused:{mouth:'oh', brow:10, browTilt:10},
   determined:{mouth:'grit', brow:-8, browTilt:14},
   realization:{mouth:'grin', brow:16, browTilt:0},
-  disappointed:{mouth:'hmm', brow:0, browTilt:-10}
+  disappointed:{mouth:'hmm', brow:0, browTilt:-10},
+  // Phase 7B: subtle relief (a soft smile, brows easing down)
+  relieved:{mouth:'smile', brow:-2, browTilt:-8}
 };
 // Hands rest on a prop for a touch: reach in over these frames, then hold until the action ends
 const TOUCH_REACH_FRAMES = 12;

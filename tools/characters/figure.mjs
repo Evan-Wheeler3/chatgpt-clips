@@ -62,8 +62,11 @@ export function headOutline(H, n = 96) {
 const headHalfWidth = (H, y) => y > 0 ? H.rx * Math.max(0, 1 - Math.abs(y / H.ry) ** (H.crown ?? 2)) ** (1 / (H.crown ?? 2)) : H.rx * Math.sqrt(Math.max(0, 1 - (y / H.ry) ** 2)) * (1 - H.jaw * (y / H.ry) ** 2);
 
 export const EXPRESSION_FALLBACK = 'neutral';
+// Newer storyboard faces fall back to an existing expression on characters drawn before them (their artwork untouched)
+export const FACE_FALLBACK = {relieved:'happy'};
 export function resolveExpression(def, face) {
-  const name = def.expressions[face] ? face : def.faceMap?.[face] ?? EXPRESSION_FALLBACK;
+  const shared = FACE_FALLBACK[face] && def.expressions[FACE_FALLBACK[face]] ? FACE_FALLBACK[face] : null;
+  const name = def.expressions[face] ? face : def.faceMap?.[face] ?? shared ?? EXPRESSION_FALLBACK;
   return {name, ...def.expressions[name]};
 }
 

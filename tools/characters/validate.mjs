@@ -1,5 +1,6 @@
 import { figureIssues } from './rig-checks.mjs';
 import { FACES } from '../storyboard/character.mjs';
+import { FACE_FALLBACK } from './figure.mjs';
 
 // Static checks on a character definition (review assistance, not approval)
 export const REQUIRED_PARTS = ['torso', 'head', 'cap', 'eyes', 'pupils', 'brows',
@@ -64,7 +65,7 @@ function validateVector(def) {
   if (errors.length) return {status:'failed', errors, warnings, metrics:{}};
   for (const [name, color] of Object.entries(def.palette)) if (!/^#[0-9a-f]{6}$/i.test(color)) errors.push({code:'UNKNOWN_COLOR', message:`${def.id}: palette.${name} "${color}" is not a colour`});
   // Every face the storyboard can ask for must resolve to one of this character's expressions
-  for (const face of Object.keys(FACES)) if (!def.expressions[face] && !def.expressions[def.faceMap?.[face]]) errors.push({code:'MISSING_EXPRESSION', message:`${def.id}: storyboard face "${face}" has no expression or faceMap entry`});
+  for (const face of Object.keys(FACES)) if (!def.expressions[face] && !def.expressions[def.faceMap?.[face]] && !def.expressions[FACE_FALLBACK[face]]) errors.push({code:'MISSING_EXPRESSION', message:`${def.id}: storyboard face "${face}" has no expression or faceMap entry`});
   for (const face of Object.keys(def.expressions)) for (const issue of figureIssues(def, {...NEUTRAL_STATE, face}).issues) errors.push({...issue, message:`${def.id} (${face}): ${issue.message}`});
   const {figure} = figureIssues(def, NEUTRAL_STATE);
   const head = figure.items.find(i => i.id === 'head').shapes[0].pts, chin = Math.min(...head.map(p => p[1]));
