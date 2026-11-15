@@ -11,6 +11,6 @@ Not measured in this phase: **nothing was rendered**. These are engineering judg
 | **Rendering time** | The existing deterministic frame renderer (Three.js + Remotion-style frames) at 1080×1920, about 970 frames | **Likely fine** | The car and environment are the heaviest parts. Keep textures at 1–2K and low-poly geometry. Measure in 7B rather than guess |
 | **Character + 3D compositing** | The existing vector-2D character over the 3D stage (proven in barrel-bilge) | **Proven** | The driver holding the nozzle needs a hand contact point. The `touch` action exists; hand-on-prop alignment needs checking |
 | **Narration gap for the click** | Natural sentence gap (~0.38 s measured) | **Medium** | If a take's gap is short, the click overlaps "It". Choose the take by gap, or add segmented generation |
-| **Modeling the nozzle** | Blender (exceptional hero asset) or parametric Three.js | **Medium** (effort, not compute) | Blender MCP availability **not verified**. Hand modeling may need the owner's time or a fallback |
+| **Nozzle** | Sourced exterior (CC-BY) + custom internal parts in Three.js; a clipping-plane section with capped faces | **Good** | The sourced shell must be closed for clean caps, and the lever separable. Checked at conversion; Blender (3.1.0, installed) is used only for a repair |
 
 **Memory/compute:** none of the above needs a GPU simulation, ray tracing or ML models at render time. The heaviest local job remains the narration (local Qwen3-TTS, already proven on this machine).

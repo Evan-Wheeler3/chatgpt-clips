@@ -27,6 +27,13 @@
       "on": "2026-11-14",
       "event": "brief",
       "decision": "new"
+    },
+    {
+      "on": "2026-11-14",
+      "event": "superseded",
+      "by": "hold-up-protagonist",
+      "note": "owner chose a recurring Hold Up protagonist (Phase 7A review); this story-scoped brief is kept for the record"
     }
-  ]
+  ],
+  "supersededBy": "hold-up-protagonist"
 }

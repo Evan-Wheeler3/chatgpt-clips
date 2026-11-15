@@ -1,63 +1,76 @@
-# Narration
+# Narration: revision 4. APPROVED
 
-Narrator: **hold-up-narrator** (the approved cloned voice, local Qwen3-TTS; profile `voices/hold-up-narrator.json`). **No narration has been generated for this episode.** Generation happens in Phase 7B, after approval.
+**Owner approval (2026-11-14, Evan Wheeler):**
+- revision 4 **with both recommended technical fixes**;
+- the measured take `rev4-recommended` (**24.48 s** spoken) and the **25.10 s** video timeline;
+- the script is **not** to be extended just to reach 30 s.
 
-## Recommended script (96 words, estimated 31.8 s)
-> How does a gas pump know when to stop?
-> It doesn't. The **nozzle** does.
-> And it's not electronic. It's **air**.
-> See this tiny hole near the tip?
-> Inside, rushing fuel squeezes through a narrow spot, creating **suction**.
-> That suction pulls air in through the hole, up a thin tube.
-> While air gets in, fuel flows.
-> When the tank's full, gas covers the hole. No more air.
-> So the suction tugs a flexible diaphragm.
-> That pulls a pin, a latch lets go, the lever drops, and a spring **snaps** the valve shut.
-> All from one tiny hole.
+The take is recorded in `story.json` → `narration.take`, and it is the active narration in `production/gas-pump-shutoff/`.
 
-**Markup:**
-- In `story.json`, bold words carry `[[emph +]]`.
-- "hole" gets caption emphasis through `captions.emphasize`, so it lights up at each mention. Voice emphasis on "hole" is left out deliberately: four stressed repeats would sound sing-song.
+- **Narrator:** `hold-up-narrator`, the approved cloned voice (local Qwen3-TTS 0.6B through mlx-audio), unchanged.
+- **Timing previews:** two takes were generated for **timing only**, not as approved narration. They live in `production/gas-pump-shutoff/takes/` (gitignored) and were forced-aligned with Qwen3-ForcedAligner (0.08 s step).
 
-**Why it works:**
-- **Hook:** the question is spoken over a disaster image, so the viewer gets the problem in the first second.
-- **Twist:** "It doesn't. The nozzle does." reframes the question in four words.
-- **Second twist:** "It's air." is something most viewers don't expect.
-- **Explanation:** one causal chain, with each link given a visual: air in → covered → vacuum → diaphragm → pin → latch → lever → spring.
-- **Ending:** the last line calls back to the hole, so the loop closes on the image it started from.
+## Revision 4 as written by the owner
+How does a gas pump know when to stop?
+That click comes from a clever little mechanism inside the nozzle.
+See this tiny hole near the tip?
+While you're pumping, air gets sucked through it.
+But when gasoline rises high enough to cover the hole, that airflow stops.
+Now the suction pulls on a diaphragm, releasing a spring-loaded valve.
+And the gas stops flowing. All because of that tiny hole.
 
-## Timing estimate: method and caveat
-`node tools/episode-check.mjs --story stories/gas-pump-shutoff/story.json` builds a **scratch** timeline from the narrator's measured pace:
-- the source is the approved barrel-bilge take, aligned with the forced aligner;
-- 15.8 letters/s inside sentences;
-- 0.38 s gaps between sentences;
-- 0.64 s lead-in.
+## Recommended: revision 4 with two minimal technical corrections
+How does a gas pump know when to stop?
+That click? A clever little mechanism inside the nozzle just shut it off.
+See this tiny hole near the tip?
+While you're pumping, the rushing fuel sucks air in through it.
+But when gasoline rises high enough to cover the hole, that airflow stops.
+Now the suction pulls on a diaphragm, releasing a spring-loaded valve.
+And the gas stops flowing. All because of that tiny hole.
 
-It estimates **31.8 s** (target 28–32 s). This is an estimate, not a measurement. The real take decides, and every shot is anchored to words, so the edit re-times itself to the real alignment.
+| Line | Change | Why (`research.md`, "Revision 4: line-by-line technical validation") |
+|---|---|---|
+| Shot 2 | "That click comes from a clever little mechanism inside the nozzle." becomes "That click? A clever little mechanism inside the nozzle just shut it off." | No nozzle source identifies which part makes the audible click. The shutoff itself is verified. The new wording ties the click to the moment of shutoff without claiming its source. Bonus: "That click?" lands exactly on the rewind |
+| Shot 4 | "air gets sucked through it" becomes "**the rushing fuel sucks** air in through it" | The suction comes from the flowing fuel (the venturi: US 3,646,974, "the flow of the liquid … creates an orifice effect to suck the air … through the tube"). Without it, "the suction" in shot 6 has no cause |
 
-A first draft estimated 33.6 s. It was tightened by these edits:
-- "As long as air gets in, fuel keeps flowing" became "While air gets in, fuel flows";
-- "But" and "instead" were dropped;
-- "the handle loses its pivot" became "the lever drops".
+Everything else is verified as written, including "releasing a spring-loaded valve" as a simplification; the visuals show the latch and lever steps.
 
-Nothing in the causal chain was removed.
+**Emphasis:**
+- **Voice** (`[[emph +]]` in `story.json`): nozzle, hole, air, stops, suction, hole.
+- **Captions:** every "hole" is highlighted. The local engine has no emphasis control, so the voice markup affects captions only.
 
-**Delivery risks for the take (check in Phase 7B):**
-- **The click gap.** The CLICK must sit in the natural pause after "stop?". The local engine can't insert silence at sentence ends, so we rely on the measured ~0.4 s gap. If it comes out shorter, the click overlaps "It". Options then:
-  - take a different seed;
-  - put the question in its own generated segment and join the segments (a new feature, not built yet).
-- **"No more air."** is short and could come out rushed. Audition two seeds.
-- **The list.** "a pin, a latch lets go, the lever drops" must keep its commas as small beats.
+## Measured duration (timing-preview takes, approved narrator)
+| Take | Words | Aligned | **Spoken duration** | Lead-in | Pause after "stop?" | Video length (+0.6 s tail) |
+|---|---|---|---|---|---|---|
+| `rev4-as-written` | 70 | 70/70 exact | **21.84 s** | 0.80 s | **0.40 s** | about 22.5 s |
+| `rev4-recommended` | 75 | 75/75 exact | **24.48 s** | 0.72 s | **0.48 s** | 25.10 s |
 
-## Alternate opening lines (both keep the overflow image, the click and the reveal)
-1. "Why doesn't every fill-up end like this?" Shows the disaster first, then the CLICK, then "Because the nozzle knows. And it's not electronic…" (the second line changes to fit).
-2. "Your gas pump has no idea your tank is full." A provocative claim. Over the overflow, the CLICK lands after it, then "But the nozzle does. And it's not electronic…".
+**Measured sentence pauses** (recommended take, in seconds):
+- stop? 0.48
+- click? 0.40
+- off. 0.56
+- tip? 0.16
+- pumping, 0.24
+- it. 0.80
+- hole, 0.40
+- stops. 0.40
+- diaphragm, 0.32
+- valve. 0.24
+- flowing. 0.64
 
-**Recommendation:** keep the main hook. It is the question viewers actually ask, and it fits a search title. Alternate 2 is the strongest swap if a bolder claim is wanted.
+**The intentional pause after the opening question** measures 0.48 s (natural). The local engine can't add silence at a sentence end. The click is placed 0.1 s before "That", which is 0.38 s after "stop?" ends, inside the gap. The 3-frame freeze follows, and the rewind plays under "That click?". So the transition works with the natural pause. No artificial gap is needed.
 
-## Alternate ending
-> "Next time you hear that click, that's air, a diaphragm and a spring saving your shoes."
+**The ending is not clipped (measured):**
+- In `rev4-recommended`, "hole" decays from −29 dB to −63 dBFS over its last 40 ms. The final 20 ms are at −62.6 dBFS and the last sample is −3/32768.
+- The video runs **0.62 s past the last word**: the mix spans the whole 25.10 s timeline, so ambience carries the tail.
+- Every new take now records this as `ending` in `words.json` (`tools/narration/narrate.mjs`, `endingReport`), and `episode-check` reports it. A final 20 ms above −45 dBFS is flagged as cut off.
+- My earlier "may be clipped" note came from a coarser 120 ms window and was wrong for both takes.
 
-This is warmer and a little comedic, a callback to both the click and the spill. It's about 1.2 s longer, so the trim would have to come from elsewhere (for example "flexible").
+## Against the 28–32 s target (resolved: keep about 25 s)
+Both measured takes are **under** the target: 21.8 s as written, 24.5 s recommended. The script is shorter, not too long, so no speed-up or trimming is needed. Options, without changing the voice's speed:
 
-**Recommendation:** the main ending ("All from one tiny hole."), which is shorter and loops cleanly.
+1. **Recommended: keep it at about 25 s.** The story is complete, every beat has room, and a tighter Short helps retention. The longest shot is 4.4 s, the shortest 0.97 s.
+2. **Add one line of real explanation** (about +3 s, estimated from the narrator's pace; not measured). In the airflow beat, "Inside, the fuel squeezes through a narrow spot, creating suction." makes the venturi explicit and reaches about 28 s.
+3. **Add a designed beat after "stop?"** (about +0.5–0.7 s) by inserting silence into the take at the measured gap. This is an audio edit, not a speed change, and the tool for it isn't built yet.
+
+Final timing is re-measured on the production take after approval. Every cut and cue is anchored to words, so it follows that take automatically.

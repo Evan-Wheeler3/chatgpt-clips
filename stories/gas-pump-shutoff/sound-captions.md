@@ -1,51 +1,50 @@
-# Sound and caption plan
+# Sound and caption plan (revision 2)
 
-Everything uses the Phase 6.2 systems unchanged:
-- the hold-up caption style;
-- the effect scheduler with manual cues;
-- the mixer (narration at −16 LUFS, effects −3 dB under speech, a −14 LUFS / −1.5 dBTP master).
+The Phase 6.2 systems are used unchanged:
+- the hold-up captions;
+- the scheduler with manual cues;
+- the mixer (narration −16 LUFS, effects −3 dB under speech, master −14 LUFS / −1.5 dBTP).
 
 **Music:** none (no approved music exists).
 
-## Sound-effect cues (`story.json` → `audio.sfx`; times from the scratch timeline)
-| Cue | Anchor | ≈ time | Asset (new) | Source plan |
+## Sourcing policy (owner direction)
+- **Natural recordings first:** verified **CC0** recordings, especially for the liquid sounds. Each import goes through `tools/audio/import.mjs` with its licence, source page, author and evidence, and starts as `pending-review`.
+- **Synthesized alternatives** are generated with `tools/audio/synth.mjs` and compared by ear. The owner picks.
+- Every asset keeps its licensing metadata in `audio/catalog.json`. Nothing is used before approval.
+- **No sound has been sourced, created or downloaded yet.**
+
+## Cues (`story.json` → `audio.sfx`; **measured** times on the `rev4-recommended` take)
+| Cue | Anchor | Time (s) | Asset (new) | Source |
 |---|---|---|---|---|
-| Overflow gush | 0.5 s before "How" | 0.14 s | `fuel-gush-loop` | **Hard to synthesize convincingly** (pouring liquid). Either a CC0 recording import with licence evidence, or a synthesis attempt reviewed by ear. Owner decision |
-| Splash on pavement | "know" | 1.65 s | `fuel-splash` | Same as above |
-| **CLICK** (hook) | 0.1 s before "It", on the cut | 2.81 s | `nozzle-click` | Synthesize: a metal modal impact (a sharp latch tick plus a lower valve clack, about 120 ms). +2 dB. The gush stops dead here |
-| Rewind | 0.04 s before "It" | 2.87 s | `rewind-swoosh` | Synthesize from the existing whoosh generator, reversed, with a rising pitch sweep |
-| Air suction | "pulls" | 14.35 s | `air-suction-loop` | Synthesize: band-passed noise, a thin airy hiss, loopable. −4 dB |
-| Air stops | "No" | 21.60 s | `air-stop` | Synthesize: the hiss choked off with a fast low-pass sweep |
-| Diaphragm | "tugs" | 23.31 s | `diaphragm-flex` | Synthesize: a soft rubbery thump |
-| Latch | "latch" | 26.26 s | `latch-release` | Synthesize: a small metal snick |
-| **CLICK** (payoff) | "snaps" | 28.71 s | `nozzle-click` | The same asset as the hook, on purpose (callback). +2 dB |
+| Overflow gush | 0.5 s before "How" | 0.22 | `fuel-gush-loop` | **CC0 recording** (liquid pouring); a synth alternative for comparison |
+| Splash | "know" | 1.68 | `fuel-splash` | **CC0 recording**; a synth alternative |
+| **CLICK** (hook) | "That" − 0.1 s, the freeze frame | 2.86 | `nozzle-click` | A CC0 recording of a real nozzle or latch click if found; otherwise a synthesized metal impact. +2 dB. The gush stops dead here |
+| Rewind | "That" + 0.03 s | 2.99 | `fuel-gush-reversed` | **Derived** from the approved gush recording: reversed, +1–2 semitones. It inherits the source licence |
+| Gulp | end of "click?" | 3.57 | `fuel-gulp` | CC0 recording, or derived from the splash |
+| Air suction | "sucks" | 10.88 | `air-suction-loop` | Synthesized band-passed hiss; a CC0 air-leak recording as the alternative |
+| Air stops | "stops" (1st) | 16.32 | `air-stop` | Synthesized choke-off |
+| Diaphragm | "pulls" | 18.00 | `diaphragm-flex` | Synthesized soft rubbery thump |
+| Latch | "releasing" | 19.52 | `latch-release` | A CC0 small-metal recording or a synth |
+| **CLICK** (payoff) | "valve." | 20.64 | `nozzle-click` | The same asset as the hook; synchronized to valve closure |
 
-**Automatic cues:**
-- The scheduler adds gesture rustles for the driver's big poses (surprised, point, thumbs-up) once the character exists.
-- No roll, pivot or walk events.
+The pump-counter cue from revision 3 is removed: revision 4 has no pump-computer shot.
 
-**Ambience:** a new `gas-station` profile in `audio/ambience.json`:
-- light wind, distant traffic and a faint canopy-light hum;
-- ducked 3 dB under speech;
-- lowered a further 3 dB inside the cutaway (shots 3–9) so the mechanism sounds "inside".
-- The hum and wind are synthesizable. Distant traffic is better as a CC0 recording.
-- The per-shot ambience level is a **new feature**: the current profile has one level.
+**Ambience:** a new `gas-station` profile (wind, distant traffic, canopy hum).
+- Distant traffic should be a **CC0 recording**; the hum and wind can be synthesized.
+- Ducked 3 dB under speech, plus 3 dB lower inside the cutaway.
 
-**Licensing:** every new asset goes through `tools/audio/import.mjs` (licence + source + evidence; CC0 / CC-BY only) or `tools/audio/synth.mjs` (original, CC0 dedication). Nothing is used before human approval. **No sound has been created or downloaded in Phase 7A.**
+**Needed mixer features (planned, not built):**
+- a per-shot ambience level;
+- a **150 ms ambience dip** on the hook click, to create the near-silence;
+- a hard stop of a looping effect at a cue (the gush stops dead on the click).
 
 ## Captions
-- **Style:** hold-up (Avenir Next Heavy 74 px, ink stroke, amber highlight for the spoken word).
-- **28 groups** (from `episode-check`).
+- **Style:** hold-up, 22 groups (measured take).
 - **Emphasis:**
-  - voice markup on nozzle, air, suction and snaps;
-  - plus "hole" via `captions.emphasize` (amber at each mention: the visual motif).
-- **Placement keeps the nozzle visible:**
-  - **Exterior shots 1, 2 and 10:** automatic band, which chose *lower*. The nozzle and filler neck are framed in the middle third, and the driver's head is in the upper half.
-  - **Cutaway shots 3–9:** **pinned upper band** (0.24). Every mechanism framing must keep the moving part in the lower two-thirds. That is a composition rule for Phase 7B framing, checked by caption QA.
-- **Known caption issues to recheck with the real take:**
-  - "See this tiny *hole* near / the tip?" splits before "the tip": a weak 2-word tail from the 24-character limit. Acceptable; the real pauses may regroup it.
-  - "and a spring *snaps*" starts in `latch` and the group continues into `snap`. A group belongs to the shot of its first word, so "snaps" is captioned over the latch frame for about 0.4 s before the cut. Options:
-    - anchor the `snap` cut to "and#2"; or
-    - accept it (the word lands right before its picture).
-
-    To decide on the real take.
+  - voice: nozzle, hole, air, stops, suction, hole;
+  - captions: the same, plus every "hole".
+- **Placement:**
+  - **Exterior shots 1–3, 9 and 10:** lower band. The nozzle and filler neck stay in the middle third.
+  - **Cutaway shots 4–8:** **pinned upper**. Mechanism framings keep the moving part in the lower two-thirds.
+- **Group boundaries match the cuts**, measured: "That click?" is its own group on the rewind; "on a diaphragm, releasing" stays in `diaphragm`; "a spring-loaded valve." opens `valve-shut`.
+- **To recheck on the production take:** "See this tiny *hole* near / the tip?" (a weak two-word tail) and "All because of that tiny / *hole.*" (a single-word last group). The second ends on the payoff word, which is acceptable and arguably stronger.

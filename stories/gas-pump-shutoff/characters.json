@@ -1,29 +1,79 @@
 {
   "story": "gas-pump-shutoff",
-  "status": "character requirements for Phase 7A pre-production (no artwork yet)",
-  "premise": "A driver at a modern gas station watches the pump fail to stop and gasoline overflow (an exaggerated what-if), then a CLICK rewinds it: the nozzle itself knows when to stop. The camera dives into a cutaway of the nozzle to show the sensing hole, the airflow, the vacuum, the diaphragm and the latch.",
-  "setting": {"era": 2026, "place": "a clean, modern self-service gas station in daylight"},
+  "status": "character requirements, Phase 7A revision 2: the owner chose a recurring Hold Up protagonist (male, 20s-30s); no artwork yet",
+  "premise": "Hold Up's recurring everyday protagonist: a modern guy who keeps running into everyday mysteries (and, in other episodes, wakes up in history). In this episode he watches the pump fail to stop and gasoline overflow (an exaggerated what-if), then a CLICK rewinds it: the nozzle itself knows when to stop.",
+  "setting": {
+    "era": 2026,
+    "place": "the present day, his home era (he also visits historical eras in other episodes; first episode: a modern self-service gas station)"
+  },
   "ownerDecisions": [
-    "the protagonist's gender and look (kept open)",
-    "whether this driver becomes Hold Up's recurring modern everyperson, shared with the 1873 saloon story's time-traveller (recommended: one character, not two)"
+    "approved by the owner (Phase 7A review): a reusable, original, modern adult male protagonist, about 20-30s, casual clothes, visually distinctive, simple expressive face, in the approved character style; recurring, including historical/time-travel stories, with swappable outfits and accessories; not the cooper",
+    "still open: his name (the intake id hold-up-protagonist is a working id)",
+    "still open: the final look, chosen from the generated sheet at design approval"
   ],
   "requests": [
     {
       "slot": "protagonist",
+      "intakeId": "hold-up-protagonist",
       "role": "driver",
-      "description": "An ordinary, relatable modern adult filling up their own car: the viewer's stand-in. Expressive and a little comedic; on screen briefly in the hook, the rewind and the payoff.",
-      "age": "adult (mid 20s to 30s)",
+      "description": "Hold Up's recurring everyday protagonist: an ordinary, likeable modern man (the viewer's stand-in) who reacts big to small mysteries. The same face and body in every episode; only his outfit and accessories change with the story.",
+      "age": "adult man, about 25-35",
       "era": 2026,
-      "outfit": {"era": 2026, "description": "everyday modern clothes that read instantly at phone size", "tags": ["modern", "casual"]},
-      "personality": "relatable, slightly clumsy, curious; big readable reactions",
-      "silhouette": "simple and friendly: compact Hold Up proportions, a distinctive hairstyle or cap, one strong jacket colour that reads against concrete and a red or white pump",
-      "garments": ["round cartoon head", "zip jacket or hoodie", "plain T-shirt", "jeans", "sneakers", "mitten hands"],
-      "accessories": ["fuel nozzle (held; the dispensing nozzle prop, not character artwork)", "car keys (optional)"],
-      "expressions": {
-        "required": ["neutral", "happy", "surprised", "concerned"],
-        "role": ["panicked (wide eyes, raised brows, small open mouth) for the overflow", "relieved (soft smile, lowered brows) after the click", "curious (one brow up, small mouth) as the explanation starts", "impressed (raised brows, open smile) at the payoff"]
+      "outfit": {
+        "era": 2026,
+        "description": "base outfit: everyday modern casual that reads instantly at phone size",
+        "tags": [
+          "modern",
+          "casual",
+          "base"
+        ]
       },
-      "poses": ["holding a nozzle in the filler neck (arm extended, hand at the nozzle grip)", "recoiling from the overflow (lean back, free hand up)", "pointing at the nozzle", "relaxed stance, nozzle hung back on the pump"]
+      "personality": "relatable, curious, a little clumsy and easily startled, quick to grin; big readable reactions",
+      "silhouette": "instantly recognisable even in a different outfit or era: a tall, tousled dark-brown quiff that tips slightly forward (his signature shape, kept in every story), a slim build with slightly long arms, compact Hold Up proportions with a large head; one strong, muted teal jacket colour that reads against grey concrete and a red-and-white pump",
+      "contrastWith": "the cooper (approved 1870s craftsman): the protagonist must read as clearly modern and younger, with a different head shape, hair and palette",
+      "garments": [
+        "round cartoon head",
+        "tall, tousled dark-brown quiff (signature, never covered by default)",
+        "muted teal zip-up hooded jacket, worn open, sleeves pushed up slightly",
+        "plain cream T-shirt",
+        "dark-blue jeans, cuffs rolled once",
+        "simple white sneakers with one muted red stripe (the single warm accent)",
+        "mitten hands"
+      ],
+      "accessories": [
+        "smartphone (small, plain, no logo)",
+        "car key fob (small, plain)"
+      ],
+      "expressions": {
+        "required": [
+          "neutral",
+          "happy",
+          "surprised",
+          "concerned"
+        ],
+        "role": [
+          "panicked (wide eyes, raised brows, small open mouth) for the overflow",
+          "relieved (soft smile, lowered brows) after the click",
+          "curious (one brow up, small mouth) as the explanation starts",
+          "impressed (raised brows, open smile) at the payoff"
+        ]
+      },
+      "poses": [
+        "holding a fuel nozzle in a car's filler neck (arm extended, hand closed around an empty grip)",
+        "recoiling (lean back, free hand up)",
+        "pointing at something low in front of him",
+        "glancing back over his shoulder",
+        "relaxed stance, thumbs-up"
+      ],
+      "wardrobe": [
+        "base: modern casual (teal open hoodie-jacket, cream T-shirt, jeans, white sneakers) [this sheet]",
+        "1873 Kansas saloon (the planned time-travel story): he arrives in his modern base outfit (the fish-out-of-water joke); a period duster coat and hat are later variants",
+        "future historical variants as layers over the same body: period coats, hats, aprons and tools, chosen per story",
+        "accessories as separate layers: smartphone, key fob, backpack, cap, sunglasses, period hats"
+      ],
+      "props": [
+        "fuel nozzle: the episode's 3D hero prop, held in the grip pose; not character artwork"
+      ]
     }
   ]
 }

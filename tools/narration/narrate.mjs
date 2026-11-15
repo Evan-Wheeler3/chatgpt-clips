@@ -43,6 +43,26 @@ export function pauseReport(script, words) {
  * Writes production/<slug>/takes/<take>/{narration.wav, words.json} and copies both to production/<slug>/ (active).
  * Timing is always measured: the provider's alignment when it returns one, otherwise whisper.cpp; never estimated from text.
  */
+// Is the last word cut off? Loudness of the file's final 20 ms (PCM16 WAV) and the room left after the last word.
+// A natural ending has decayed well below speech level before the file ends.
+export const ENDING_CUT_DB = -45;
+export function endingReport(wav, words) {
+  let rate = 48000, p = 12, data = null;
+  while (p + 8 <= wav.length) {
+    const id = wav.toString('ascii', p, p + 4), size = wav.readUInt32LE(p + 4);
+    if (id === 'fmt ') rate = wav.readUInt32LE(p + 12);
+    if (id === 'data') { data = wav.subarray(p + 8, Math.min(wav.length, p + 8 + size)); break; }
+    p += 8 + size + (size % 2);
+  }
+  if (!data) throw new Error('No PCM data chunk in narration WAV');
+  const samples = data.length >> 1, n = Math.min(samples, Math.round(rate * 0.02));
+  let sum = 0;
+  for (let i = samples - n; i < samples; i++) { const v = data.readInt16LE(i * 2) / 32768; sum += v * v; }
+  const finalDb = +(10 * Math.log10(sum / Math.max(1, n) + 1e-12)).toFixed(1), fileEndSec = +(samples / rate).toFixed(3);
+  const lastWordEndSec = words.at(-1)?.end ?? 0;
+  return {lastWordEndSec, fileEndSec, silenceAfterLastWordSec:+(fileEndSec - lastWordEndSec).toFixed(3), finalDb, cut:finalDb > ENDING_CUT_DB};
+}
+
 export async function narrate({slug, narration, outDir, audioPath = null, profile = null, authorization = null, verifyAlignment = false, take = null}) {
   await mkdir(outDir, {recursive:true});
   const work = await mkdtemp(join(tmpdir(), 'hold-up-narrate-'));
@@ -85,7 +105,7 @@ export async function narrate({slug, narration, outDir, audioPath = null, profil
       audio:{file:'narration.wav', sha256:createHash('sha256').update(data).digest('hex'), durationSec:await audioDuration(wav), sampleRate:48000},
       source:{engine:provider.id, profile:voice.profile.id, reason:voice.reason, voiceId:voice.profile.voiceId ?? null, modelId:voice.profile.modelId ?? null, settings:voice.profile.settings ?? null,
         renderedText:synth.renderedText, cached:synth.cached, costUsd:synth.costUsd, cacheKey:synth.key},
-      aligner, alignmentCrossCheck:crossCheck, quality, pauses:pauseReport(narration.script, words), islands, recognized, words
+      aligner, alignmentCrossCheck:crossCheck, quality, pauses:pauseReport(narration.script, words), ending:endingReport(data, words), islands, recognized, words
     };
     await writeFile(join(takeDir, 'words.json'), JSON.stringify(result, null, 2) + '\n');
     await copyFile(wav, join(outDir, 'narration.wav'));

@@ -1,0 +1,123 @@
+{
+  "story": "gas-pump-shutoff",
+  "slot": "protagonist",
+  "kind": "new",
+  "subject": "a new character: driver",
+  "premise": "Hold Up's recurring everyday protagonist: a modern guy who keeps running into everyday mysteries (and, in other episodes, wakes up in history). In this episode he watches the pump fail to stop and gasoline overflow (an exaggerated what-if), then a CLICK rewinds it: the nozzle itself knows when to stop.",
+  "character": {
+    "role": "driver",
+    "age": "adult man, about 25-35",
+    "era": 2026,
+    "personality": "relatable, curious, a little clumsy and easily startled, quick to grin; big readable reactions",
+    "description": "Hold Up's recurring everyday protagonist: an ordinary, likeable modern man (the viewer's stand-in) who reacts big to small mysteries. The same face and body in every episode; only his outfit and accessories change with the story.",
+    "silhouette": "instantly recognisable even in a different outfit or era: a tall, tousled dark-brown quiff that tips slightly forward (his signature shape, kept in every story), a slim build with slightly long arms, compact Hold Up proportions with a large head; one strong, muted teal jacket colour that reads against grey concrete and a red-and-white pump",
+    "contrastWith": "the cooper (approved 1870s craftsman): the protagonist must read as clearly modern and younger, with a different head shape, hair and palette"
+  },
+  "clothing": [
+    "round cartoon head",
+    "tall, tousled dark-brown quiff (signature, never covered by default)",
+    "muted teal zip-up hooded jacket, worn open, sleeves pushed up slightly",
+    "plain cream T-shirt",
+    "dark-blue jeans, cuffs rolled once",
+    "simple white sneakers with one muted red stripe (the single warm accent)",
+    "mitten hands"
+  ],
+  "accessories": [
+    "smartphone (small, plain, no logo)",
+    "car key fob (small, plain)"
+  ],
+  "expressions": {
+    "required": [
+      "neutral",
+      "happy",
+      "surprised",
+      "concerned"
+    ],
+    "role": [
+      "panicked (wide eyes, raised brows, small open mouth) for the overflow",
+      "relieved (soft smile, lowered brows) after the click",
+      "curious (one brow up, small mouth) as the explanation starts",
+      "impressed (raised brows, open smile) at the payoff"
+    ]
+  },
+  "poses": [
+    "holding a fuel nozzle in a car's filler neck (arm extended, hand closed around an empty grip)",
+    "recoiling (lean back, free hand up)",
+    "pointing at something low in front of him",
+    "glancing back over his shoulder",
+    "relaxed stance, thumbs-up"
+  ],
+  "wardrobe": [
+    "base: modern casual (teal open hoodie-jacket, cream T-shirt, jeans, white sneakers) [this sheet]",
+    "1873 Kansas saloon (the planned time-travel story): he arrives in his modern base outfit (the fish-out-of-water joke); a period duster coat and hat are later variants",
+    "future historical variants as layers over the same body: period coats, hats, aprons and tools, chosen per story",
+    "accessories as separate layers: smartphone, key fob, backpack, cap, sunglasses, period hats"
+  ],
+  "historicalNotes": null,
+  "styleGuide": {
+    "version": "1.0.0",
+    "basedOn": "cooper@1.0.0",
+    "document": "docs/CHARACTER-STYLE-GUIDE.md"
+  },
+  "artworkRequirements": {
+    "formats": [
+      "png",
+      "jpg",
+      "jpeg",
+      "webp"
+    ],
+    "minLongEdgePx": 1536,
+    "minShortEdgePx": 1024,
+    "background": "plain, light and even; no scene behind the figure",
+    "views": {
+      "required": [
+        "3/4 view, full body, facing screen right"
+      ],
+      "recommended": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    "sheet": [
+      "full-body turnaround",
+      "expression row (the required set at least)",
+      "colour swatches with labels",
+      "separate drawings of removable accessories (hat, tools, weapons)"
+    ],
+    "forbidden": [
+      "copies or close imitations of another creator's characters",
+      "likeness of a real living person",
+      "logos, watermarks or text over the figure"
+    ]
+  },
+  "rig": {
+    "reuse": [
+      "skeleton and pose engine (tools/storyboard/character.mjs)",
+      "pose presets with anticipation",
+      "walk cycle",
+      "push and touch IK (object interaction)",
+      "expression system (face data + faceMap)",
+      "blinks, gaze and head turn",
+      "feet grounding",
+      "painter, card renderer and silhouette shadow",
+      "palette compensation",
+      "attachment layers on any bone (outfits, accessories)",
+      "rig checks, visual regression and approval gates"
+    ],
+    "reusableForms": [
+      "round cartoon head (head)",
+      "mitten hands (hands)"
+    ],
+    "newArtwork": [
+      "tall, tousled dark-brown quiff (signature, never covered by default)",
+      "muted teal zip-up hooded jacket, worn open, sleeves pushed up slightly",
+      "plain cream T-shirt",
+      "dark-blue jeans, cuffs rolled once",
+      "simple white sneakers with one muted red stripe (the single warm accent)",
+      "smartphone (small, plain, no logo) (accessory layer)",
+      "car key fob (small, plain) (accessory layer)"
+    ]
+  },
+  "artworkRequest": "Character design sheet for an original 2D cartoon character for \"Hold Up\", a YouTube Shorts channel. Hold Up's recurring everyday protagonist: an ordinary, likeable modern man (the viewer's stand-in) who reacts big to small mysteries. The same face and body in every episode; only his outfit and accessories change with the story.\n\nSetting: the present day, his home era (he also visits historical eras in other episodes; first episode: a modern self-service gas station), 2026. Age: adult man, about 25-35. Personality: relatable, curious, a little clumsy and easily startled, quick to grin; big readable reactions.\n\nStyle: simple, bold 2D cartoon with flat colours and one thick, even, dark warm outline around every shape; no gradients, textures or hatching. Round, simple face: solid dark oval eyes with no whites, short thick dark eyebrows that carry the expression, no nose or only a tiny mark, a simple line or shape for the mouth. Stylized compact proportions about 2.9-4.2 heads tall, large readable head, simple mitten-like hands.\n\nSilhouette: instantly recognisable even in a different outfit or era: a tall, tousled dark-brown quiff that tips slightly forward (his signature shape, kept in every story), a slim build with slightly long arms, compact Hold Up proportions with a large head; one strong, muted teal jacket colour that reads against grey concrete and a red-and-white pump.\n\nClothing and details: tall, tousled dark-brown quiff (signature, never covered by default), muted teal zip-up hooded jacket, worn open, sleeves pushed up slightly, plain cream T-shirt, dark-blue jeans, cuffs rolled once, simple white sneakers with one muted red stripe (the single warm accent). Muted, period-appropriate colours, at most 5 clothing colours, one warm accent at most.\n\nAccessories, each also drawn separately: smartphone (small, plain, no logo), car key fob (small, plain).\n\nSheet layout on a plain light background: a full-body 3/4 view facing screen right (most important), plus front, side and back views; an expression row with neutral, happy, surprised, concerned, panicked, relieved, curious, impressed; colour swatches with hex labels. A small pose row: holding a fuel nozzle in a car's filler neck (arm extended, hand closed around an empty grip); recoiling (lean back, free hand up); pointing at something low in front of him; glancing back over his shoulder; relaxed stance, thumbs-up.\n\nRecurring character: the head, face, hair and body stay identical in every story while outfits and accessories change. Draw the clothing as clean, separate flat shapes with their own outlines (nothing drawn across the face, and nothing fused to the hands), so outfits can be swapped as layers later. Draw only the base outfit on this sheet.\n\nDo not imitate any existing character, studio or creator; do not resemble a real person; no logos, watermarks or text over the figure."
+}

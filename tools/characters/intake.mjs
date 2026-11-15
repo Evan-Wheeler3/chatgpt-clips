@@ -45,12 +45,13 @@ export function writeBrief(request, resolution, styleGuide, {story, premise, set
     `Clothing and details: ${request.garments.filter(g => !/head|mitten/.test(g)).join(', ')}. Muted, period-appropriate colours, at most ${sg.color.maxClothingColors} clothing colours, one warm accent at most.`,
     `Accessories, each also drawn separately: ${request.accessories.join(', ')}.`,
     `Sheet layout on a plain light background: a full-body 3/4 view facing screen right (most important), plus front, side and back views; an expression row with ${[...request.expressions.required, ...request.expressions.role.map(e => e.split(' (')[0])].join(', ')}; colour swatches with hex labels.${request.poses?.length ? ` A small pose row: ${request.poses.join('; ')}.` : ''}`,
+    ...(request.wardrobe ? [`Recurring character: the head, face, hair and body stay identical in every story while outfits and accessories change. Draw the clothing as clean, separate flat shapes with their own outlines (nothing drawn across the face, and nothing fused to the hands), so outfits can be swapped as layers later. Draw only the base outfit on this sheet.`] : []),
     `Do not imitate any existing character, studio or creator; do not resemble a real person; no logos, watermarks or text over the figure.`
   ].join('\n\n');
   return {
     story, slot:request.slot, kind:variant ? 'variant' : 'new', subject, premise,
     character:{role:request.role, age:request.age, era:request.era, personality:request.personality, description:request.description, silhouette:request.silhouette, contrastWith:request.contrastWith ?? null},
-    clothing:request.garments, accessories:request.accessories, expressions:request.expressions, poses:request.poses ?? [], historicalNotes:request.historicalNotes ?? null,
+    clothing:request.garments, accessories:request.accessories, expressions:request.expressions, poses:request.poses ?? [], wardrobe:request.wardrobe ?? null, historicalNotes:request.historicalNotes ?? null,
     styleGuide:{version:sg.version, basedOn:sg.basedOn, document:'docs/CHARACTER-STYLE-GUIDE.md'},
     artworkRequirements:{formats:sg.artwork.formats, minLongEdgePx:sg.artwork.minLongEdgePx, minShortEdgePx:sg.artwork.minShortEdgePx, background:sg.artwork.background, views:sg.artwork.views, sheet:sg.artwork.sheet, forbidden:sg.artwork.forbidden},
     rig:resolution.rig,
@@ -84,7 +85,7 @@ ${list(brief.accessories)}
 - **Required:** ${brief.expressions.required.join(', ')}
 - **For this role:**
 ${list(brief.expressions.role).replace(/^/gm, '  ')}
-${brief.poses?.length ? `\n## Poses the rig must reach\n${list(brief.poses)}\n` : ''}${brief.historicalNotes ? `\n## Historical notes (${brief.historicalNotes.status})\n${list(brief.historicalNotes.notes)}\n` : ''}
+${brief.poses?.length ? `\n## Poses the rig must reach\n${list(brief.poses)}\n` : ''}${brief.wardrobe ? `\n## Recurring wardrobe (later outfit/accessory variants; not drawn on this sheet)\n${list(brief.wardrobe)}\n` : ''}${brief.historicalNotes ? `\n## Historical notes (${brief.historicalNotes.status})\n${list(brief.historicalNotes.notes)}\n` : ''}
 ## Artwork requirements
 - **Format:** ${brief.artworkRequirements.formats.join('/')}, at least ${brief.artworkRequirements.minLongEdgePx}×${brief.artworkRequirements.minShortEdgePx} px
 - **Background:** ${brief.artworkRequirements.background}
@@ -120,7 +121,8 @@ export async function createBriefs(storyFile, {root = ROOT, slots = null} = {}) 
   for (const [i, request] of requests.entries()) {
     const resolution = resolutions[i];
     if (resolution.decision === 'reuse') { created.push({slot:request.slot, decision:'reuse', character:resolution.character}); continue; }
-    const id = `${spec.story}-${request.slot}`, dir = dirOf(id, root);
+    // A recurring character keeps a stable id that is not tied to the story that first needed it
+    const id = request.intakeId ?? `${spec.story}-${request.slot}`, dir = dirOf(id, root);
     await mkdir(join(dir, 'artwork'), {recursive:true});
     const brief = writeBrief(request, resolution, sg, {story:spec.story, premise:spec.premise, setting:{place:spec.setting.place, era:spec.setting.era}});
     await writeJson(join(dir, 'brief.json'), brief);

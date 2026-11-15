@@ -1,34 +1,40 @@
-# Asset requirements
+# Asset requirements (asset-first; see `sourcing-report.md`)
 
-Resolver result (`episode-check`): **all 5 story props are missing** from `assets/catalog.json`. They are recorded as `MISSING_ASSET` errors, and nothing was substituted. Nothing has been downloaded in this phase.
+- **Local catalog:** all 5 story props are `MISSING_ASSET` (recorded, nothing substituted).
+- **Missing locally is not the same as unavailable.** Real, licence-verified candidates exist online for every ordinary object. Custom work is limited to what no free model can show: the nozzle's internal mechanism and a few small details.
+- **Nothing has been downloaded.**
 
 **Classification key:**
-- **A**: available locally and verified;
-- **M**: modify existing work;
-- **X**: verified external (needs an approved adapter + human approval before download);
-- **C**: custom modeling or code;
-- **H**: needs human artwork approval.
+- **A:** available locally.
+- **P:** available through the approved Poly Haven adapter (CC0).
+- **S:** a sourced external candidate. The licence is verified on its page; it needs the Sketchfab or Poly Pizza adapter, then convert, owner review and register.
+- **C:** custom, only where sourcing can't work.
+- **H:** human artwork approval.
 
-| Need | Shots | Class | Plan | Notes |
-|---|---|---|---|---|
-| Protagonist "driver" | 1, 2, 10 | **H** | Intake `characters/intake/gas-pump-shutoff-protagonist/` (awaiting artwork) | See `characters.md`. The cooper is not reused |
-| Nozzle exterior + cutaway (one model) | all | **C** | Blender hero model or parametric Three.js (see `mechanism-plan.md`) | The most important asset. Generic and unbranded |
-| Spout tip + filler pipe cutaway | 3, 5, 6 | **C** | Simple lathe geometry | Shares the spout with the nozzle |
-| Car (rear quarter, fuel door, filler neck) | 1, 2, 10 | **C** (or **X**) | Model only what's seen: the rear quarter panel, wheel arch, fuel door and neck. The wide outro (shot 10) needs a full silhouette, so either a simple stylized full car (C) or a vetted CC0 low-poly car (X) | No car in the catalog. Search-result titles are not licence evidence |
-| Fuel dispenser (pump) | 1, 10 | **C** (or **X**) | A stylized box dispenser with a hose and nozzle holster, no screen text or logos | Background-soft in shot 1, readable in shot 10 |
-| Gas station environment | 1, 2, 10 | **M** | A new `environments/gas-station.json`. The environment compiler needs **new outdoor types**: an open ground with no walls, a canopy (roof slab on columns), a pump island (curb) | Today's compiler only builds interior rooms (floor, walls, plinth, piers, trusses, rack) |
-| Asphalt / concrete textures | 1, 2, 10 | **X** | Poly Haven CC0 textures via the existing approved Poly Haven adapter | The CC0 licence is verified per asset at import (polyhaven.com/license). The current texture catalog has none suitable |
-| Outdoor HDRI / sky | 1, 10 | **X** or **C** | A Poly Haven CC0 HDRI, or the existing gradient sky (`stage.background`) | The gradient sky is enough for the stylized look; the HDRI is optional |
-| Station dressing (bin, bollards, wet-floor sign) | 10 | **X** / optional | Poly Haven CC0 props | Not required. Skip if time is short |
-| Fluid effects (spill, streaks, level, air) | 1–9 | **C** | Shader + animated meshes + sprite particles (code, not assets) | No fluid simulation |
-| Highlight ring, x-ray material, shake | 3, 9 | **C** | Code | |
-| SFX + ambience | all | **C** / **X** | See `sound-captions.md` | 8 effects + 1 ambience profile are missing |
+| Need | Shots | Class | Plan |
+|---|---|---|---|
+| Recurring protagonist | 1–3, 9 | **H** | Intake `characters/intake/hold-up-protagonist/` (ChatGPT image brief; awaiting artwork) |
+| Nozzle exterior | 1–4, 9, 10 | **S** | ghostbusterjeffrey "Gas Pump Nozzle" (CC-BY-4.0), restyled; a section cut in Three.js |
+| Nozzle internal mechanism | 5–8 | **C** | Custom parts fitted inside the sourced shell (`mechanism-plan.md`) |
+| Sensing hole, filler-neck cutaway, car fuel door | 4–6, 10 | **C** (small) | Simple custom details |
+| Fuel dispenser | 1, 9 (background) | **S** | kunkun "gas pump" (CC-BY-4.0), clean texture set |
+| Station (canopy, island, shop, sign) | 1, 9 | **S** | Elbolillo "Gas station" + "Gas station Props" (CC-BY-4.0; CC0 FBX alternative), re-textured |
+| Car | 1–3, 9 | **S** | Comrade1280 "Generic passenger car pack" (CC-BY-4.0), or a CC0 Quaternius / Kay Lousberg car after a preview comparison |
+| Ground and island textures | 1, 9 | **P** | `clean_asphalt`, `asphalt_floor` |
+| Dressing | 1, 9 | **P** | `metal_trash_can`, `concrete_road_barrier`, `WetFloorSign_01`, `fire_hydrant`, `korean_fire_extinguisher_01` |
+| Sky | 1, 9 | **A** / **P** | Gradient-sky stage (existing), or a Poly Haven HDRI |
+| Fluid, air, x-ray, highlight, shake | 1–8 | **C** (code) | Effects, not assets |
+| Sounds and ambience | all | see `sound-captions.md` | Verified CC0 recordings first (especially the liquids); synthesized alternatives tested |
 
-**Reused as-is (A):**
-- the hold-up caption style;
-- the narrator profile;
+**Reused unchanged:**
+- the caption style;
+- the narrator;
 - the audio scheduler and mixer;
-- the vector character rig and approval gates;
-- the storyboard compiler and validator.
+- the character rig and approval gates;
+- the storyboard compiler and validator;
+- the converter, validator and registration.
 
-**Readiness:** 0 of 5 props available, 1 character awaiting artwork, 0 of 9 sounds available. **Production cannot start until the nozzle model and the protagonist exist.**
+**Pipeline additions needed:**
+- a Sketchfab provider adapter, using the owner's free API token for downloads;
+- optionally, a Poly Pizza adapter;
+- environment-compiler support for an outdoor scene made of placed models (the current compiler builds interior rooms only).

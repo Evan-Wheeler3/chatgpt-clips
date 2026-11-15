@@ -109,6 +109,30 @@
       }
     },
     {
+      "id": "hold-up-protagonist",
+      "name": "protagonist (gas-pump-shutoff)",
+      "kind": "intake",
+      "status": "awaiting-artwork",
+      "roles": [
+        "driver"
+      ],
+      "family": null,
+      "era": {
+        "from": 2026,
+        "to": 2026
+      },
+      "regions": [],
+      "description": "Hold Up's recurring everyday protagonist: an ordinary, likeable modern man (the viewer's stand-in) who reacts big to small mysteries. The same face and body in every episode; only his outfit and accessories change with the story.",
+      "approvals": {
+        "design": "pending",
+        "rig": "pending",
+        "production": "pending"
+      },
+      "files": {
+        "intake": "characters/intake/hold-up-protagonist/intake.json"
+      }
+    },
+    {
       "id": "saloon-1873-gunfighter",
       "name": "gunfighter (saloon-1873)",
       "kind": "intake",

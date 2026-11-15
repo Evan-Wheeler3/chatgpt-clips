@@ -6,6 +6,7 @@ import { validatePlan } from './storyboard/validate.mjs';
 import { scheduleSfx } from './audio/schedule.mjs';
 import { loadCatalog } from './audio/catalog.mjs';
 import { spokenWords } from './narration/markup.mjs';
+import { endingReport } from './narration/narrate.mjs';
 
 /*
  * Pre-production check for an episode (no narration, no rendering): estimates the spoken duration from the approved
@@ -13,6 +14,7 @@ import { spokenWords } from './narration/markup.mjs';
  * it. It reports anchors, missing assets and characters, caption groups and the sound effects the scheduler would add.
  * Every number here is an estimate; real timing comes from the narration take and forced alignment.
  *   node tools/episode-check.mjs --story stories/<slug>/story.json [--reference production/<slug>/words.json]
+ * With --words <take words.json> it uses a real, forced-aligned narration take instead (measured timing, no estimate).
  */
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const exists = p => access(p).then(() => true, () => false);
@@ -39,13 +41,27 @@ export function scratchWords(script, pace) {
   return {words:out, durationSec:+(out.at(-1).end + Math.max(0.5, pace.tailSec)).toFixed(2)};
 }
 
-export async function checkEpisode(storyFile, {referenceWords = join(root, 'production/barrel-bilge/words.json')} = {}) {
+export async function checkEpisode(storyFile, {referenceWords = join(root, 'production/barrel-bilge/words.json'), wordsFile = null} = {}) {
   const story = JSON.parse(await readFile(storyFile, 'utf8')), report = {story:story.slug, generatedAt:new Date().toISOString(), notes:[]};
-  const reference = JSON.parse(await readFile(referenceWords, 'utf8'));
-  const pace = {...measurePace(reference.words, reference.audio.durationSec), source:referenceWords.replace(root + '/', '')};
-  const scratch = scratchWords(story.narration.script, pace);
-  report.estimate = {words:scratch.words.length, durationSec:scratch.durationSec, pace:{lettersPerSec:+pace.lettersPerSec.toFixed(1), sentenceGapSec:+pace.sentenceGapSec.toFixed(2), leadInSec:pace.leadInSec, source:pace.source},
-    caveat:'Estimated from the approved narrator\'s measured pace; the real take decides (delivery varies with punctuation and emphasis).'};
+  let scratch;
+  if (wordsFile) {
+    // A real take: measured word timing from the narration engine's aligner
+    const take = JSON.parse(await readFile(wordsFile, 'utf8'));
+    const spoken = spokenWords(story.narration.script).join(' '), taken = take.words.map(w => w.text).join(' ');
+    if (spoken !== taken) throw new Error(`The take's words differ from story.json's script; narrate the current script first`);
+    scratch = {words:take.words, durationSec:take.audio.durationSec};
+    const gaps = take.words.slice(1).map((w, i) => ({after:take.words[i].text, sec:+(w.start - take.words[i].end).toFixed(3)})).filter(g => /[.?!:]$/.test(g.after));
+    // The ending: is the last word cut off, and how much room does the video leave after it?
+    const ending = take.ending ?? endingReport(await readFile(join(dirname(wordsFile), take.audio.file ?? 'narration.wav')), take.words);
+    report.measured = {take:take.take, words:take.words.length, durationSec:take.audio.durationSec, leadInSec:take.words[0].start, ending,
+      lastWordEndSec:take.words.at(-1).end, sentenceGaps:gaps, aligner:take.aligner?.engine ?? null, exact:`${take.quality.exact}/${take.quality.scriptWords}`, source:wordsFile.replace(root + '/', '')};
+  } else {
+    const reference = JSON.parse(await readFile(referenceWords, 'utf8'));
+    const pace = {...measurePace(reference.words, reference.audio.durationSec), source:referenceWords.replace(root + '/', '')};
+    scratch = scratchWords(story.narration.script, pace);
+    report.estimate = {words:scratch.words.length, durationSec:scratch.durationSec, pace:{lettersPerSec:+pace.lettersPerSec.toFixed(1), sentenceGapSec:+pace.sentenceGapSec.toFixed(2), leadInSec:pace.leadInSec, source:pace.source},
+      caveat:'Estimated from the approved narrator\'s measured pace; the real take decides (delivery varies with punctuation and emphasis).'};
+  }
   // Not built yet: characters and environments that do not exist are reported and stripped so the rest can be checked
   const staged = structuredClone(story);
   report.cast = [];
@@ -60,6 +76,13 @@ export async function checkEpisode(storyFile, {referenceWords = join(root, 'prod
   else report.environment = story.environment ? {id:story.environment.id, available:true} : null;
   const plan = await compileStory(staged, {words:scratch.words, audio:{durationSec:scratch.durationSec}});
   const v = validatePlan(plan);
+  if (report.measured) {
+    const videoSec = plan.durationFrames / plan.fps;
+    report.measured.videoSec = +videoSec.toFixed(2);
+    report.measured.videoTailAfterLastWordSec = +(videoSec - report.measured.lastWordEndSec).toFixed(2);
+    if (report.measured.ending.cut) report.notes.push(`The last word may be cut off: the take's final 20 ms are at ${report.measured.ending.finalDb} dBFS`);
+    if (report.measured.videoTailAfterLastWordSec < 0.5) report.notes.push('Less than 0.5 s of video after the last word');
+  }
   report.shots = plan.shots.map(s => ({id:s.id, start:+(s.startFrame / plan.fps).toFixed(2), end:+(s.endFrame / plan.fps).toFixed(2), sec:+((s.endFrame - s.startFrame) / plan.fps).toFixed(2), move:s.camera.behavior, transition:s.transition?.type ?? 'cut'}));
   report.missingAssets = plan.missingAssets;
   report.validation = {status:v.status, errors:v.errors.map(e => `${e.code} ${e.shot ?? e.prop ?? ''}: ${e.message}`), warnings:[...new Set(v.warnings.map(w => `${w.code} ${w.shot ?? ''}`))]};
@@ -74,7 +97,8 @@ export async function checkEpisode(storyFile, {referenceWords = join(root, 'prod
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2), opt = name => args.includes(name) ? args[args.indexOf(name) + 1] : undefined;
   const storyFile = resolve(process.cwd(), opt('--story'));
-  checkEpisode(storyFile, {referenceWords:opt('--reference') ? resolve(process.cwd(), opt('--reference')) : undefined}).then(async r => {
+  checkEpisode(storyFile, {referenceWords:opt('--reference') ? resolve(process.cwd(), opt('--reference')) : undefined,
+    wordsFile:opt('--words') ? resolve(process.cwd(), opt('--words')) : null}).then(async r => {
     const out = join(root, 'production', r.story); await mkdir(out, {recursive:true});
     await writeFile(join(out, 'preproduction-check.json'), JSON.stringify(r, null, 2) + '\n');
     process.stdout.write(JSON.stringify(r, null, 2) + '\n');

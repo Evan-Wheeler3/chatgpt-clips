@@ -1,0 +1,32 @@
+{
+  "id": "hold-up-protagonist",
+  "name": "protagonist (gas-pump-shutoff)",
+  "status": "awaiting-artwork",
+  "story": "gas-pump-shutoff",
+  "slot": "protagonist",
+  "created": "2026-11-15",
+  "request": {
+    "roles": [
+      "driver"
+    ],
+    "era": {
+      "from": 2026,
+      "to": 2026
+    },
+    "description": "Hold Up's recurring everyday protagonist: an ordinary, likeable modern man (the viewer's stand-in) who reacts big to small mysteries. The same face and body in every episode; only his outfit and accessories change with the story.",
+    "age": "adult man, about 25-35"
+  },
+  "resolution": {
+    "decision": "new",
+    "character": null
+  },
+  "artwork": [],
+  "approvals": {},
+  "log": [
+    {
+      "on": "2026-11-15",
+      "event": "brief",
+      "decision": "new"
+    }
+  ]
+}

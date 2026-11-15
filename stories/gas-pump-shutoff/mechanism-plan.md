@@ -30,13 +30,14 @@ Goal: one generic, unbranded automatic nozzle, readable at phone size. It is acc
 | Spout | Exterior/interior link | Matches the exterior nozzle exactly | Custom |
 | Filler pipe / tank neck | Where fuel rises | A cut cylinder with a rising fuel surface | Custom |
 
-**Custom vs reuse:**
-- No existing asset fits. The catalog has 7 Poly Haven props, all 19th-century wood.
-- The exterior nozzle and the cutaway must be **one model with two material states**, not two models, so the x-ray dissolve is continuous. Hence a single GLB with named parts:
-  - `nozzle/shell`, `nozzle/spout`, `nozzle/lever`, `nozzle/poppet`, `nozzle/spring`, `nozzle/venturi`;
-  - `nozzle/tube`, `nozzle/hole`, `nozzle/chamber`, `nozzle/diaphragm`, `nozzle/pin`, `nozzle/ball-1/2`, `nozzle/plunger`.
-- **Recommended:** model it in Blender as the exceptional hero asset (CLAUDE.md: Blender for exceptional modeling). Blender MCP availability has **not** been checked in this phase.
-- **Fallback:** build it as parametric primitives in Three.js. Lathe geometry suits the tubes, chamber and poppet. This keeps it inside the code pipeline, at the cost of hand-tuning.
+**Sourced vs custom** (asset-first; see `sourcing-report.md`):
+- **Exterior: sourced.** ghostbusterjeffrey's "Gas Pump Nozzle" (CC-BY-4.0) supplies the shell, spout, boot, lever and guard. It is restyled with Hold Up materials.
+- **Interior: custom, and only the interior.** The poppet and spring, venturi throat and suction port, sensing tube, diaphragm chamber and diaphragm, latch pin, two latch balls, and the plunger with the lever pivot. These are lathe and primitive parts built in Three.js, sized to the sourced shell's measured interior.
+- **The cutaway.** It is the sourced shell cut by Three.js clipping planes, with capped section faces, and the custom parts inside. Exterior and cutaway are the same object in two material states, so the x-ray dissolve stays continuous.
+- **Named parts for animation.** `nozzle/lever` comes from the sourced model; if the lever is fused to the body, split it in a one-off repair. Everything else is custom and named from the start:
+  - `nozzle/poppet`, `nozzle/spring`, `nozzle/venturi`, `nozzle/tube`, `nozzle/hole`;
+  - `nozzle/chamber`, `nozzle/diaphragm`, `nozzle/pin`, `nozzle/ball-1/2`, `nozzle/plunger`.
+- **Blender is optional.** It is installed (3.1.0) and used only if a repair is needed, such as splitting the lever. It is not the default production method.
 
 ## Visual treatments (distinct, consistent)
 | Thing | Treatment | Why |
@@ -63,3 +64,5 @@ The compiler ignores unknown keys, so these live under `planned` in each shot of
 - [ ] The order is: pin → balls → plunger/pivot drops → spring closes the poppet.
 - [ ] The poppet closes *with* the flow direction, against its seat, driven by the spring.
 - [ ] No branding, no part numbers, no claimed dimensions.
+- [ ] The trigger is the liquid level reaching the spout opening (nozzle patents). No vehicle venting or vapour-recovery parts are shown or implied.
+- [ ] Every part and motion above traces to a nozzle patent quote in `research.md` (rows 2–11, 15).
