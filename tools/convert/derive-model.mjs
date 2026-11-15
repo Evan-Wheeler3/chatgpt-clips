@@ -17,10 +17,18 @@ import { getBounds, prune, dedup } from '@gltf-transform/functions';
  *   rename:{old:new}    rename nodes (stable part names for animation, e.g. "nozzle/lever")
  *   flatten:{materials?, palette?}  replace textures by one flat colour per UV island (its average texel colour,
  *                       optionally snapped to a palette): removes baked text, stickers and logos, keeps the panel layout
- *   recolor:{material:hex}          set a material's flat colour (textures removed)
+ *   recolor:{material:hex | {color, roughness, metalness}}  set a material's flat colour (textures removed)
  *   emit:{material:hex}             make a material glow (lamps)
  *   scale:k | fit:{axis, length}    uniform scale, or scale so the model's extent along x|y|z equals length (m)
  *   ground:true          move the model so its lowest point is at y = 0;   center:true  centre it on x/z
+ * Sockets: named attachment frames stored as empty nodes "socket/<name>" (local +Z = the socket's axis, +Y = up), used to
+ * attach props to each other (a spout into a filler neck, a hose to its outlet). Positions are in final model space, so
+ * socket operations come after any scale/ground/center:
+ *   socket:{name, position, axis, up}                       an explicit frame
+ *   socketOnSurface:{name, origin, direction, up, tilt}     raycast the model's triangles from origin along direction;
+ *                       the frame sits on the hit, its axis points into the surface, tilted by {deg, toward:[x,y,z]}
+ *   socketFromTip:{name, node, along, back, up}             the end of a tube-like part: the tip is the centroid of the
+ *                       vertices at the extreme along "along"; the axis runs from the slice "back" metres behind it to the tip
  */
 const run = promisify(execFile);
 const hexToLinear = hex => { const n = parseInt(hex.replace('#', ''), 16), c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => v / 255); return c.map(v => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); };
@@ -61,6 +69,59 @@ async function islandColors(prim, texture, cache) {
   }
   const colorOf = new Map([...sums].map(([r, s]) => [r, [s[0] / s[3], s[1] / s[3], s[2] / s[3]]]));
   return {count, island:i => find(i), colorOf};
+}
+
+// --- Socket math -------------------------------------------------------------------------------------------------
+const sub = (a, b) => a.map((v, i) => v - b[i]), add = (a, b) => a.map((v, i) => v + b[i]), mul = (a, k) => a.map(v => v * k);
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = a => { const l = Math.hypot(...a); if (!l) throw new Error('Zero-length socket vector'); return a.map(v => v / l); };
+const applyMatrix = (m, v) => [m[0] * v[0] + m[4] * v[1] + m[8] * v[2] + m[12], m[1] * v[0] + m[5] * v[1] + m[9] * v[2] + m[13], m[2] * v[0] + m[6] * v[1] + m[10] * v[2] + m[14]];
+// Rodrigues rotation of v about a unit axis k by deg
+const rotate = (v, k, deg) => { const a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a); return add(add(mul(v, c), mul(cross(k, v), s)), mul(k, dot(k, v) * (1 - c))); };
+// Orthonormal frame from an axis (+Z) and an approximate up (+Y), as a quaternion [x, y, z, w]
+export function frameQuaternion(axis, up) {
+  const z = norm(axis), y = norm(sub(up, mul(z, dot(up, z)))), x = cross(y, z);
+  const [m00, m01, m02, m10, m11, m12, m20, m21, m22] = [x[0], y[0], z[0], x[1], y[1], z[1], x[2], y[2], z[2]], tr = m00 + m11 + m22;
+  let q;
+  if (tr > 0) { const s = Math.sqrt(tr + 1) * 2; q = [(m21 - m12) / s, (m02 - m20) / s, (m10 - m01) / s, s / 4]; }
+  else if (m00 > m11 && m00 > m22) { const s = Math.sqrt(1 + m00 - m11 - m22) * 2; q = [s / 4, (m01 + m10) / s, (m02 + m20) / s, (m21 - m12) / s]; }
+  else if (m11 > m22) { const s = Math.sqrt(1 + m11 - m00 - m22) * 2; q = [(m01 + m10) / s, s / 4, (m12 + m21) / s, (m02 - m20) / s]; }
+  else { const s = Math.sqrt(1 + m22 - m00 - m11) * 2; q = [(m02 + m20) / s, (m12 + m21) / s, s / 4, (m10 - m01) / s]; }
+  const l = Math.hypot(...q); return q.map(v => v / l);
+}
+// Every triangle (and every vertex) of a node subtree in model space
+function geometryOf(node) {
+  const tris = [], verts = [];
+  node.traverse(n => {
+    const mesh = n.getMesh(); if (!mesh) return;
+    const m = n.getWorldMatrix();
+    for (const prim of mesh.listPrimitives()) {
+      const pos = prim.getAttribute('POSITION'), count = pos.getCount(), idx = prim.getIndices()?.getArray() ?? Uint32Array.from({length:count}, (_, i) => i);
+      const world = Array.from({length:count}, (_, i) => applyMatrix(m, pos.getElement(i, [])));
+      verts.push(...world);
+      for (let k = 0; k < idx.length; k += 3) tris.push([world[idx[k]], world[idx[k + 1]], world[idx[k + 2]]]);
+    }
+  });
+  return {tris, verts};
+}
+// Möller–Trumbore: nearest hit along a ray, with the triangle's normal facing the ray origin
+function raycast(tris, origin, dir) {
+  let best = null;
+  for (const [a, b, c] of tris) {
+    const e1 = sub(b, a), e2 = sub(c, a), p = cross(dir, e2), det = dot(e1, p);
+    if (Math.abs(det) < 1e-12) continue;
+    const t0 = sub(origin, a), u = dot(t0, p) / det; if (u < 0 || u > 1) continue;
+    const q = cross(t0, e1), v = dot(dir, q) / det; if (v < 0 || u + v > 1) continue;
+    const t = dot(e2, q) / det;
+    if (t > 1e-6 && (!best || t < best.t)) { let n = norm(cross(e1, e2)); if (dot(n, dir) > 0) n = mul(n, -1); best = {t, point:add(origin, mul(dir, t)), normal:n}; }
+  }
+  return best;
+}
+function addSocket(doc, scene, name, position, axis, up) {
+  const node = doc.createNode(`socket/${name}`).setTranslation(position).setRotation(frameQuaternion(axis, up));
+  scene.addChild(node);
+  return node;
 }
 
 const nearest = (c, palette) => palette.reduce((best, p) => { const d = (c[0] - p[0]) ** 2 + (c[1] - p[1]) ** 2 + (c[2] - p[2]) ** 2; return d < best.d ? {d, p} : best; }, {d:Infinity, p:c}).p;
@@ -109,10 +170,11 @@ export async function deriveModel(sourceGlb, ops) {
       }
       log.push(`textures flattened to one colour per UV island${palette ? ' (Hold Up palette)' : ''}`);
     } else if (op.recolor) {
-      for (const [name, hex] of Object.entries(op.recolor)) {
+      for (const [name, spec] of Object.entries(op.recolor)) {
+        const {color:hex, roughness = 0.75, metalness = 0} = typeof spec === 'string' ? {color:spec} : spec;
         const found = root.listMaterials().filter(m => m.getName() === name); if (!found.length) throw new Error(`recolor: no material "${name}"`);
         // Emissive maps too: glowing signage (stripes, logos) lives there on some models
-        for (const m of found) m.setBaseColorTexture(null).setBaseColorFactor([...hexToLinear(hex), 1]).setNormalTexture(null).setMetallicRoughnessTexture(null).setEmissiveTexture(null).setEmissiveFactor([0, 0, 0]).setMetallicFactor(0).setRoughnessFactor(0.75); // Painted, not metal
+        for (const m of found) m.setBaseColorTexture(null).setBaseColorFactor([...hexToLinear(hex), 1]).setNormalTexture(null).setMetallicRoughnessTexture(null).setEmissiveTexture(null).setEmissiveFactor([0, 0, 0]).setMetallicFactor(metalness).setRoughnessFactor(roughness); // Painted, not metal unless asked
       }
       log.push(`recoloured ${Object.keys(op.recolor).join(', ')}`);
     } else if (op.emit) {
@@ -132,8 +194,30 @@ export async function deriveModel(sourceGlb, ops) {
       const b = getBounds(wrapper);
       wrapper.setTranslation([op.center ? -(b.min[0] + b.max[0]) / 2 : 0, op.ground ? -b.min[1] : 0, op.center ? -(b.min[2] + b.max[2]) / 2 : 0]);
       log.push(`scaled ×${k.toPrecision(4)}${op.ground ? ', grounded' : ''}${op.center ? ', centred' : ''}`);
+    } else if (op.socket) {
+      const {name, position, axis, up = [0, 1, 0]} = op.socket;
+      addSocket(doc, scene, name, position, axis, up);
+      log.push(`socket ${name}`);
+    } else if (op.socketOnSurface) {
+      const {name, origin, direction, up = [0, 1, 0], tilt = null} = op.socketOnSurface;
+      const hit = raycast(geometryOf(scene).tris, origin, norm(direction));
+      if (!hit) throw new Error(`socketOnSurface ${name}: the ray from ${origin} hits nothing`);
+      let axis = mul(hit.normal, -1); // Into the surface
+      if (tilt) { const side = norm(cross(axis, tilt.toward)); axis = norm(rotate(axis, side, tilt.deg)); }
+      addSocket(doc, scene, name, hit.point.map(v => Math.round(v * 1e5) / 1e5), axis, up);
+      log.push(`socket ${name} on the surface`);
+    } else if (op.socketFromTip) {
+      const {name, node:partName, along, back = 0.05, up = [0, 1, 0]} = op.socketFromTip;
+      const part = byName(partName)[0]; if (!part) throw new Error(`socketFromTip: no node "${partName}"`);
+      const {verts} = geometryOf(part), dir = norm(along), proj = verts.map(v => dot(v, dir)), extreme = Math.max(...proj);
+      const centroid = sel => [0, 1, 2].map(i => sel.reduce((s, v) => s + v[i], 0) / sel.length);
+      const tipVerts = verts.filter((v, i) => proj[i] > extreme - 0.004), backVerts = verts.filter((v, i) => Math.abs(proj[i] - (extreme - back)) < 0.004);
+      if (!tipVerts.length || !backVerts.length) throw new Error(`socketFromTip ${name}: not enough geometry near the tip`);
+      const tip = centroid(tipVerts), axis = norm(sub(tip, centroid(backVerts)));
+      addSocket(doc, scene, name, tip.map(v => Math.round(v * 1e5) / 1e5), axis, up);
+      log.push(`socket ${name} at the tip of ${partName}`);
     } else throw new Error(`Unknown derive operation: ${JSON.stringify(op)}`);
   }
-  await doc.transform(prune({keepAttributes:true, keepLeaves:false}), dedup());
+  await doc.transform(prune({keepAttributes:true, keepLeaves:true}), dedup());
   return {bytes:await io.writeBinary(doc), log, sha256:createHash('sha256').update(await readFile(sourceGlb)).digest('hex')};
 }

@@ -14,6 +14,7 @@ import { BEHAVIORS, FRAMING, FRAMING_ORDER, LENSES } from './camera.mjs';
 import { ACTION_TYPES, INSTANT_ACTIONS } from './actions.mjs';
 import { isEasing } from './easing.mjs';
 import { validateEffectDeclaration, validateEffectKey } from './effects.mjs';
+import { resolveAttachments, checkContacts } from './attach.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const TIMING_DEFAULTS = {cutLeadSec:0.1, eventLeadSec:0.07, tailSec:0.6, minShotSec:0.5, maxShotSec:4.5};
@@ -68,12 +69,21 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
     props.push({
       id:prop.id, query:prop.asset.query, missing:!asset, sizeHint:prop.sizeHint ?? null,
       asset:asset && {id:asset.id, name:asset.name, localPath:asset.localPath, sha256:asset.sha256 ?? null, license:asset.license, creator:asset.creator, sourceUrl:asset.sourceUrl},
-      ...(asset ? await shapeFor(resolve(rootDir, asset.localPath), asset.sha256).then(({min, max, points, nodes}) => ({bounds:{min, max}, points, nodes:nodes ?? null})) : {bounds:null, points:null, nodes:null}),
+      ...(asset ? await shapeFor(resolve(rootDir, asset.localPath), asset.sha256).then(({min, max, points, nodes, sockets}) => ({bounds:{min, max}, points, nodes:nodes ?? null, sockets:sockets ?? null})) : {bounds:null, points:null, nodes:null, sockets:null}),
+      attach:prop.attach ?? null, holes:prop.holes ?? null,
       base:{position:prop.position ?? [0, 0, 0], rotation:prop.rotation ?? [0, 0, 0], scale:prop.scale ?? 1, visible:prop.visible ?? true, grounded:prop.grounded ?? true},
       actions:[]
     });
   }
   const propById = new Map(props.map(prop => [prop.id, prop]));
+  // Physical attachments (a nozzle in a filler neck): placed from the models' sockets, never from typed coordinates
+  for (const prop of props) {
+    if (prop.attach && !['to', 'socket', 'via'].every(k => typeof prop.attach[k] === 'string')) throw new Error(`Prop ${prop.id}: attach needs to, socket and via`);
+    for (const hole of prop.holes ?? []) if (typeof hole.socket !== 'string' || !Array.isArray(hole.size)) throw new Error(`Prop ${prop.id}: holes need a socket and a size [w, h]`);
+    if ((prop.holes ?? []).length > 1) throw new Error(`Prop ${prop.id}: one hole per prop is supported`);
+    for (const hole of prop.holes ?? []) if (!prop.missing && !prop.sockets?.[hole.socket]) throw new Error(`Prop ${prop.id}: no socket "${hole.socket}" for its hole`);
+  }
+  const unresolvedAttachments = resolveAttachments(props);
 
   // Effects: declared once, animated by shot events (tools/storyboard/effects.mjs)
   const effects = [];
@@ -83,6 +93,11 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
     if (declared.attach?.prop && !propById.has(declared.attach.prop)) throw new Error(`Effect ${declared.id}: attaches to unknown prop "${declared.attach.prop}"`);
     const host = declared.attach?.prop ? propById.get(declared.attach.prop) : null;
     if (declared.attach?.part && host?.nodes && !host.nodes.includes(declared.attach.part)) throw new Error(`Effect ${declared.id}: prop ${host.id} has no part "${declared.attach.part}"`);
+    if (declared.type === 'hose') for (const end of ['from', 'to']) {
+      const e = declared.params?.[end], host = e && propById.get(e.prop);
+      if (!host) throw new Error(`Hose ${declared.id}: ${end} needs a known prop`);
+      if (!host.missing && !host.sockets?.[e.socket]) throw new Error(`Hose ${declared.id}: prop ${host.id} has no socket "${e.socket}"`);
+    }
     effects.push({id:declared.id, type:declared.type, attach:declared.attach ?? null, params:declared.params ?? {}, initial:declared.initial ?? {}, keys:[]});
   }
   const effectById = new Map(effects.map(effect => [effect.id, effect]));
@@ -222,6 +237,9 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
     words, stage:story.stage ?? {}, props, shots, missingAssets, style, environment, cast, effects, freezes:freezes.sort((a, b) => a.startFrame - b.startFrame), shakes,
     sources:{story:storyBytes ? sha256(storyBytes) : null, words:wordsBytes ? sha256(wordsBytes) : null, narration:wordsDoc.source ?? null, aligner:wordsDoc.aligner ?? null}
   };
+  // Contacts: alignment, insertion depth, orientation, body intersection, hose attachment (checked on real triangles)
+  plan.unresolvedAttachments = unresolvedAttachments;
+  plan.contacts = await checkContacts(props, effects, prop => resolve(rootDir, prop.asset.localPath));
   // Captions are planned from the measured words and the staged shots (story.captions: false turns them off)
   plan.captions = planCaptions(plan, story);
   return plan;

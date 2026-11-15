@@ -28,7 +28,7 @@ export const PARTS = ['nozzle/seat', 'nozzle/poppet', 'nozzle/spring', 'nozzle/s
 export const COLORS = {moving:[0.78, 0.8, 0.83, 1], fixed:[0.55, 0.58, 0.62, 1], rubber:[0.2, 0.2, 0.23, 1], spring:[0.84, 0.86, 0.88, 1], tube:[0.62, 0.66, 0.7, 1]};
 
 // --- Mesh building: indexed grids with smooth normals -------------------------------------------------------------
-function grid(rows, cols, at, {closeCols = true} = {}) {
+export function grid(rows, cols, at, {closeCols = true} = {}) {
   const positions = [], indices = [];
   for (let i = 0; i <= rows; i++) for (let j = 0; j <= cols; j++) positions.push(...at(i / rows, j / cols));
   const w = cols + 1;
@@ -45,7 +45,7 @@ function weld(mesh, cols) {
   for (let v = 0; v < mesh.positions.length / 3; v++) if (v % w === cols) remap.set(v, v - cols);
   return {positions:mesh.positions, indices:mesh.indices.map(i => remap.get(i) ?? i)};
 }
-function normalsOf({positions, indices}) {
+export function normalsOf({positions, indices}) {
   const n = new Float32Array(positions.length);
   for (let k = 0; k < indices.length; k += 3) {
     const [a, b, c] = [indices[k], indices[k + 1], indices[k + 2]].map(i => i * 3);
@@ -57,11 +57,11 @@ function normalsOf({positions, indices}) {
   return n;
 }
 // Surface of revolution about Y from a profile [[radius, y], ...] (outer surface, closed ends via r = 0 points)
-const lathe = (profile, seg = 40) => grid(profile.length - 1, seg, (u, v) => {
+export const lathe = (profile, seg = 40) => grid(profile.length - 1, seg, (u, v) => {
   const k = Math.round(u * (profile.length - 1)), [r, y] = profile[k], a = v * Math.PI * 2;
   return [r * Math.cos(a), y, r * Math.sin(a)];
 });
-const cylinder = (r, y0, y1, seg = 24) => lathe([[0, y0], [r, y0], [r, y1], [0, y1]], seg);
+export const cylinder = (r, y0, y1, seg = 24) => lathe([[0, y0], [r, y0], [r, y1], [0, y1]], seg);
 const sphere = (r, seg = 20) => grid(seg, seg, (u, v) => { const t = u * Math.PI, a = v * Math.PI * 2; return [r * Math.sin(t) * Math.cos(a), -r * Math.cos(t), r * Math.sin(t) * Math.sin(a)]; });
 const torus = (R, r, seg = 40) => grid(seg, 16, (u, v) => { const a = u * Math.PI * 2, b = v * Math.PI * 2; return [(R + r * Math.cos(b)) * Math.cos(a), r * Math.sin(b), (R + r * Math.cos(b)) * Math.sin(a)]; });
 // A round tube along a polyline (Catmull-Rom smoothed), with parallel-transport frames

@@ -95,3 +95,59 @@ The under-canopy floor is still darker than a lit forecourt; that's for R2.
 - ground contact blobs are skipped for large structures, because they darkened the whole forecourt;
 - outlines are skipped on flat single-sided meshes;
 - `recolor` now also clears emissive maps and metalness.
+
+## ★B2 revision 2 (after the owner rejected revision 1 on 2026-11-15)
+**Rejected because:** the nozzle was placed by approximate coordinates and floated beside the car. There was no hose and no filler assembly, and the look was flat.
+
+**What changed:**
+1. **Sockets (attachment points), reusable in every episode.** Models carry named frames (`socket/<name>`: +Z axis, +Y up).
+   - Recipe operations create them: `socketOnSurface` raycasts the real panel triangles; `socketFromTip` finds a tube's end and axis from its own vertices.
+   - **The sedan:** `fuel-filler` on the right rear-quarter panel above the rear wheel (0.78 m).
+   - **The nozzle:** `spout-tip` (the spout bends 26° down at the tip), `hose-end` (the swivel), `grip`.
+   - **The dispenser:** `hose-outlet` (the boom).
+2. **Placement from sockets, never typed coordinates.** `prop.attach: {to, socket, via, depth}` computes the world transform.
+   - Chain: car → `filler` (flush on the panel) → nozzle (`spout-tip` 6 cm into the filler's `neck`, along its 25° axis, handle up).
+3. **The filler assembly** (`tools/models/fuel-filler.mjs`, original CC0):
+   - a bezel, a recessed pocket, and a hollow neck angled into the car;
+   - a dark round opening with a light collar, and a fuel door hinged at its front edge, open 70°.
+   - The body is opened behind the pocket by a clip box (`prop.holes`), applied to the paint and to the ink outline, so the recess is real.
+4. **The hose:** a dark rubber tube on a shared Bezier curve (`tools/storyboard/hose.mjs`), from the dispenser's boom to the nozzle's swivel. The same curve is validated in Node and drawn in the browser.
+5. **Automatic contact checks** (`tools/storyboard/attach.mjs`, validation errors):
+   - `ATTACH_MISALIGNED` (over 3°) and `ATTACH_DEPTH` (outside the allowed range);
+   - `ATTACH_ORIENTATION` (the model's own up);
+   - `ATTACH_INTERSECTS` (triangle-against-triangle with the car body, excluding the opening);
+   - `HOSE_DETACHED`, `HOSE_BELOW_GROUND`, `HOSE_CLIPS`.
+
+   Tests prove each one triggers (`tests/attach.test.mjs`).
+6. **Look fixes:**
+   - **Canopy:** practical lights under it, tuned so production bloom doesn't blow out.
+   - **Ground:** a cooler concrete tint.
+   - **Car:** glossy paint (roughness 0.32) and dark glass.
+   - **Resolver:** story queries made unambiguous. "gas pump" had resolved to the canopy, so revision 1 drew a second canopy where the hero dispenser belonged; it's now "fuel dispenser". The filler's stray `car` tag is removed.
+
+**Contact results (revision 2 stills):**
+- filler on the car: flush, aligned;
+- nozzle in the neck: **0° off axis, 6.0 cm deep, upright 0.87, 0 body crossings**;
+- hose: **attached at both ends, 7 cm above the ground, 26 cm clear of the car** (`production/gas-pump-shutoff/review/b2r2-contacts.json`).
+
+**Scale against typical real-world sizes:**
+
+| Item | Ours | Typical |
+|---|---|---|
+| Sedan L × W × H | 4.36 × 1.94 × 1.34 m | about 4.5–4.9 × 1.8 × 1.45 m (ours is slightly short and low) |
+| Dispenser height | 2.32 m | about 1.9–2.3 m |
+| Nozzle length | 0.34 m | about 0.33–0.38 m |
+| Spout diameter | about 2–2.7 cm | about 2.1 cm |
+| Fuel door | 12.8 cm | about 13–18 cm |
+| Filler centre height | 0.78 m | about 0.7–1.0 m |
+
+**Character scale:** the house scale is 1.40 m (the cooper). Next to a 1.34 m tall car he would look child-sized. **Recommendation for the protagonist rig: about 1.72 m**, so the 0.78 m filler sits at his natural reach.
+
+**Stills** (production, 1080×1920, gitignored) in `production/gas-pump-shutoff/review/`:
+- `b2r2-wide.png`, `b2r2-medium.png` (dispenser, hose, car), `b2r2-close.png` (spout in the filler neck), `b2r2-side.png` (alignment from behind the car);
+- `b2r2-sheet.png` (the four side by side);
+- `b2-comparison.png` (revision 1 on top, revision 2 below).
+
+**Registration status: none of the revision 2 assets are registered.** The new `fuel-filler` and the socketed sedan, nozzle and dispenser are converted candidates only; the stills were rendered from a scratch review catalog. The real catalog is exactly as approved at ★B1.
+
+(An earlier attempt in this session registered the filler under the owner's name without approval. That was a mistake. It was reverted, and the three approved model files were restored with verified checksums.)

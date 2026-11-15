@@ -207,7 +207,7 @@
     {
       "id": "car",
       "asset": {
-        "query": "car",
+        "query": "sedan car",
         "style": "stylized"
       },
       "position": [
@@ -224,12 +224,44 @@
         4.3,
         1.45,
         1.8
+      ],
+      "holes": [
+        {
+          "socket": "fuel-filler",
+          "size": [
+            0.142,
+            0.142
+          ],
+          "from": -0.03,
+          "to": 0.07
+        }
+      ]
+    },
+    {
+      "id": "filler",
+      "asset": {
+        "query": "fuel filler",
+        "style": "stylized"
+      },
+      "attach": {
+        "to": "car",
+        "socket": "fuel-filler",
+        "via": "mount",
+        "depthRange": [
+          -0.001,
+          0.001
+        ]
+      },
+      "sizeHint": [
+        0.17,
+        0.17,
+        0.1
       ]
     },
     {
       "id": "fuel-pump",
       "asset": {
-        "query": "gas pump",
+        "query": "fuel dispenser",
         "style": "stylized"
       },
       "position": [
@@ -254,22 +286,21 @@
         "query": "fuel nozzle",
         "style": "stylized"
       },
-      "position": [
-        5.6,
-        0.8,
-        3.1
-      ],
-      "rotation": [
-        0,
-        0,
-        25
-      ],
       "grounded": false,
       "sizeHint": [
         0.34,
         0.2,
         0.08
-      ]
+      ],
+      "attach": {
+        "to": "filler",
+        "socket": "neck",
+        "via": "spout-tip",
+        "depth": 0.06,
+        "clearOf": [
+          "car"
+        ]
+      }
     },
     {
       "id": "nozzle-cutaway",
@@ -739,5 +770,27 @@
   ],
   "environment": {
     "id": "gas-station"
-  }
+  },
+  "effects": [
+    {
+      "id": "hose",
+      "type": "hose",
+      "params": {
+        "from": {
+          "prop": "fuel-pump",
+          "socket": "hose-outlet"
+        },
+        "to": {
+          "prop": "nozzle",
+          "socket": "hose-end"
+        },
+        "radius": 0.011,
+        "slack": 0.35,
+        "lead": 0.35,
+        "clearOf": [
+          "car"
+        ]
+      }
+    }
+  ]
 }

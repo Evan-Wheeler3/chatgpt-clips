@@ -1,3 +1,4 @@
+import { CONTACT_LIMITS } from './attach.mjs';
 import { PerspectiveCamera, Vector3, Ray, MathUtils, Box3 } from 'three';
 import { samplePlan } from './sample.mjs';
 import { propWorldBox, INSTANT_ACTIONS } from './actions.mjs';
@@ -93,6 +94,24 @@ export function validatePlan(plan) {
 
   // Assets
   for (const miss of plan.missingAssets) errors.push({code:'MISSING_ASSET', prop:miss.prop, message:`No catalog asset for "${miss.query}" (prop ${miss.prop}); nothing was substituted`});
+
+  // Physical contacts (tools/storyboard/attach.mjs): a nozzle that floats beside a car, or a hose that ends in mid-air, fails
+  for (const u of plan.unresolvedAttachments ?? []) warnings.push({code:'ATTACH_UNRESOLVED', prop:u.prop, message:`${u.prop} cannot attach to ${u.to}: ${u.reason}`});
+  for (const c of plan.contacts ?? []) {
+    if (c.kind === 'attach') {
+      const at = `${c.prop} → ${c.to}.${c.socket}`, L = CONTACT_LIMITS;
+      if (c.angleDeg > L.maxAngleDeg) errors.push({code:'ATTACH_MISALIGNED', prop:c.prop, message:`${at}: ${c.via} is ${c.angleDeg}° off the socket axis (limit ${L.maxAngleDeg}°)`});
+      const range = c.depthRange ?? L.depth;
+      if (!(c.depthM >= range[0] && c.depthM <= range[1])) errors.push({code:'ATTACH_DEPTH', prop:c.prop, message:`${at}: inserted ${c.depthM} m (allowed ${range[0]} to ${range[1]} m)`});
+      if (c.up < L.minUp) errors.push({code:'ATTACH_ORIENTATION', prop:c.prop, message:`${at}: the part is upside down or on its side (up ${c.up})`});
+      for (const i of c.intersections) if (i.count) errors.push({code:'ATTACH_INTERSECTS', prop:c.prop, message:`${at}: cuts through ${i.body} outside its opening (${i.count} crossings, e.g. at ${JSON.stringify(i.sample[0])})`});
+    } else if (c.kind === 'hose') {
+      if (c.unresolved) { warnings.push({code:'HOSE_UNRESOLVED', message:`hose ${c.effect}: an end prop is missing`}); continue; }
+      if (c.endGapsM.some(d => d > 1e-4)) errors.push({code:'HOSE_DETACHED', message:`hose ${c.effect}: an end is ${Math.max(...c.endGapsM)} m from its socket`});
+      if (c.lowestM < -1e-3) errors.push({code:'HOSE_BELOW_GROUND', message:`hose ${c.effect} dips ${-c.lowestM} m below the ground`});
+      for (const k of c.clearance) if (k.minDistanceM < CONTACT_LIMITS.hoseClearance) errors.push({code:'HOSE_CLIPS', message:`hose ${c.effect} passes ${k.minDistanceM} m from ${k.body} at ${JSON.stringify(k.at)}`});
+    }
+  }
 
   // Timing and direction
   plan.shots.forEach((shot, i) => {

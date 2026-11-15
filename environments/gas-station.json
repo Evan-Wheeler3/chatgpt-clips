@@ -30,7 +30,7 @@
   "materials": {
     "concrete": {
       "texture": "polyhaven-asphalt-floor",
-      "tint": "#e6e8ec",
+      "tint": "#b8bcc2",
       "role": "architecture"
     }
   },
@@ -132,8 +132,8 @@
           3
         ],
         "color": "#fff3e0",
-        "intensity": 14,
-        "distance": 11,
+        "intensity": 38,
+        "distance": 14,
         "glow": 0
       },
       {
@@ -143,8 +143,8 @@
           -3
         ],
         "color": "#fff3e0",
-        "intensity": 14,
-        "distance": 11,
+        "intensity": 38,
+        "distance": 14,
         "glow": 0
       },
       {
@@ -154,8 +154,8 @@
           3
         ],
         "color": "#fff3e0",
-        "intensity": 14,
-        "distance": 11,
+        "intensity": 38,
+        "distance": 14,
         "glow": 0
       },
       {
@@ -165,8 +165,8 @@
           -3
         ],
         "color": "#fff3e0",
-        "intensity": 14,
-        "distance": 11,
+        "intensity": 38,
+        "distance": 14,
         "glow": 0
       },
       {
@@ -176,14 +176,14 @@
           0
         ],
         "color": "#fff3e0",
-        "intensity": 14,
-        "distance": 11,
+        "intensity": 38,
+        "distance": 14,
         "glow": 0
       }
     ],
     "ambient": {
       "sky": "#cfe0f2",
-      "ground": "#8a857c",
+      "ground": "#9a9da2",
       "intensity": 1.25
     },
     "environment": 0.85

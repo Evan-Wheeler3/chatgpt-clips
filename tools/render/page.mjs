@@ -87,7 +87,7 @@ window.setup = async (planJson, size, issueList, qualityName) => {
     if (quality.stylize) stylizeObject(model, style.materials.hero, style.palette, {outlineScale:quality.name === 'production' ? 1 : 1.6});
     const group = new THREE.Group(); group.add(model); scene.add(group);
     groups.set(prop.id, group);
-    rigs.set(prop.id, {parts:partRig(model), material:materialRig(model, group)});
+    rigs.set(prop.id, {parts:partRig(model), material:materialRig(model, group, {prop})});
     if (prop.base.grounded !== false) shadows.set(prop.id, [contactLayer(0.35), contactLayer(0.7)]);
   }
   for (const member of plan.cast ?? []) {

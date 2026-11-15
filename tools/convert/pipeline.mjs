@@ -12,7 +12,7 @@ import { renderPreview } from './preview.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 // Bump when conversion output or report semantics change, so cached results are rebuilt
-export const CONVERTER_VERSION = 1;
+export const CONVERTER_VERSION = 2;
 const TOOL_PACKAGES = ['@gltf-transform/core', '@gltf-transform/functions', 'gltf-validator', 'three'];
 
 /*
@@ -90,7 +90,8 @@ async function convertWithGltfTransform(source, {quantize}) {
   const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).setLogger(logger);
   const document = (await io.read(join(source.dir, source.entry))).setLogger(logger);
   // Lossless by default: dedup/prune/weld only remove exact duplicates and unused data; images are embedded byte-for-byte
-  const steps = [dedup(), prune({keepSolidTextures:true}), weld()];
+  // keepLeaves: empty nodes can be attachment sockets ("socket/<name>"), which must survive conversion
+  const steps = [dedup(), prune({keepSolidTextures:true, keepLeaves:true}), weld()];
   if (quantize) steps.push(quantizeMesh());
   steps.push(unpartition());
   await document.transform(...steps);

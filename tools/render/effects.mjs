@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { socketFrame, holePlanes } from '../storyboard/sockets.mjs';
+import { hosePoints } from '../storyboard/hose.mjs';
 
 /*
  * Browser renderers for story effects (tools/storyboard/effects.mjs). Each effect is built once from its static params
@@ -140,13 +142,34 @@ function glint(p) {
   }};
 }
 
-const BUILDERS = {overflow, flow:p => travellers(p, 'flow'), air:p => travellers(p, 'air'), level, ring, tint, glint};
+// A dark rubber fuel hose between two live socket frames, rebuilt only when an end moves
+function hose(p, {frameOf}) {
+  const material = new THREE.MeshStandardMaterial({color:p.color ?? '#1c1d20', roughness:0.55, metalness:0});
+  const mesh = new THREE.Mesh(new THREE.BufferGeometry(), material);
+  mesh.castShadow = true; mesh.receiveShadow = true; mesh.frustumCulled = false;
+  let key = '';
+  return {group:mesh, update:({amount}) => {
+    mesh.visible = amount > 0.01;
+    const from = frameOf(p.from.prop, p.from.socket), to = frameOf(p.to.prop, p.to.socket);
+    if (!from || !to) { mesh.visible = false; return; }
+    const k = [...from.position, ...from.axis, ...to.position, ...to.axis].map(v => v.toFixed(4)).join();
+    if (k === key) return;
+    key = k;
+    const curve = new THREE.CatmullRomCurve3(hosePoints(from, to, p).map(q => new THREE.Vector3(...q)));
+    mesh.geometry.dispose();
+    mesh.geometry = new THREE.TubeGeometry(curve, 96, p.radius ?? 0.011, 12, false);
+  }};
+}
+
+const BUILDERS = {overflow, flow:p => travellers(p, 'flow'), air:p => travellers(p, 'air'), level, ring, tint, glint, hose};
 
 // Builds every effect of the plan and parents it to its prop / part; returns update(sampleEffects, sceneTime)
 export function buildEffects(plan, {scene, groups}) {
-  const built = new Map();
+  const built = new Map(), propById = new Map(plan.props.map(p => [p.id, p]));
+  // World frame of a prop socket from the prop's live group (hoses follow whatever the props do)
+  const frameOf = (propId, socket) => { const g = groups.get(propId), prop = propById.get(propId); if (!g || !prop?.sockets?.[socket]) return null; g.updateMatrixWorld(true); return socketFrame(prop, socket, g.matrixWorld); };
   for (const effect of plan.effects ?? []) {
-    const fx = BUILDERS[effect.type](effect.params);
+    const fx = BUILDERS[effect.type](effect.params, {frameOf});
     let parent = scene;
     if (effect.attach?.prop) {
       const group = groups.get(effect.attach.prop);
@@ -201,7 +224,7 @@ const DEFAULT_GHOST = {color:'#A8E6F0', opacity:0.55, cap:'#5b6670'};
 
 // X-ray ghost (pale cyan fresnel shell, no depth write) and section cut (clipping plane in the prop's local space,
 // cut faces capped by a back-face pass in a flat colour). Parts listed in `keep` stay solid and uncut.
-export function materialRig(model, group) {
+export function materialRig(model, group, {prop = null} = {}) {
   const meshes = [];
   model.traverse(o => {
     if (!o.isMesh || o.userData.outlineOf !== undefined) return;
@@ -217,20 +240,34 @@ export function materialRig(model, group) {
   return m => {
     const look = {...DEFAULT_GHOST, ...(m.ghost ?? {})};
     ghost.uniforms.color.value.set(look.color); capMaterial.color.set(look.cap);
-    if (m.section) { local.set(v3(m.section.normal).normalize(), m.section.constant ?? 0); group.updateMatrixWorld(true); plane.copy(local).applyMatrix4(group.matrixWorld); }
+    group.updateMatrixWorld(true);
+    if (m.section) { local.set(v3(m.section.normal).normalize(), m.section.constant ?? 0); plane.copy(local).applyMatrix4(group.matrixWorld); }
+    // A hole (e.g. the fuel-filler pocket) cuts a box out of the surface; a section cut, when active, takes precedence
+    const hole = !m.section && prop?.holes?.length && prop.sockets?.[prop.holes[0].socket] ? holePlanes(prop, prop.holes[0], group.matrixWorld) : null;
     for (const entry of meshes) {
       const solid = kept(entry.mesh, m.keep ?? []), cut = !!m.section && !solid, x = solid ? 0 : m.xray;
       const bases = Array.isArray(entry.base) ? entry.base : [entry.base];
       // Dissolve: the solid material fades out over the first half, the ghost fades in over the second
       if (x < 0.5) {
         entry.mesh.material = entry.base;
-        for (const b of bases) { b.transparent = x > 0; b.opacity = 1 - x * 2; b.depthWrite = x === 0; b.clippingPlanes = cut ? [plane] : null; b.needsUpdate = b.userData.cut !== cut || b.userData.ghosting !== x > 0; b.userData.cut = cut; b.userData.ghosting = x > 0; }
+        for (const b of bases) {
+          b.transparent = x > 0; b.opacity = 1 - x * 2; b.depthWrite = x === 0;
+          b.clippingPlanes = cut ? [plane] : hole; b.clipIntersection = !cut && !!hole; b.clipShadows = !!hole;
+          const mode = cut ? 'cut' : hole ? 'hole' : 'none';
+          b.needsUpdate = b.userData.clipMode !== mode || b.userData.ghosting !== x > 0; b.userData.clipMode = mode; b.userData.ghosting = x > 0;
+        }
       } else {
         entry.mesh.material = ghost;
         ghost.uniforms.opacity.value = look.opacity * (x - 0.5) * 2;
         ghost.clippingPlanes = m.section ? [plane] : null;
       }
-      for (const o of entry.outlines) o.visible = x < 0.25;
+      for (const o of entry.outlines) {
+        o.visible = x < 0.25;
+        // The ink hull must be cut by the same hole, or its dark back faces show through the opening
+        const mode = hole && x < 0.5 ? 'hole' : 'none';
+        if (o.material.userData.clipMode !== mode) { o.material.clippingPlanes = mode === 'hole' ? hole : null; o.material.clipIntersection = mode === 'hole'; o.material.needsUpdate = true; o.material.userData.clipMode = mode; }
+        else if (mode === 'hole') o.material.clippingPlanes = hole;
+      }
       // Caps: a back-face copy in a flat colour shows through the cut wherever the solid shell is open
       if (cut && x < 0.5) {
         if (!caps.has(entry.mesh)) { const c = new THREE.Mesh(entry.mesh.geometry, capMaterial); c.renderOrder = 1; entry.mesh.add(c); caps.set(entry.mesh, c); }

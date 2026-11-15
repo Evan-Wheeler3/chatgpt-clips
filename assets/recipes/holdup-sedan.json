@@ -1,15 +1,84 @@
 {
   "id": "holdup-sedan",
   "name": "Generic sedan (Hold Up)",
-  "description": "Generic modern four-door sedan resembling no real car; muted steel-blue paint; real-world scale",
-  "tags": ["car", "sedan", "vehicle", "modern", "generic"],
+  "description": "Generic modern four-door sedan resembling no real car; muted steel-blue paint; real-world scale. Socket fuel-filler: on the right rear-quarter panel above the rear wheel (+Z into the body)",
+  "tags": [
+    "car",
+    "sedan",
+    "vehicle",
+    "modern",
+    "generic"
+  ],
   "category": "Vehicles",
   "style": "stylized",
-  "from": {"provider": "sketchfab", "id": "20f9af9b8a404d5cb022ac6fe87f21f5"},
-  "approval": {"by": "Evan Wheeler", "on": "2026-11-14", "note": "B1: approved; use the sedan"},
+  "from": {
+    "provider": "sketchfab",
+    "id": "20f9af9b8a404d5cb022ac6fe87f21f5"
+  },
+  "approval": {
+    "by": "Evan Wheeler",
+    "on": "2026-11-14",
+    "note": "B1: approved; use the sedan"
+  },
   "ops": [
-    {"keep": ["Sedan Body", {"name": "Wheel_A", "inside": "Sedan Body"}, {"name": "Wheel_A001", "inside": "Sedan Body"}, {"name": "Wheel_A002", "inside": "Sedan Body"}, {"name": "Wheel_A003", "inside": "Sedan Body"}]},
-    {"recolor": {"Body_5": "#56708C"}},
-    {"ground": true, "center": true}
+    {
+      "keep": [
+        "Sedan Body",
+        {
+          "name": "Wheel_A",
+          "inside": "Sedan Body"
+        },
+        {
+          "name": "Wheel_A001",
+          "inside": "Sedan Body"
+        },
+        {
+          "name": "Wheel_A002",
+          "inside": "Sedan Body"
+        },
+        {
+          "name": "Wheel_A003",
+          "inside": "Sedan Body"
+        }
+      ]
+    },
+    {
+      "recolor": {
+        "Body_5": {
+          "color": "#56708C",
+          "roughness": 0.32,
+          "metalness": 0.25
+        },
+        "Glass_5": {
+          "color": "#1d232b",
+          "roughness": 0.08,
+          "metalness": 0.1
+        }
+      }
+    },
+    {
+      "ground": true,
+      "center": true
+    },
+    {
+      "socketOnSurface": {
+        "name": "fuel-filler",
+        "origin": [
+          2,
+          0.78,
+          1.55
+        ],
+        "direction": [
+          -1,
+          0,
+          0
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ]
+      }
+    }
   ]
 }

@@ -39,14 +39,18 @@ export async function readGlbShape(path, directions = 2048) {
   }
   const round = value => Math.round(value * 1e4) / 1e4;
   // Node names, so stories can animate named parts (and the compiler can reject parts the model does not have)
-  const nodes = [];
-  scene.traverse(node => { if (node.getName()) nodes.push(node.getName()); });
-  return {min, max, points:[...picked].sort((a, b) => a - b).map(i => vertices[i].map(round)), nodes};
+  const nodes = [], sockets = {};
+  scene.traverse(node => {
+    if (node.getName()) nodes.push(node.getName());
+    // Attachment frames ("socket/<name>"): model-space position and orientation (+Z axis, +Y up)
+    if (node.getName().startsWith('socket/')) sockets[node.getName().slice(7)] = {position:node.getWorldTranslation().map(round), quaternion:node.getWorldRotation()};
+  });
+  return {min, max, points:[...picked].sort((a, b) => a - b).map(i => vertices[i].map(round)), nodes, sockets};
 }
 
 // Silhouette extraction costs ~0.2 s per GLB; cache it by the GLB's own SHA-256 so storyboard iteration stays fast
 export async function cachedShape(path, sha, cacheDir = resolve(root, '.cache/shapes')) {
-  const file = sha ? join(cacheDir, `${sha}-v2.json`) : null; // v2: shapes also list node names
+  const file = sha ? join(cacheDir, `${sha}-v3.json`) : null; // v2: node names; v3: sockets
   if (file) {
     try { return JSON.parse(await readFile(file, 'utf8')); } catch { /* Not cached yet */ }
   }

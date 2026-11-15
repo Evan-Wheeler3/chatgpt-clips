@@ -15,7 +15,8 @@ export const EFFECT_TYPES = {
   level:{channels:{height:0}, about:'a liquid surface rising inside a cylinder (fuel in the filler neck)'},
   ring:{channels:{amount:0}, about:'a soft pulsing highlight ring at a point'},
   tint:{channels:{amount:0}, about:'a translucent tinted volume (suction / pressure difference)'},
-  glint:{channels:{progress:0}, about:'a specular glint sweeping along a path'}
+  glint:{channels:{progress:0}, about:'a specular glint sweeping along a path'},
+  hose:{channels:{amount:1}, about:'a flexible hose hanging between two prop sockets (dispenser outlet to nozzle)'}
 };
 
 export function effectDefaults(effect) {

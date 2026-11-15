@@ -1,14 +1,63 @@
 {
   "id": "holdup-fuel-dispenser",
   "name": "Fuel dispenser (Hold Up)",
-  "description": "Modern self-service fuel dispenser with hoses and holstered nozzles; original flat Hold Up colours, no text, stickers or branding",
-  "tags": ["fuel", "dispenser", "gas", "pump", "station", "modern"],
+  "description": "Modern self-service fuel dispenser with hoses and holstered nozzles; original flat Hold Up colours, no text, stickers or branding. Socket hose-outlet: the boom on the -x side",
+  "tags": [
+    "fuel",
+    "dispenser",
+    "gas",
+    "pump",
+    "station",
+    "modern"
+  ],
   "category": "Props/Station",
   "style": "stylized",
-  "from": {"provider": "sketchfab", "id": "add0f902b9164718bd0540e88bf9927e"},
-  "approval": {"by": "Evan Wheeler", "on": "2026-11-14", "note": "B1: approved; replace existing branding and textures with original Hold Up styling"},
+  "from": {
+    "provider": "sketchfab",
+    "id": "add0f902b9164718bd0540e88bf9927e"
+  },
+  "approval": {
+    "by": "Evan Wheeler",
+    "on": "2026-11-14",
+    "note": "B1: approved; replace existing branding and textures with original Hold Up styling"
+  },
   "ops": [
-    {"flatten": {"palette": ["#C23B33", "#EDEBE6", "#B9BDC2", "#7D838A", "#2A2C30", "#141518"], "roughness": 0.6}},
-    {"ground": true, "center": true}
+    {
+      "flatten": {
+        "palette": [
+          "#C23B33",
+          "#EDEBE6",
+          "#B9BDC2",
+          "#7D838A",
+          "#2A2C30",
+          "#141518"
+        ],
+        "roughness": 0.6
+      }
+    },
+    {
+      "ground": true,
+      "center": true
+    },
+    {
+      "socket": {
+        "name": "hose-outlet",
+        "position": [
+          -0.7,
+          2.3,
+          0
+        ],
+        "axis": [
+          0,
+          -1,
+          0
+        ],
+        "up": [
+          0,
+          0,
+          -1
+        ]
+      }
+    }
   ]
 }
