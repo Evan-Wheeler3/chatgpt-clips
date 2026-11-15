@@ -630,6 +630,294 @@
       "sha256": "25cbefa02e65da0a4ffbe01e40208120121bf92ba040ee2e7401129fc512bad6"
     },
     {
+      "id": "seatbelt-pull-synth",
+      "description": "Seatbelt webbing pulled quickly through its guide loop",
+      "category": "mechanism",
+      "file": "audio/sfx/seatbelt-pull-synth.wav",
+      "durationSec": 0.32,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#webbingZip",
+        "params": {
+          "duration": 0.32
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -16,
+      "loop": null,
+      "sha256": "be1982db3fb389a208d8c4484be3c94a974df6f46ce35a97993254fabc95774a"
+    },
+    {
+      "id": "seatbelt-pull-long-synth",
+      "description": "Seatbelt webbing drawn out smoothly, a long even pull",
+      "category": "mechanism",
+      "file": "audio/sfx/seatbelt-pull-long-synth.wav",
+      "durationSec": 0.9,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#webbingZip",
+        "params": {
+          "duration": 0.9
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -20,
+      "loop": null,
+      "sha256": "5480fe68af51846221da0865894441748c7a53d3ade84ea81ca057bad3546ca3"
+    },
+    {
+      "id": "seatbelt-retract-synth",
+      "description": "Seatbelt webbing reeling back a short way",
+      "category": "mechanism",
+      "file": "audio/sfx/seatbelt-retract-synth.wav",
+      "durationSec": 0.3,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#webbingZip",
+        "params": {
+          "duration": 0.3
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -21,
+      "loop": null,
+      "sha256": "fcd4fce6536160907a0b1de88164424addfa36f88b0173996e8e035224c12463"
+    },
+    {
+      "id": "seatbelt-lock-clank-1",
+      "description": "A seatbelt retractor locking: pawl on tooth, housing knock, webbing snapping taut (variant 1)",
+      "category": "mechanism",
+      "file": "audio/sfx/seatbelt-lock-clank-1.wav",
+      "durationSec": 0.42,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#retractorClank",
+        "params": {
+          "variant": 1
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -7,
+      "loop": null,
+      "sha256": "e509951a0c0dfb91540154be5ead7b58413f93cc36c7c3cd34f51cfcd56237a2"
+    },
+    {
+      "id": "seatbelt-lock-clank-2",
+      "description": "A seatbelt retractor locking: pawl on tooth, housing knock, webbing snapping taut (variant 2)",
+      "category": "mechanism",
+      "file": "audio/sfx/seatbelt-lock-clank-2.wav",
+      "durationSec": 0.42,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#retractorClank",
+        "params": {
+          "variant": 2
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -7,
+      "loop": null,
+      "sha256": "d44fd2aa179f6833a039c100a64e9f3efc8e2dcf7ae9889cf4264a079ab88631"
+    },
+    {
+      "id": "seatbelt-lock-clank-3",
+      "description": "A seatbelt retractor locking: pawl on tooth, housing knock, webbing snapping taut (variant 3)",
+      "category": "mechanism",
+      "file": "audio/sfx/seatbelt-lock-clank-3.wav",
+      "durationSec": 0.42,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#retractorClank",
+        "params": {
+          "variant": 3
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -7,
+      "loop": null,
+      "sha256": "210c4032e0c453d7ea9d39146b0463e81dc7baa5190bdb4b8867b8884803439c"
+    },
+    {
+      "id": "retractor-pawl-lock-synth",
+      "description": "The retractor pawl dropping into the ratchet, heard from inside the housing: heavier and closer",
+      "category": "mechanism",
+      "file": "audio/sfx/retractor-pawl-lock-synth.wav",
+      "durationSec": 0.42,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#retractorClank",
+        "params": {
+          "weight": 1.35
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -6,
+      "loop": null,
+      "sha256": "eb7c69ce287988d44242e3481aa29e84d647eb23747cc381882bcea7a258c72b"
+    },
+    {
+      "id": "retractor-spool-whirr-synth",
+      "description": "A belt spool turning freely: light ticking over a soft whirr",
+      "category": "mechanism",
+      "file": "audio/sfx/retractor-spool-whirr-synth.wav",
+      "durationSec": 1.6,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#spoolWhirr",
+        "params": {
+          "duration": 1.6
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -18,
+      "loop": null,
+      "sha256": "fa62a73216f3e701a9411942ce162f6a4293da5c2eda60cd596cf890cd4b6304"
+    },
+    {
+      "id": "seatbelt-buckle-click-synth",
+      "description": "A seatbelt tongue sliding into its buckle and latching",
+      "category": "mechanism",
+      "file": "audio/sfx/seatbelt-buckle-click-synth.wav",
+      "durationSec": 0.36,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#buckleClick",
+        "params": {}
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -8,
+      "loop": null,
+      "sha256": "71b7526e6e906b7cbbd3ca17d73c0c38a3bdfffeeafa6350f9a43d9b3be37ebb"
+    },
+    {
+      "id": "sled-impact-synth",
+      "description": "A crash-test sled stopping against its barrier: low thump, panel crunch, brief rattle (restrained)",
+      "category": "impact",
+      "file": "audio/sfx/sled-impact-synth.wav",
+      "durationSec": 1.1,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#sledImpact",
+        "params": {}
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -7,
+      "loop": null,
+      "sha256": "2ff549b1300d5055f73d9f5e88e167495db0f644573357e613116de88c470d8b"
+    },
+    {
+      "id": "ambience-car-interior-synth",
+      "description": "Air inside a parked car: close and soft (seamless loop)",
+      "category": "ambience",
+      "file": "audio/sfx/ambience-car-interior-synth.wav",
+      "durationSec": 12,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#airBed",
+        "params": {
+          "duration": 12
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -26,
+      "loop": {
+        "seamless": true
+      },
+      "sha256": "54a5edd875a3cfa1da281da5bf784288cb36a367898faeaafeff5d19673ebbf1"
+    },
+    {
+      "id": "ambience-test-lab-synth",
+      "description": "A large test hall: wide room air with a faint ventilation tone (seamless loop)",
+      "category": "ambience",
+      "file": "audio/sfx/ambience-test-lab-synth.wav",
+      "durationSec": 12,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#airBed",
+        "params": {
+          "duration": 12
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -25,
+      "loop": {
+        "seamless": true
+      },
+      "sha256": "19773b67ba9e4826461d4396257ea25d61471ebd2363315a7b5ed14f9664e95b"
+    },
+    {
       "id": "fuel-gush-reversed-synth",
       "description": "The overflow gush played backwards and slightly higher, for the rewind (derived from fuel-gush-loop-synth)",
       "category": "liquid",

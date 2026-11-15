@@ -1,0 +1,419 @@
+{
+  "version": 1,
+  "slug": "seatbelt-locking",
+  "title": "Why Does Your Seatbelt Lock When You Pull It Too Fast?",
+  "status": "preview: stand-in narrator, custom-built set (see README.md)",
+  "fps": 30,
+  "size": {
+    "width": 1080,
+    "height": 1920
+  },
+  "tailSec": 0.9,
+  "narration": {
+    "script": "You're in a rush, you grab your seatbelt, yank\u2014 and it locks up. Clank. Clank. Clank. Annoying, right? But that is exactly what could save your life. In a crash, your body lurches forward fast. So your seatbelt is designed to lock when the belt gets pulled too suddenly. Inside the retractor, a fast jerk triggers a locking mechanism that stops the belt from feeding out. No lock? You fly forward. With the lock\u2014 the belt catches you instantly. And you are now much safer.",
+    "voice": {
+      "profile": "hold-up-narrator"
+    },
+    "approval": "Script approved by the owner; wording must not change.",
+    "standIn": {
+      "voice": "am_michael",
+      "speed": 1.1,
+      "pauseMs": 200
+    },
+    "lines": [
+      {
+        "id": "rush",
+        "text": "You're in a rush, you grab your seatbelt,",
+        "pauseMs": 70
+      },
+      {
+        "id": "yank",
+        "text": "yank\u2014",
+        "say": "yank!",
+        "pauseMs": 130
+      },
+      {
+        "id": "locks",
+        "text": "and it locks up.",
+        "pauseMs": 330
+      },
+      {
+        "id": "clank1",
+        "text": "Clank.",
+        "pauseMs": 270
+      },
+      {
+        "id": "clank2",
+        "text": "Clank.",
+        "pauseMs": 270
+      },
+      {
+        "id": "clank3",
+        "text": "Clank.",
+        "pauseMs": 420
+      },
+      {
+        "id": "annoying",
+        "text": "Annoying, right?",
+        "pauseMs": 260
+      },
+      {
+        "id": "save",
+        "text": "But that is exactly what could save your life.",
+        "pauseMs": 300
+      },
+      {
+        "id": "crash",
+        "text": "In a crash, your body lurches forward fast.",
+        "pauseMs": 230
+      },
+      {
+        "id": "designed",
+        "text": "So your seatbelt is designed to lock when the belt gets pulled too suddenly.",
+        "pauseMs": 230
+      },
+      {
+        "id": "inside",
+        "text": "Inside the retractor, a fast jerk triggers a locking mechanism that stops the belt from feeding out.",
+        "pauseMs": 300
+      },
+      {
+        "id": "nolock",
+        "text": "No lock?",
+        "pauseMs": 160
+      },
+      {
+        "id": "fly",
+        "text": "You fly forward.",
+        "pauseMs": 320
+      },
+      {
+        "id": "withlock",
+        "text": "With the lock\u2014",
+        "say": "With the lock,",
+        "pauseMs": 130
+      },
+      {
+        "id": "catches",
+        "text": "the belt catches you instantly.",
+        "pauseMs": 320
+      },
+      {
+        "id": "safer",
+        "text": "And you are now much safer.",
+        "pauseMs": 0
+      }
+    ]
+  },
+  "captions": {
+    "style": "hold-up",
+    "font": {
+      "family": "\"Avenir Next\", \"Inter\", \"Helvetica Neue\", Arial, sans-serif"
+    },
+    "emphasize": [
+      "Clank.",
+      "save",
+      "lock?",
+      "instantly."
+    ],
+    "layout": {
+      "bands": {
+        "top": 0.15
+      }
+    }
+  },
+  "shots": [
+    {
+      "id": "yank",
+      "start": 0,
+      "captions": "top",
+      "purpose": "Straight into the action: he grabs the belt, yanks, and it stops dead"
+    },
+    {
+      "id": "clanks",
+      "start": "Clank#1",
+      "captions": "top",
+      "purpose": "Three more tries, three locks; confusion, irritation, disbelief"
+    },
+    {
+      "id": "twist",
+      "start": "Annoying",
+      "captions": "top",
+      "purpose": "He glares at the belt; the camera pushes onto the webbing and the tone turns"
+    },
+    {
+      "id": "crash",
+      "start": "In a crash",
+      "captions": "top",
+      "purpose": "Crash-test sled: the seat stops, the dummy keeps going"
+    },
+    {
+      "id": "tension",
+      "start": "So",
+      "captions": "top",
+      "purpose": "Follow the taut webbing over the shoulder guide and down to the retractor"
+    },
+    {
+      "id": "retractor",
+      "start": "Inside",
+      "captions": "top",
+      "purpose": "Cutaway: slow pull spins freely; a fast jerk leaves the inertia disc behind, the pawl swings into the teeth, the spool stops"
+    },
+    {
+      "id": "no-lock",
+      "start": "No lock",
+      "captions": "top",
+      "purpose": "Same sled, lock disabled: webbing pays out and the dummy pitches far forward"
+    },
+    {
+      "id": "with-lock",
+      "start": "With",
+      "captions": "top",
+      "purpose": "Identical framing, lock working: the belt goes taut and holds him after a short lurch"
+    },
+    {
+      "id": "closure",
+      "start": "And#2",
+      "captions": "top",
+      "purpose": "Back in the car: a smooth pull, the buckle clicks, a small satisfied look"
+    }
+  ],
+  "audio": {
+    "ambience": [
+      {
+        "asset": "ambience-car-interior-synth",
+        "shots": [
+          "yank",
+          "clanks",
+          "twist",
+          "closure"
+        ],
+        "gainDb": -30
+      },
+      {
+        "asset": "ambience-test-lab-synth",
+        "shots": [
+          "crash",
+          "tension",
+          "no-lock",
+          "with-lock"
+        ],
+        "gainDb": -30
+      },
+      {
+        "asset": "ambience-test-lab-synth",
+        "shots": [
+          "retractor"
+        ],
+        "gainDb": -36
+      }
+    ],
+    "sfx": [
+      {
+        "asset": "cloth-rustle-1",
+        "at": {
+          "at": "grab",
+          "offset": -0.45
+        },
+        "reason": "he reaches for the belt"
+      },
+      {
+        "asset": "seatbelt-pull-long-synth",
+        "at": {
+          "at": "grab",
+          "offset": 0.0
+        },
+        "reason": "drawing the belt out"
+      },
+      {
+        "asset": "seatbelt-pull-synth",
+        "at": {
+          "at": "yank",
+          "offset": -0.1
+        },
+        "reason": "the yank"
+      },
+      {
+        "asset": "seatbelt-lock-clank-1",
+        "at": {
+          "at": "yank",
+          "offset": 0.08
+        },
+        "reason": "it locks"
+      },
+      {
+        "asset": "seatbelt-pull-synth",
+        "at": {
+          "at": "Clank#1",
+          "offset": -0.16
+        },
+        "gainDb": -18
+      },
+      {
+        "asset": "seatbelt-lock-clank-2",
+        "at": {
+          "at": "Clank#1",
+          "offset": 0.02
+        },
+        "reason": "clank 1, on the word"
+      },
+      {
+        "asset": "seatbelt-retract-synth",
+        "at": {
+          "at": "Clank#1",
+          "offset": 0.32
+        }
+      },
+      {
+        "asset": "seatbelt-pull-synth",
+        "at": {
+          "at": "Clank#2",
+          "offset": -0.16
+        },
+        "gainDb": -18
+      },
+      {
+        "asset": "seatbelt-lock-clank-3",
+        "at": {
+          "at": "Clank#2",
+          "offset": 0.02
+        },
+        "reason": "clank 2"
+      },
+      {
+        "asset": "seatbelt-retract-synth",
+        "at": {
+          "at": "Clank#2",
+          "offset": 0.32
+        }
+      },
+      {
+        "asset": "seatbelt-pull-synth",
+        "at": {
+          "at": "Clank#3",
+          "offset": -0.16
+        },
+        "gainDb": -17
+      },
+      {
+        "asset": "seatbelt-lock-clank-1",
+        "at": {
+          "at": "Clank#3",
+          "offset": 0.02
+        },
+        "gainDb": -5,
+        "reason": "clank 3, the hardest"
+      },
+      {
+        "asset": "cloth-rustle-2",
+        "at": {
+          "at": "Annoying",
+          "offset": -0.05
+        },
+        "reason": "he slumps"
+      },
+      {
+        "asset": "whoosh-soft",
+        "at": {
+          "shot": "crash",
+          "offset": -0.05
+        },
+        "gainDb": -20,
+        "reason": "the sled runs in"
+      },
+      {
+        "asset": "sled-impact-synth",
+        "at": {
+          "at": "crash",
+          "offset": 0.08
+        },
+        "reason": "the sled meets the barrier"
+      },
+      {
+        "asset": "seatbelt-lock-clank-2",
+        "at": {
+          "at": "crash",
+          "offset": 0.22
+        },
+        "gainDb": -12,
+        "reason": "the belt catches the dummy"
+      },
+      {
+        "asset": "retractor-spool-whirr-synth",
+        "at": {
+          "shot": "retractor",
+          "offset": 0.15
+        },
+        "reason": "slow pull: the spool turns freely"
+      },
+      {
+        "asset": "seatbelt-pull-synth",
+        "at": {
+          "at": "jerk",
+          "offset": -0.1
+        },
+        "gainDb": -17,
+        "reason": "the fast jerk"
+      },
+      {
+        "asset": "retractor-pawl-lock-synth",
+        "at": {
+          "at": "jerk",
+          "offset": 0.07
+        },
+        "reason": "the pawl drops into the teeth"
+      },
+      {
+        "asset": "sled-impact-synth",
+        "at": {
+          "shot": "no-lock",
+          "offset": 0.34
+        },
+        "gainDb": -9
+      },
+      {
+        "asset": "seatbelt-pull-long-synth",
+        "at": {
+          "shot": "no-lock",
+          "offset": 0.38
+        },
+        "gainDb": -15,
+        "reason": "webbing paying out"
+      },
+      {
+        "asset": "sled-impact-synth",
+        "at": {
+          "shot": "with-lock",
+          "offset": 0.34
+        },
+        "gainDb": -9
+      },
+      {
+        "asset": "retractor-pawl-lock-synth",
+        "at": {
+          "shot": "with-lock",
+          "offset": 0.5
+        },
+        "gainDb": -8,
+        "reason": "the lock engages"
+      },
+      {
+        "asset": "seatbelt-pull-long-synth",
+        "at": {
+          "shot": "closure",
+          "offset": 0.1
+        },
+        "gainDb": -19,
+        "reason": "a smooth pull"
+      },
+      {
+        "asset": "seatbelt-buckle-click-synth",
+        "at": {
+          "shot": "closure",
+          "offset": 1.08
+        },
+        "reason": "buckled"
+      }
+    ]
+  }
+}

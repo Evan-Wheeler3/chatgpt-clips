@@ -171,6 +171,55 @@ function stationBed({seed, duration = 16}) {
   return normalize(loopable(highpass(out, 25), 1), 0.5);
 }
 
+// ---- Seatbelt episode: webbing, retractor, buckle, sled impact, cabin and test-lab air
+// Webbing drawn quickly through a guide loop: a short textured zip that rises (pull) or falls (retract)
+function webbingZip({seed, duration = 0.32, from = 900, to = 2600, grainHz = 95}) {
+  const r = rng(seed), sweep = t => from + (to - from) * Math.min(1, t / duration) ** 0.8;
+  const body = bandpass(white(duration, r), 0, 1.3, sweep);
+  return normalize(fade(env(body, t => (0.55 + 0.45 * Math.sin(2 * Math.PI * grainHz * t * (0.6 + t / duration))) * Math.sin(Math.PI * Math.min(1, t / duration)) ** 0.7), 0.004, 0.05), 0.8);
+}
+// The retractor locking: the pawl hits a tooth (a hard steel clack), the housing answers, the webbing snaps taut
+function retractorClank({seed, weight = 1}) {
+  const out = buffer(0.42);
+  add(out, metalHit({seed, modes:[1480, 2360, 3890, 5200], decay:0.014, tick:1, tickHz:4200, duration:0.1}), 0, 0.9);
+  add(out, metalHit({seed:seed + 1, modes:[410 / weight, 930 / weight, 1620, 2480], decay:0.045 * weight, tick:0.3, tickHz:1800, duration:0.38}), 0.004, 1);
+  add(out, mode(0.3, 118 / weight, 0.035 * weight, 0.9), 0.004);
+  add(out, env(bandpass(white(0.09, rng(seed + 2)), 700, 1.1), t => Math.exp(-t / 0.018)), 0.01, 0.7);
+  return normalize(fade(highpass(out, 30), 0.0003, 0.06), 0.9);
+}
+// A buckle: the tongue slides in (a light tick), then the latch snaps home
+function buckleClick({seed}) {
+  const out = buffer(0.36);
+  add(out, metalHit({seed, modes:[2900, 4700, 6900], decay:0.008, tick:0.9, tickHz:6000, duration:0.06}), 0, 0.5);
+  add(out, metalHit({seed:seed + 1, modes:[820, 1710, 2950, 4300], decay:0.03, tick:0.6, tickHz:3200, duration:0.28}), 0.07, 1);
+  add(out, mode(0.2, 190, 0.02, 0.5), 0.07);
+  return normalize(fade(out, 0.0003, 0.05), 0.88);
+}
+// The spool turning freely: light ticks of the mechanism over a soft whirr, speeding up then easing
+function spoolWhirr({seed, duration = 1.6}) {
+  const r = rng(seed), out = buffer(duration);
+  add(out, env(bandpass(white(duration, r), 0, 2.2, t => 500 + 700 * Math.sin(Math.PI * Math.min(1, t / duration))), t => 0.35 * Math.sin(Math.PI * Math.min(1, t / duration)) ** 1.2), 0);
+  for (let t = 0.05, k = 0; t < duration - 0.08; k++) { const u = t / duration, gap = 0.11 - 0.06 * Math.sin(Math.PI * u); add(out, metalHit({seed:seed + 3 + k, modes:[2400 + 300 * r(), 4100, 6300], decay:0.006, tick:0.7, tickHz:5200, duration:0.04}), t, 0.28 + 0.2 * Math.sin(Math.PI * u)); t += gap; }
+  return normalize(fade(out, 0.02, 0.12), 0.7);
+}
+// A sled meeting its barrier, kept short and dry: a low body thump, a crunch of panels, a brief rattle
+function sledImpact({seed}) {
+  const r = rng(seed), out = buffer(1.1);
+  add(out, mode(0.8, 54, 0.11, 1.2), 0); add(out, mode(0.6, 97, 0.07, 0.7), 0);
+  add(out, env(lowpass(white(0.35, r), 900), t => Math.exp(-t / 0.05)), 0, 1.4);
+  add(out, env(bandpass(white(0.5, r), 2400, 0.9), t => Math.exp(-t / 0.09) * (0.6 + 0.4 * Math.sin(2 * Math.PI * 31 * t))), 0.01, 0.35);
+  add(out, metalHit({seed:seed + 5, modes:[330, 760, 1340, 2210], decay:0.09, tick:0.2, tickHz:1500, duration:0.6}), 0.012, 0.55);
+  for (let k = 0; k < 5; k++) add(out, metalHit({seed:seed + 9 + k, modes:[1900 + 500 * r(), 3300, 5100], decay:0.012, tick:0.5, tickHz:4000, duration:0.06}), 0.12 + k * 0.07 + r() * 0.03, 0.16 / (1 + k * 0.5));
+  return normalize(fade(highpass(out, 28), 0.0005, 0.25), 0.9);
+}
+// Air inside a parked car: close, soft and slightly boxy; or a large test hall: wider, with a faint ventilation tone
+function airBed({seed, duration = 12, lowHz = 180, tone = 0, level = 1}) {
+  const r = rng(seed), d = duration + 1, out = buffer(d);
+  add(out, lowpass(brown(d, r), lowHz), 0, 1); add(out, lowpass(highpass(white(d, r), 2500), 6000), 0, 0.012 * level);
+  if (tone) [tone, tone * 2.01].forEach((hz, n) => add(out, mode(d, hz, 1e9, 0.004 / (n + 1)), 0));
+  return normalize(loopable(env(highpass(out, 30), t => 1 + 0.12 * Math.sin(2 * Math.PI * t / 5.3)), 1), 0.5);
+}
+
 const generated = (generator, params) => ({type:'generated', generator:`tools/audio/synth.mjs#${generator}`, params});
 const LICENSE = {license:'CC0-1.0', licenseEvidence:'Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0', author:'Hold Up (generated)'};
 
@@ -195,7 +244,18 @@ export const LIBRARY = [
   {id:'diaphragm-flex-synth', category:'mechanism', description:'A soft rubbery thump (a diaphragm pulled by suction)', make:() => rubberThump({seed:97}), params:{}, gainDb:-14},
   {id:'air-suction-loop-synth', category:'air', description:'Air drawn through a small tube: a thin hiss (seamless loop)', make:() => airHiss({seed:98}), params:{duration:3}, gainDb:-22, loop:true},
   {id:'air-stop-synth', category:'air', description:'An airflow choking off as an opening is covered', make:() => airStop({seed:99}), params:{duration:0.6}, gainDb:-22},
-  {id:'ambience-gas-station-synth', category:'ambience', description:'Outdoor gas station: soft wind, distant traffic swells, faint canopy hum (seamless loop)', make:() => stationBed({seed:100}), params:{duration:16}, gainDb:-24, loop:true}
+  {id:'ambience-gas-station-synth', category:'ambience', description:'Outdoor gas station: soft wind, distant traffic swells, faint canopy hum (seamless loop)', make:() => stationBed({seed:100}), params:{duration:16}, gainDb:-24, loop:true},
+  // Seatbelt episode
+  {id:'seatbelt-pull-synth', category:'mechanism', description:'Seatbelt webbing pulled quickly through its guide loop', make:() => webbingZip({seed:110}), params:{duration:0.32}, gainDb:-16},
+  {id:'seatbelt-pull-long-synth', category:'mechanism', description:'Seatbelt webbing drawn out smoothly, a long even pull', make:() => webbingZip({seed:111, duration:0.9, from:700, to:1500, grainHz:60}), params:{duration:0.9}, gainDb:-20},
+  {id:'seatbelt-retract-synth', category:'mechanism', description:'Seatbelt webbing reeling back a short way', make:() => webbingZip({seed:112, duration:0.3, from:2100, to:800, grainHz:80}), params:{duration:0.3}, gainDb:-21},
+  ...[1, 2, 3].map(n => ({id:`seatbelt-lock-clank-${n}`, category:'mechanism', description:`A seatbelt retractor locking: pawl on tooth, housing knock, webbing snapping taut (variant ${n})`, make:() => retractorClank({seed:120 + n * 4, weight:1 + (n - 1) * 0.07}), params:{variant:n}, gainDb:-7})),
+  {id:'retractor-pawl-lock-synth', category:'mechanism', description:'The retractor pawl dropping into the ratchet, heard from inside the housing: heavier and closer', make:() => retractorClank({seed:140, weight:1.35}), params:{weight:1.35}, gainDb:-6},
+  {id:'retractor-spool-whirr-synth', category:'mechanism', description:'A belt spool turning freely: light ticking over a soft whirr', make:() => spoolWhirr({seed:150}), params:{duration:1.6}, gainDb:-18},
+  {id:'seatbelt-buckle-click-synth', category:'mechanism', description:'A seatbelt tongue sliding into its buckle and latching', make:() => buckleClick({seed:160}), params:{}, gainDb:-8},
+  {id:'sled-impact-synth', category:'impact', description:'A crash-test sled stopping against its barrier: low thump, panel crunch, brief rattle (restrained)', make:() => sledImpact({seed:170}), params:{}, gainDb:-7},
+  {id:'ambience-car-interior-synth', category:'ambience', description:'Air inside a parked car: close and soft (seamless loop)', make:() => airBed({seed:180, lowHz:160}), params:{duration:12}, gainDb:-26, loop:true},
+  {id:'ambience-test-lab-synth', category:'ambience', description:'A large test hall: wide room air with a faint ventilation tone (seamless loop)', make:() => airBed({seed:181, lowHz:240, tone:120, level:1.6}), params:{duration:12}, gainDb:-25, loop:true}
 ];
 
 export async function buildLibrary({dir = join(root, 'audio'), catalogFile = join(root, 'audio/catalog.json')} = {}) {
