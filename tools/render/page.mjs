@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { samplePlan } from '../storyboard/sample.mjs';
+import { buildEffects, partRig, materialRig } from './effects.mjs';
 import { propWorldPoints } from '../storyboard/actions.mjs';
 import { QUALITY } from './quality.mjs';
 import { stylizeObject } from './stylize.mjs';
@@ -13,7 +14,8 @@ import { buildVectorCharacter } from './character-vector.mjs';
 import { drawCaptions } from './captions.mjs';
 
 let plan, quality, renderer, scene, camera, out, ctx, post, env = null, W, H, issues = [], keyLight;
-const groups = new Map(), shadows = new Map(), characters = new Map();
+const groups = new Map(), shadows = new Map(), characters = new Map(), rigs = new Map();
+let updateEffects = () => {};
 const flags = [];
 
 function blobTexture() {
@@ -63,6 +65,7 @@ window.setup = async (planJson, size, issueList, qualityName) => {
   renderer.toneMappingExposure = quality.stylize ? style?.grade?.exposure ?? 1 : plan.stage?.light?.exposure ?? 1;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.info.autoReset = false; // Count every pass of a frame, not just the last full-screen quad
+  renderer.localClippingEnabled = true; // Section cuts on props (material state)
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(40, W / H, 0.02, 120);
 
@@ -84,6 +87,7 @@ window.setup = async (planJson, size, issueList, qualityName) => {
     if (quality.stylize) stylizeObject(model, style.materials.hero, style.palette, {outlineScale:quality.name === 'production' ? 1 : 1.6});
     const group = new THREE.Group(); group.add(model); scene.add(group);
     groups.set(prop.id, group);
+    rigs.set(prop.id, {parts:partRig(model), material:materialRig(model, group)});
     if (prop.base.grounded !== false) shadows.set(prop.id, [contactLayer(0.35), contactLayer(0.7)]);
   }
   for (const member of plan.cast ?? []) {
@@ -100,6 +104,7 @@ window.setup = async (planJson, size, issueList, qualityName) => {
     // Two-layer contact shadow: a soft pool and a tight dark patch under the feet
     characters.set(member.id, {rig, layer, definition:member.definition, shadow:contactLayer((style?.character?.contactShadow ?? 0.6) * 0.6), feet:contactLayer(style?.character?.contactShadow ?? 0.6)});
   }
+  updateEffects = buildEffects(plan, {scene, groups});
   post = createPost(renderer, scene, camera, {quality, style, width:W, height:H});
   out = document.createElement('canvas'); out.width = W; out.height = H;
   ctx = out.getContext('2d', {willReadFrequently:true});
@@ -150,8 +155,13 @@ function draw(frame) {
     group.quaternion.copy(p.quaternion).multiply(p.wobble);
     group.scale.setScalar(p.scale);
     group.visible = p.visible;
+    const rig = rigs.get(p.id);
+    rig.parts(p.parts ?? {});
+    rig.material(p.material ?? {xray:0, keep:[], section:null});
   }
-  placeContactShadows(frame);
+  updateEffects(s.effects ?? [], (s.sceneFrame ?? frame) / plan.fps);
+  const sceneFrame = s.sceneFrame ?? frame; // A freeze holds everything in the scene (not the film grain or the HUD)
+  placeContactShadows(sceneFrame);
   // The camera is set before the characters: vector characters paint at the current frame's screen scale
   camera.fov = s.camera.fov; camera.updateProjectionMatrix();
   camera.position.copy(s.camera.position); camera.lookAt(s.camera.target);
@@ -168,7 +178,7 @@ function draw(frame) {
     feet.scale.set(stance * 1.6, 0.12 * c.heightM + 0.05, 1);
     feet.rotation.z = Math.atan2(-c.facing[2], c.facing[0]); // Flat plane: local y is world -z
   }
-  env?.update(frame, plan.fps);
+  env?.update(sceneFrame, plan.fps);
   post.setFrame(frame);
   renderer.info.reset();
   post.render();
@@ -250,7 +260,7 @@ function compose(frame, withHud = quality.hud) {
 let lastCaption = null;
 window.captionFrames = frames => frames.map(frame => { compose(frame, false); return {frame, caption:lastCaption}; });
 
-window.renderFrames = (frames, format = 'image/jpeg') => frames.map(frame => { compose(frame); return out.toDataURL(format, 0.9); });
+window.renderFrames = (frames, format = 'image/jpeg', hud) => frames.map(frame => { compose(frame, hud ?? quality.hud); return out.toDataURL(format, 0.9); });
 
 window.renderSheet = (entries, columns) => {
   const tw = W, th = H, band = 90 * W / 360;

@@ -4,16 +4,20 @@ import { ease } from './easing.mjs';
 const UP = new Vector3(0, 1, 0);
 const toQuat = degrees => new Quaternion().setFromEuler(new Euler(...degrees.map(MathUtils.degToRad), 'XYZ'));
 
-export const ACTION_TYPES = ['set', 'move', 'roll', 'pivot', 'wobble', 'appear', 'hide'];
+export const ACTION_TYPES = ['set', 'move', 'roll', 'pivot', 'wobble', 'appear', 'hide', 'part', 'material'];
 // Actions that jump instantly; validation requires them to sit on a cut while the prop is visible
 export const INSTANT_ACTIONS = new Set(['set', 'appear', 'hide']);
 
 export function baseState(prop) {
   return {position:new Vector3(...(prop.base.position ?? [0, 0, 0])), quaternion:toQuat(prop.base.rotation ?? [0, 0, 0]),
-    scale:prop.base.scale ?? 1, visible:prop.base.visible ?? true, grounded:prop.base.grounded ?? true, wobble:new Quaternion()};
+    scale:prop.base.scale ?? 1, visible:prop.base.visible ?? true, grounded:prop.base.grounded ?? true, wobble:new Quaternion(),
+    // Named sub-parts (GLB nodes) offset from their rest pose, and the prop's material state (x-ray ghost, section cut)
+    parts:{}, material:{xray:0, keep:[], section:null, ghost:null}};
 }
 
-const clone = state => ({...state, position:state.position.clone(), quaternion:state.quaternion.clone(), wobble:state.wobble.clone()});
+const clone = state => ({...state, position:state.position.clone(), quaternion:state.quaternion.clone(), wobble:state.wobble.clone(), parts:{...state.parts}, material:{...state.material}});
+const lerpArray = (a, b, p) => a.map((v, i) => v + ((b ?? a)[i] - v) * p);
+export const REST_PART = Object.freeze({position:[0, 0, 0], rotation:[0, 0, 0], scale:1, morph:{}});
 
 const corners = bounds => [bounds.min[0], bounds.max[0]].flatMap(x => [bounds.min[1], bounds.max[1]].flatMap(y => [bounds.min[2], bounds.max[2]].map(z => [x, y, z])));
 
@@ -78,6 +82,22 @@ const APPLY = {
     const axis = new Vector3(...(params.axis ?? [1, 0, 0])).normalize();
     const angle = MathUtils.degToRad(params.degrees ?? 6) * Math.sin(p * Math.PI * 2 * (params.cycles ?? 2.5)) * (1 - p) ** 2;
     out.wobble = new Quaternion().setFromAxisAngle(axis, angle);
+    return out;
+  },
+  // A named part moves from wherever it is toward an offset from its rest pose (degrees, metres, uniform scale, morph weights)
+  part:(state, p, params) => {
+    const out = clone(state), prev = state.parts[params.part] ?? REST_PART;
+    const morph = {...prev.morph};
+    for (const [k, w] of Object.entries(params.morph ?? {})) morph[k] = (prev.morph[k] ?? 0) + (w - (prev.morph[k] ?? 0)) * p;
+    out.parts[params.part] = {position:lerpArray(prev.position, params.position, p), rotation:lerpArray(prev.rotation, params.rotation, p),
+      scale:prev.scale + ((params.scale ?? prev.scale) - prev.scale) * p, morph};
+    return out;
+  },
+  // X-ray amount eases; which parts stay solid, the section plane and the ghost look switch when the action starts
+  material:(state, p, params) => {
+    const out = clone(state), m = state.material;
+    out.material = {xray:params.xray === undefined ? m.xray : m.xray + (params.xray - m.xray) * p, keep:params.keep ?? m.keep,
+      section:params.section === undefined ? m.section : params.section, ghost:params.ghost ?? m.ghost};
     return out;
   },
   appear:state => ({...clone(state), visible:true}),

@@ -1,6 +1,7 @@
 import { propStateAt } from './actions.mjs';
 import { cameraAt } from './camera.mjs';
 import { characterTrack } from './character.mjs';
+import { effectStateAt, sceneFrame, shakeOffset } from './effects.mjs';
 
 // Everything a renderer or validator needs for one frame; pure, so Node validation and the browser animatic agree
 export function shotIndexAt(plan, frame) {
@@ -23,13 +24,20 @@ export function castTracks(plan) {
   return tracks.get(plan);
 }
 
+// A freeze holds the scene (camera, props, effects, characters) while captions and audio run on in real time
 export function samplePlan(plan, frame) {
-  const shotIndex = shotIndexAt(plan, frame);
-  const index = Math.max(0, Math.min(plan.durationFrames - 1, Math.floor(frame)));
+  const scene = sceneFrame(plan, frame), shotIndex = shotIndexAt(plan, frame);
+  const index = Math.max(0, Math.min(plan.durationFrames - 1, Math.floor(scene)));
+  let camera = cameraAt(plan, shotIndex, scene);
+  const shake = shakeOffset(plan, frame);
+  if (shake) { // New vectors: never mutate a pose the camera module may share between frames
+    const d = camera.position.distanceTo(camera.target), offset = camera.position.clone().set(...shake).multiplyScalar(d);
+    camera = {...camera, position:camera.position.clone().add(offset), target:camera.target.clone().add(offset)};
+  }
   return {
-    frame, time:frame / plan.fps, shotIndex, shot:plan.shots[shotIndex],
-    camera:cameraAt(plan, shotIndex, frame),
-    props:plan.props.map(prop => ({id:prop.id, missing:prop.missing, ...propStateAt(prop, frame)})),
+    frame, time:frame / plan.fps, sceneFrame:scene, shotIndex, shot:plan.shots[shotIndex], camera,
+    props:plan.props.map(prop => ({id:prop.id, missing:prop.missing, ...propStateAt(prop, scene)})),
+    effects:(plan.effects ?? []).map(effect => ({id:effect.id, type:effect.type, ...effectStateAt(effect, scene)})),
     characters:[...castTracks(plan)].map(([id, track]) => ({id, ...track[index]})),
     word:wordAt(plan, frame)
   };

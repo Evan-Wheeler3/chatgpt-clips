@@ -13,6 +13,7 @@ import { resolveAnchor } from './anchors.mjs';
 import { BEHAVIORS, FRAMING, FRAMING_ORDER, LENSES } from './camera.mjs';
 import { ACTION_TYPES, INSTANT_ACTIONS } from './actions.mjs';
 import { isEasing } from './easing.mjs';
+import { validateEffectDeclaration, validateEffectKey } from './effects.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const TIMING_DEFAULTS = {cutLeadSec:0.1, eventLeadSec:0.07, tailSec:0.6, minShotSec:0.5, maxShotSec:4.5};
@@ -67,12 +68,25 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
     props.push({
       id:prop.id, query:prop.asset.query, missing:!asset, sizeHint:prop.sizeHint ?? null,
       asset:asset && {id:asset.id, name:asset.name, localPath:asset.localPath, sha256:asset.sha256 ?? null, license:asset.license, creator:asset.creator, sourceUrl:asset.sourceUrl},
-      ...(asset ? await shapeFor(resolve(rootDir, asset.localPath), asset.sha256).then(({min, max, points}) => ({bounds:{min, max}, points})) : {bounds:null, points:null}),
+      ...(asset ? await shapeFor(resolve(rootDir, asset.localPath), asset.sha256).then(({min, max, points, nodes}) => ({bounds:{min, max}, points, nodes:nodes ?? null})) : {bounds:null, points:null, nodes:null}),
       base:{position:prop.position ?? [0, 0, 0], rotation:prop.rotation ?? [0, 0, 0], scale:prop.scale ?? 1, visible:prop.visible ?? true, grounded:prop.grounded ?? true},
       actions:[]
     });
   }
   const propById = new Map(props.map(prop => [prop.id, prop]));
+
+  // Effects: declared once, animated by shot events (tools/storyboard/effects.mjs)
+  const effects = [];
+  for (const declared of story.effects ?? []) {
+    validateEffectDeclaration(declared);
+    if (effects.some(e => e.id === declared.id) || propById.has(declared.id)) throw new Error(`Duplicate effect id: ${declared.id}`);
+    if (declared.attach?.prop && !propById.has(declared.attach.prop)) throw new Error(`Effect ${declared.id}: attaches to unknown prop "${declared.attach.prop}"`);
+    const host = declared.attach?.prop ? propById.get(declared.attach.prop) : null;
+    if (declared.attach?.part && host?.nodes && !host.nodes.includes(declared.attach.part)) throw new Error(`Effect ${declared.id}: prop ${host.id} has no part "${declared.attach.part}"`);
+    effects.push({id:declared.id, type:declared.type, attach:declared.attach ?? null, params:declared.params ?? {}, initial:declared.initial ?? {}, keys:[]});
+  }
+  const effectById = new Map(effects.map(effect => [effect.id, effect]));
+  const freezes = [], shakes = [];
 
   // Look and place: channel style with story palette overrides, and an optional reusable environment
   const style = await loadStyle(story.style?.id ?? 'hold-up', story.style ?? {});
@@ -146,8 +160,31 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
           anchor:at.word ? {word:at.word, wordIndex:at.wordIndex, wordFrame:words[at.wordIndex].startFrame} : null, shot:shot.id, instant:INSTANT_CHARACTER_ACTIONS.has(event.do)});
         continue;
       }
+      if (event.effect) {
+        const effect = effectById.get(event.effect);
+        if (!effect) throw new Error(`Shot ${shot.id}: event targets unknown effect "${event.effect}"`);
+        if (event.do !== 'animate') throw new Error(`Shot ${shot.id}: effect events use "do":"animate"`);
+        validateEffectKey(effect, event.set, `Shot ${shot.id}`);
+        if (event.ease && !isEasing(event.ease)) throw new Error(`Shot ${shot.id}: unknown easing "${event.ease}"`);
+        const at = event.at === 'shot-start' || event.at === undefined ? {frame:shot.startFrame, word:null, wordIndex:null} : anchor(event.at, timing.eventLeadSec);
+        let endFrame = at.frame;
+        if (event.until) endFrame = anchor(typeof event.until === 'string' ? {at:event.until, edge:'end'} : event.until).frame;
+        else if (event.duration !== undefined) endFrame = at.frame + Math.round(event.duration * fps);
+        effect.keys.push({startFrame:at.frame, endFrame:Math.max(at.frame, endFrame), set:event.set, ease:event.ease ?? null, shot:shot.id,
+          anchor:at.word ? {word:at.word, wordIndex:at.wordIndex, wordFrame:words[at.wordIndex].startFrame} : null});
+        continue;
+      }
       const prop = propById.get(event.prop);
       if (!prop) throw new Error(`Shot ${shot.id}: event targets unknown prop "${event.prop}"`);
+      if (event.do === 'part') {
+        if (typeof event.params?.part !== 'string') throw new Error(`Shot ${shot.id}: part events need params.part`);
+        if (prop.nodes && !prop.nodes.includes(event.params.part)) throw new Error(`Shot ${shot.id}: prop ${prop.id} has no part "${event.params.part}" (${prop.nodes.join(', ')})`);
+      }
+      if (event.do === 'material') {
+        const x = event.params?.xray;
+        if (x !== undefined && !(x >= 0 && x <= 1)) throw new Error(`Shot ${shot.id}: material xray must be between 0 and 1`);
+        for (const part of event.params?.keep ?? []) if (prop.nodes && !prop.nodes.includes(part)) throw new Error(`Shot ${shot.id}: prop ${prop.id} has no part "${part}" to keep solid`);
+      }
       if (!ACTION_TYPES.includes(event.do)) throw new Error(`Shot ${shot.id}: unknown action "${event.do}"`);
       if (event.ease && !isEasing(event.ease)) throw new Error(`Shot ${shot.id}: unknown easing "${event.ease}"`);
       const at = event.at === 'shot-start' || event.at === undefined ? {frame:shot.startFrame, word:null, wordIndex:null} : anchor(event.at, timing.eventLeadSec);
@@ -155,21 +192,34 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
       if (!INSTANT_ACTIONS.has(event.do)) {
         if (event.until) endFrame = anchor(typeof event.until === 'string' ? {at:event.until, edge:'end'} : event.until).frame;
         else if (event.duration) endFrame = at.frame + Math.round(event.duration * fps);
+        else if (event.duration === 0 && (event.do === 'part' || event.do === 'material')) endFrame = at.frame; // A switch on the frame
         else throw new Error(`Shot ${shot.id}: ${event.do} needs "until" or "duration"`);
       }
       prop.actions.push({type:event.do, startFrame:at.frame, endFrame:Math.max(at.frame, endFrame), params:event.params ?? {}, ease:event.ease ?? null,
         anchor:at.word ? {word:at.word, wordIndex:at.wordIndex, wordFrame:words[at.wordIndex].startFrame} : null, shot:shot.id});
     }
+    // Time effects: a freeze (the scene holds for a few frames; captions and audio run on) and a camera shake
+    if (shot.raw.freeze) {
+      const f = shot.raw.freeze, at = f.at === undefined || f.at === 'shot-start' ? {frame:shot.startFrame} : anchor(f.at, 0);
+      if (!(Number.isInteger(f.frames) && f.frames > 0 && f.frames <= 30)) throw new Error(`Shot ${shot.id}: freeze.frames must be 1-30`);
+      freezes.push({startFrame:at.frame, frames:f.frames, shot:shot.id});
+    }
+    if (shot.raw.camera?.shake) {
+      const k = shot.raw.camera.shake, at = anchor(k.at, 0);
+      if (!(k.amplitude > 0 && k.amplitude <= 0.1)) throw new Error(`Shot ${shot.id}: camera.shake.amplitude must be in (0, 0.1] (a fraction of the camera distance)`);
+      shakes.push({startFrame:at.frame, frames:k.frames ?? 3, amplitude:k.amplitude, shot:shot.id});
+    }
     delete shot.raw;
     delete shot.events;
   }
   for (const prop of props) prop.actions.sort((a, b) => a.startFrame - b.startFrame);
+  for (const effect of effects) effect.keys.sort((a, b) => a.startFrame - b.startFrame);
   for (const member of cast) member.actions.sort((a, b) => a.startFrame - b.startFrame);
 
   const plan = {
     version:1, slug:story.slug, title:story.title ?? story.slug, fps, size:story.size ?? {width:1080, height:1920}, durationFrames, timing,
     audio:{file:wordsDoc.audio?.file ?? null, sha256:wordsDoc.audio?.sha256 ?? null, durationSec:wordsDoc.audio?.durationSec ?? null},
-    words, stage:story.stage ?? {}, props, shots, missingAssets, style, environment, cast,
+    words, stage:story.stage ?? {}, props, shots, missingAssets, style, environment, cast, effects, freezes:freezes.sort((a, b) => a.startFrame - b.startFrame), shakes,
     sources:{story:storyBytes ? sha256(storyBytes) : null, words:wordsBytes ? sha256(wordsBytes) : null, narration:wordsDoc.source ?? null, aligner:wordsDoc.aligner ?? null}
   };
   // Captions are planned from the measured words and the staged shots (story.captions: false turns them off)
