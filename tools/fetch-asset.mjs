@@ -1,9 +1,10 @@
 import { relative } from 'node:path';
 import { createPolyHavenProvider } from './providers/polyhaven.mjs';
 import { createSketchfabProvider } from './providers/sketchfab.mjs';
+import { createGeneratedProvider } from './providers/generated.mjs';
 import { loadSecrets } from './env.mjs';
 
-const PROVIDERS = {polyhaven:createPolyHavenProvider, sketchfab:createSketchfabProvider};
+const PROVIDERS = {polyhaven:createPolyHavenProvider, sketchfab:createSketchfabProvider, generated:createGeneratedProvider};
 
 // Explicit, per-asset download into assets/cache; it never edits assets/catalog.json
 async function main(args) {
