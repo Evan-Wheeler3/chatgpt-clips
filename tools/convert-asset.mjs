@@ -1,8 +1,9 @@
 import { relative } from 'node:path';
 import { createPolyHavenProvider } from './providers/polyhaven.mjs';
+import { createSketchfabProvider } from './providers/sketchfab.mjs';
 import { convertAsset } from './convert/pipeline.mjs';
 
-const PROVIDERS = {polyhaven:createPolyHavenProvider};
+const PROVIDERS = {polyhaven:createPolyHavenProvider, sketchfab:createSketchfabProvider};
 
 // Fetches (cache-validated) and converts one provider asset to a validated GLB with a Three.js preview
 async function main(args) {

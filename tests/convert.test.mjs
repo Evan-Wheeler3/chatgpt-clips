@@ -210,6 +210,20 @@ test('registration requires approval and a passed preview, then the resolver fin
   });
 });
 
+test('registration enforces the model license allow-list and keeps the credit line for attribution licenses', async () => {
+  await workspace(async ({dir, source, outRoot}) => {
+    const catalogPath = join(dir, 'catalog.json');
+    await writeFile(catalogPath, JSON.stringify({version:1, assets:[]}));
+    const options = {catalogPath, libraryDir:join(dir, 'assets/library'), rootDir:dir, approve:true, approvedBy:'Reviewer'};
+    const convert = async (attribution, id) => join((await convertAsset({...source, id, attribution:{...source.attribution, ...attribution}}, {outRoot, render:fakePreview})).dir, 'report.json');
+    await assert.rejects(registerAsset(await convert({license:'CC-BY-NC-4.0'}, 'nc_box'), options), /not allowed/);
+    await assert.rejects(registerAsset(await convert({license:'CC-BY-4.0'}, 'uncredited_box'), options), /requires attribution/);
+    const credit = '"Painted Box" by Fixture Author (https://example.org/a), https://example.org/painted-box, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)';
+    const {entry} = await registerAsset(await convert({license:'CC-BY-4.0', credit}, 'credited_box'), options);
+    assert.deepEqual(entry.attribution, {required:true, credit});
+  });
+});
+
 test('converted GLB loads and renders in Three.js (headless Chrome)', async t => {
   if (!await findChrome()) return t.skip('No Chrome/Chromium available; set CHROME_PATH to run the Three.js load test');
   await workspace(async ({source, outRoot}) => {

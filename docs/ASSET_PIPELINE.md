@@ -5,7 +5,7 @@
 2. Confirm the referenced `localPath` exists.
 3. Rank by object/description/tag relevance, approved style, and license policy.
 4. Return all usable candidates; don't silently choose a stylistically incompatible item.
-5. On miss, query enabled external providers (Poly Haven implemented); verify metadata, thumbnail, download licensing and usage rights.
+5. On miss, query enabled external providers (Poly Haven and Sketchfab implemented); verify metadata, thumbnail, download licensing and usage rights.
 6. Download into versioned local cache (Poly Haven implemented), scan and inspect; normalize to GLB with consistent scale, orientation, materials (planned).
 7. Human or automated quality gate; only then add to shared catalog.
 8. Use Blender MCP/batch conversion when specific repair, rigging or custom asset work is necessary.
@@ -35,6 +35,48 @@ When no asset is installed, expect `not_found`. No remote models are downloaded 
 - **Cache revalidation:** a repeat fetch of the same version re-hashes every cached file against `provenance.json`, and checks the record against the API's current file list. It returns `cached` only if everything matches. Otherwise it downloads a verified fresh copy, replaces the bad one, and reports the problem in `repaired`.
 - Poly Haven serves glTF, not GLB. Fetching never edits `assets/catalog.json`; a fetched model becomes resolvable only after conversion, review and registration (below).
 - `conversionSource(id)` fetches/revalidates the model and returns it in the provider-agnostic source contract. Poly Haven reports dimensions as Blender Z-up millimetres `[x, depth, height]`; they are mapped to glTF Y-up metres `[x, height, depth]` as the expected size (verified exactly on `painted_wooden_stool`).
+
+## Sketchfab adapter (`tools/providers/sketchfab.mjs`)
+Verified against Sketchfab's official API spec (`https://docs.sketchfab.com/data-api/v3/swagger.json`, read 2026-11-14):
+- "Users can log in with OAuth2 (preferred), or an API Token" (`Authorization: Token …`).
+- `GET /v3/models/{uid}/download` uses that scheme and returns short-lived links to a glTF ZIP (and USDZ). Status codes: 400 if the model isn't downloadable, 401 without a token, 429 when rate-limited.
+- `GET /v3/licenses` lists the licence slugs.
+
+The Download API guide describes OAuth for third-party apps that sign users in. Our use is the owner's own account and token in a local tool. Per Terms §4.2.4, the downloading user is responsible for complying with each model's licence.
+
+- **Search** (`--external sketchfab`, no token): `/v3/search?type=models&downloadable=true&license=cc0|by`.
+  - Results are ranked with the same deterministic scoring as Poly Haven.
+  - **Each candidate's licence is re-verified from its own model record** before it is offered; search results are not evidence.
+  - Candidates carry the licence, the evidence (record URL, slug and licence URL), whether attribution is required, a ready credit line, the triangle count and a thumbnail.
+  - Warnings: trademarks (always), likely real brands in the name or tags, attribution required.
+- **Licence gate** (`licenseProblem`), checked at search **and again before any download request**:
+  - **Allowed:** `isDownloadable` models under `cc0` (CC0-1.0) or `by` (CC-BY-4.0) only, and the record's licence URL must match.
+  - **Refused:**
+    - view-only models;
+    - age-restricted models;
+    - priced or store models;
+    - Standard, Free Standard and Editorial;
+    - NonCommercial, NoDerivatives and ShareAlike.
+- **Download** (`npm run assets:fetch -- --provider sketchfab --id <uid>`) needs `SKETCHFAB_API_TOKEN`. Use a free account's personal token; `.env.example` shows the variable.
+  - The token is read from the environment, sent only to `api.sketchfab.com`, and never logged or written.
+  - The pre-signed archive link gets no Authorization header. It must be HTTPS on `sketchfab-prod-media.s3.amazonaws.com` or `media.sketchfab.com` (every redirect hop is checked); any other host is refused until reviewed.
+  - The archive is streamed with a size cap at the size the API declared, and SHA-256 hashed.
+- **Extraction** (`tools/providers/zip.mjs`): our own strict reader, with no shell and no dependency. It refuses:
+  - encryption, ZIP64 and multi-disk archives;
+  - methods other than stored or deflate;
+  - absolute paths, `..`, backslashes and NULs;
+  - symlinks;
+  - case-insensitive duplicates;
+  - more than 2000 entries, total size over the cap, compression ratios over 200:1, and CRC mismatches.
+- **Cache:** `assets/cache/sketchfab/<uid>/<updatedAt>/` holds the extracted files plus `provenance.json`. The provenance records:
+  - the licence (slug, label, URL, requirements) and the licence check time;
+  - the creator and their profile;
+  - the **attribution text** (title, author, source, licence, per CC BY 4.0 §3(a));
+  - the archive's own `license.txt`, verbatim;
+  - the archive hash and each file's size and SHA-256.
+
+  A repeat fetch re-hashes the cache and serves it with no token and no download. A damaged cache is replaced only after a verified redownload. A model updated on Sketchfab gets a new version folder.
+- **Conversion source:** `conversionSource(uid)` feeds the unchanged converter (Khronos validation, Three.js load check, preview). Style is left to the reviewer (`--style`) and no dimensions are claimed.
 
 ## Conversion and registration (Phase 3)
 
@@ -82,7 +124,7 @@ Errors fail the conversion; warnings are kept for review.
 - `preview.png` is a 2×2 contact sheet (three-quarter, front, side, top) with a 10 cm grid as a scale reference.
 
 ### Registration
-`assets:register` refuses without `--approve` and `--approved-by`, a `passed` report, an existing preview and a GLB matching its recorded SHA-256. It copies the GLB to `assets/library/<id>.glb` (gitignored), re-verifies the hash, and writes a sorted catalog entry with source, license and license evidence, creator, provider version, SHA-256, dimensions, triangles, conversion key and review record. Re-registering the same GLB is `unchanged`; a different GLB under the same id needs `--replace`.
+`assets:register` refuses a licence outside the model allow-list (`CC0-1.0`, `CC-BY-4.0`, `CC-BY-3.0`) and an attribution licence without a recorded credit line, which it stores in the entry (`attribution: {required, credit}`). It also refuses without `--approve` and `--approved-by`, a `passed` report, an existing preview and a GLB matching its recorded SHA-256. It copies the GLB to `assets/library/<id>.glb` (gitignored), re-verifies the hash, and writes a sorted catalog entry with source, license and license evidence, creator, provider version, SHA-256, dimensions, triangles, conversion key and review record. Re-registering the same GLB is `unchanged`; a different GLB under the same id needs `--replace`.
 
 Because `assets/library/` is not in git, a fresh clone has catalog entries without files; the resolver correctly reports `not_found` until `assets:convert` + `assets:register` are rerun. The conversion key and SHA-256 in the entry identify the exact expected output.
 
@@ -103,7 +145,7 @@ Because `assets/library/` is not in git, a fresh clone has catalog entries witho
 Replace placeholder source metadata with a real verified origin before accepting an entry. Missing local file means it will not be resolved.
 
 ## Next engineering tasks
-- Further provider adapters following the Poly Haven contract: `search(request) -> candidates` and an explicit `fetchModel(id) -> {status, dir, provenance}`.
+- Further provider adapters (Poly Pizza for CC0 low-poly) following the same contract: `search(request) -> candidates` and an explicit `fetchModel(id) -> {status, dir, provenance}`.
 - License allowlist and attribution generator.
 - Blender headless converter for OBJ/FBX/BLEND to optimized GLB (the `NEEDS_BLENDER` path).
 - Optional texture downscaling/WebP for budget-constrained scenes, with before/after preview comparison.

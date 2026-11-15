@@ -1,5 +1,8 @@
 import { relative } from 'node:path';
 import { createPolyHavenProvider } from './providers/polyhaven.mjs';
+import { createSketchfabProvider } from './providers/sketchfab.mjs';
+
+const PROVIDERS = {polyhaven:createPolyHavenProvider, sketchfab:createSketchfabProvider};
 
 // Explicit, per-asset download into assets/cache; it never edits assets/catalog.json
 async function main(args) {
@@ -10,9 +13,9 @@ async function main(args) {
     else if (args[i] === '--resolution') resolution=args[++i];
     else throw new Error(`Unknown argument: ${args[i]}`);
   }
-  if (provider !== 'polyhaven') throw new Error('Supported providers: polyhaven');
+  if (!PROVIDERS[provider]) throw new Error(`Supported providers: ${Object.keys(PROVIDERS).join(', ')}`);
   if (!id) throw new Error('Provide --id');
-  const result = await createPolyHavenProvider().fetchModel(id, {resolution});
+  const result = await PROVIDERS[provider]().fetchModel(id, {resolution});
   process.stdout.write(JSON.stringify({...result, dir:relative(process.cwd(), result.dir)}, null, 2) + '\n');
 }
 

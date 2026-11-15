@@ -14,6 +14,9 @@ async function sha256File(path) {
   return hash.digest('hex');
 }
 
+// Model licenses the catalog accepts; attribution licenses must carry the credit line recorded by the provider
+export const MODEL_LICENSES = {'CC0-1.0':{attribution:false}, 'CC-BY-4.0':{attribution:true}, 'CC-BY-3.0':{attribution:true}};
+
 export const defaultCatalogId = report => `${report.source.provider}-${report.source.id}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 function catalogTags(report, extra) {
@@ -37,6 +40,10 @@ export async function registerAsset(reportPath, {
   const glbPath = join(reportDir, report.glb.file);
   if (await sha256File(glbPath) !== report.glb.sha256) throw new Error('Converted GLB does not match the SHA-256 in its report');
 
+  const policy = MODEL_LICENSES[report.attribution?.license];
+  if (!policy) throw new Error(`License ${report.attribution?.license} is not allowed in the catalog (${Object.keys(MODEL_LICENSES).join(', ')})`);
+  if (policy.attribution && !report.attribution.credit?.trim()) throw new Error(`${report.attribution.license} requires attribution, but the source recorded no credit line`);
+
   const id = catalogId ?? defaultCatalogId(report);
   if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) throw new Error(`Invalid catalog id: ${id}`);
   const libraryPath = join(libraryDir, `${id}.glb`);
@@ -46,6 +53,7 @@ export async function registerAsset(reportPath, {
     id, name:report.metadata.name ?? attribution.name ?? source.id, description:report.metadata.description ?? '',
     tags:catalogTags(report, tags), style:style ?? report.metadata.style, localPath,
     sourceUrl:attribution.sourceUrl, license:attribution.license, licenseEvidence:attribution.licenseEvidence ?? null, creator:attribution.creator,
+    attribution:{required:policy.attribution, credit:attribution.credit ?? null},
     provider:{name:source.provider, id:source.id, version:source.version, resolution:source.resolution},
     sha256:report.glb.sha256, bytes:report.glb.bytes,
     dimensionsM:validation.checks.bounds.extentsM, triangles:validation.checks.geometry.triangles,

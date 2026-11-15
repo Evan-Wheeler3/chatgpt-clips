@@ -85,8 +85,12 @@ async function main(args) {
   if (!!query === !!requestFile) throw new Error('Provide exactly one of --query or --request');
   const requests = query ? [{id:'ad-hoc',query}] : JSON.parse(await readFile(resolve(process.cwd(),requestFile),'utf8')).requests;
   const providers = [];
-  if (external === 'polyhaven') providers.push((await import('./providers/polyhaven.mjs')).createPolyHavenProvider());
-  else if (external) throw new Error(`Unknown external provider: ${external}`);
+  // --external polyhaven,sketchfab queries each provider in turn (only for requests the local catalog cannot satisfy)
+  for (const name of external ? external.split(',') : []) {
+    if (name === 'polyhaven') providers.push((await import('./providers/polyhaven.mjs')).createPolyHavenProvider());
+    else if (name === 'sketchfab') providers.push((await import('./providers/sketchfab.mjs')).createSketchfabProvider());
+    else throw new Error(`Unknown external provider: ${name}`);
+  }
   const result = {version:1,results:await resolveAssets(requests,{providers})};
   if (providers.length) result.providerCredits = providers.map(provider => provider.credit);
   const output=JSON.stringify(result,null,2)+'\n';
