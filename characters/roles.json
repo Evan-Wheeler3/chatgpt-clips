@@ -51,7 +51,8 @@
       "office worker",
       "student",
       "tourist",
-      "commuter"
+      "commuter",
+      "driver"
     ]
   },
   "aliases": {

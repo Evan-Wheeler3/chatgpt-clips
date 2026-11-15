@@ -85,6 +85,30 @@
       }
     },
     {
+      "id": "gas-pump-shutoff-protagonist",
+      "name": "protagonist (gas-pump-shutoff)",
+      "kind": "intake",
+      "status": "awaiting-artwork",
+      "roles": [
+        "driver"
+      ],
+      "family": null,
+      "era": {
+        "from": 2026,
+        "to": 2026
+      },
+      "regions": [],
+      "description": "An ordinary, relatable modern adult filling up their own car: the viewer's stand-in. Expressive and a little comedic; on screen briefly in the hook, the rewind and the payoff.",
+      "approvals": {
+        "design": "pending",
+        "rig": "pending",
+        "production": "pending"
+      },
+      "files": {
+        "intake": "characters/intake/gas-pump-shutoff-protagonist/intake.json"
+      }
+    },
+    {
       "id": "saloon-1873-gunfighter",
       "name": "gunfighter (saloon-1873)",
       "kind": "intake",

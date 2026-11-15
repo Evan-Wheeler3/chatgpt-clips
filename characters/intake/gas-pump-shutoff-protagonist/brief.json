@@ -1,0 +1,114 @@
+{
+  "story": "gas-pump-shutoff",
+  "slot": "protagonist",
+  "kind": "new",
+  "subject": "a new character: driver",
+  "premise": "A driver at a modern gas station watches the pump fail to stop and gasoline overflow (an exaggerated what-if), then a CLICK rewinds it: the nozzle itself knows when to stop. The camera dives into a cutaway of the nozzle to show the sensing hole, the airflow, the vacuum, the diaphragm and the latch.",
+  "character": {
+    "role": "driver",
+    "age": "adult (mid 20s to 30s)",
+    "era": 2026,
+    "personality": "relatable, slightly clumsy, curious; big readable reactions",
+    "description": "An ordinary, relatable modern adult filling up their own car: the viewer's stand-in. Expressive and a little comedic; on screen briefly in the hook, the rewind and the payoff.",
+    "silhouette": "simple and friendly: compact Hold Up proportions, a distinctive hairstyle or cap, one strong jacket colour that reads against concrete and a red or white pump",
+    "contrastWith": null
+  },
+  "clothing": [
+    "round cartoon head",
+    "zip jacket or hoodie",
+    "plain T-shirt",
+    "jeans",
+    "sneakers",
+    "mitten hands"
+  ],
+  "accessories": [
+    "fuel nozzle (held; the dispensing nozzle prop, not character artwork)",
+    "car keys (optional)"
+  ],
+  "expressions": {
+    "required": [
+      "neutral",
+      "happy",
+      "surprised",
+      "concerned"
+    ],
+    "role": [
+      "panicked (wide eyes, raised brows, small open mouth) for the overflow",
+      "relieved (soft smile, lowered brows) after the click",
+      "curious (one brow up, small mouth) as the explanation starts",
+      "impressed (raised brows, open smile) at the payoff"
+    ]
+  },
+  "poses": [
+    "holding a nozzle in the filler neck (arm extended, hand at the nozzle grip)",
+    "recoiling from the overflow (lean back, free hand up)",
+    "pointing at the nozzle",
+    "relaxed stance, nozzle hung back on the pump"
+  ],
+  "historicalNotes": null,
+  "styleGuide": {
+    "version": "1.0.0",
+    "basedOn": "cooper@1.0.0",
+    "document": "docs/CHARACTER-STYLE-GUIDE.md"
+  },
+  "artworkRequirements": {
+    "formats": [
+      "png",
+      "jpg",
+      "jpeg",
+      "webp"
+    ],
+    "minLongEdgePx": 1536,
+    "minShortEdgePx": 1024,
+    "background": "plain, light and even; no scene behind the figure",
+    "views": {
+      "required": [
+        "3/4 view, full body, facing screen right"
+      ],
+      "recommended": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    "sheet": [
+      "full-body turnaround",
+      "expression row (the required set at least)",
+      "colour swatches with labels",
+      "separate drawings of removable accessories (hat, tools, weapons)"
+    ],
+    "forbidden": [
+      "copies or close imitations of another creator's characters",
+      "likeness of a real living person",
+      "logos, watermarks or text over the figure"
+    ]
+  },
+  "rig": {
+    "reuse": [
+      "skeleton and pose engine (tools/storyboard/character.mjs)",
+      "pose presets with anticipation",
+      "walk cycle",
+      "push and touch IK (object interaction)",
+      "expression system (face data + faceMap)",
+      "blinks, gaze and head turn",
+      "feet grounding",
+      "painter, card renderer and silhouette shadow",
+      "palette compensation",
+      "attachment layers on any bone (outfits, accessories)",
+      "rig checks, visual regression and approval gates"
+    ],
+    "reusableForms": [
+      "round cartoon head (head)",
+      "jeans (legs, recoloured)",
+      "mitten hands (hands)"
+    ],
+    "newArtwork": [
+      "zip jacket or hoodie",
+      "plain T-shirt",
+      "sneakers",
+      "fuel nozzle (held; the dispensing nozzle prop, not character artwork) (accessory layer)",
+      "car keys (optional) (accessory layer)"
+    ]
+  },
+  "artworkRequest": "Character design sheet for an original 2D cartoon character for \"Hold Up\", a YouTube Shorts channel. An ordinary, relatable modern adult filling up their own car: the viewer's stand-in. Expressive and a little comedic; on screen briefly in the hook, the rewind and the payoff.\n\nSetting: a clean, modern self-service gas station in daylight, 2026. Age: adult (mid 20s to 30s). Personality: relatable, slightly clumsy, curious; big readable reactions.\n\nStyle: simple, bold 2D cartoon with flat colours and one thick, even, dark warm outline around every shape; no gradients, textures or hatching. Round, simple face: solid dark oval eyes with no whites, short thick dark eyebrows that carry the expression, no nose or only a tiny mark, a simple line or shape for the mouth. Stylized compact proportions about 2.9-4.2 heads tall, large readable head, simple mitten-like hands.\n\nSilhouette: simple and friendly: compact Hold Up proportions, a distinctive hairstyle or cap, one strong jacket colour that reads against concrete and a red or white pump.\n\nClothing and details: zip jacket or hoodie, plain T-shirt, jeans, sneakers. Muted, period-appropriate colours, at most 5 clothing colours, one warm accent at most.\n\nAccessories, each also drawn separately: fuel nozzle (held; the dispensing nozzle prop, not character artwork), car keys (optional).\n\nSheet layout on a plain light background: a full-body 3/4 view facing screen right (most important), plus front, side and back views; an expression row with neutral, happy, surprised, concerned, panicked, relieved, curious, impressed; colour swatches with hex labels. A small pose row: holding a nozzle in the filler neck (arm extended, hand at the nozzle grip); recoiling from the overflow (lean back, free hand up); pointing at the nozzle; relaxed stance, nozzle hung back on the pump.\n\nDo not imitate any existing character, studio or creator; do not resemble a real person; no logos, watermarks or text over the figure."
+}

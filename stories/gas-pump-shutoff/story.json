@@ -1,0 +1,672 @@
+{
+  "version": 1,
+  "slug": "gas-pump-shutoff",
+  "title": "How does a gas pump know when to stop?",
+  "status": "pre-production (Phase 7A): storyboard for review; not narrated, not rendered",
+  "fps": 30,
+  "size": {
+    "width": 1080,
+    "height": 1920
+  },
+  "narration": {
+    "script": "How does a gas pump know when to stop? It doesn't. The [[emph +]] nozzle does. And it's not electronic. It's [[emph +]] air. See this tiny hole near the tip? Inside, rushing fuel squeezes through a narrow spot, creating [[emph +]] suction. That suction pulls air in through the hole, up a thin tube. While air gets in, fuel flows. When the tank's full, gas covers the hole. No more air. So the suction tugs a flexible diaphragm. That pulls a pin, a latch lets go, the lever drops, and a spring [[emph +]] snaps the valve shut. All from one tiny hole.",
+    "voice": {
+      "profile": "hold-up-narrator"
+    }
+  },
+  "captions": {
+    "style": "hold-up",
+    "emphasize": [
+      "hole"
+    ]
+  },
+  "audio": {
+    "ambience": {
+      "profile": "gas-station"
+    },
+    "auto": true,
+    "sfx": [
+      {
+        "id": "overflow-gush",
+        "at": {
+          "at": "How",
+          "offset": -0.5
+        },
+        "asset": "fuel-gush-loop",
+        "durationSec": 2.6,
+        "reason": "gasoline overflowing the filler neck"
+      },
+      {
+        "id": "spill-splash",
+        "at": "know",
+        "asset": "fuel-splash",
+        "reason": "fuel hitting the pavement"
+      },
+      {
+        "id": "shutoff-click-1",
+        "at": {
+          "at": "It",
+          "offset": -0.1
+        },
+        "asset": "nozzle-click",
+        "gainDb": 2,
+        "reason": "THE click, on the cut into the rewind (the approved hook contrast)"
+      },
+      {
+        "id": "rewind",
+        "at": {
+          "at": "It",
+          "offset": -0.04
+        },
+        "asset": "rewind-swoosh",
+        "reason": "the spill snaps back"
+      },
+      {
+        "id": "air-sip",
+        "at": "pulls#1",
+        "asset": "air-suction-loop",
+        "durationSec": 2.4,
+        "gainDb": -4,
+        "reason": "air drawn through the sensing hole"
+      },
+      {
+        "id": "airflow-cut",
+        "at": {
+          "at": "No",
+          "offset": 0
+        },
+        "asset": "air-stop",
+        "reason": "airflow stops when gas covers the hole"
+      },
+      {
+        "id": "diaphragm",
+        "at": "tugs",
+        "asset": "diaphragm-flex",
+        "reason": "the diaphragm is pulled"
+      },
+      {
+        "id": "latch-release",
+        "at": "latch",
+        "asset": "latch-release",
+        "reason": "the latch lets go"
+      },
+      {
+        "id": "shutoff-click-2",
+        "at": "snaps",
+        "asset": "nozzle-click",
+        "gainDb": 2,
+        "reason": "the payoff click (callback to the hook)"
+      }
+    ],
+    "planned": [
+      {
+        "need": "fuel-gush-loop",
+        "note": "liquid pouring/overflow loop: needs a CC0 recording or a convincing synthesis (pouring liquid is hard to synthesize)"
+      },
+      {
+        "need": "fuel-splash",
+        "note": "liquid splash on pavement"
+      },
+      {
+        "need": "nozzle-click",
+        "note": "metallic latch click + valve clack (synthesizable: metal modal impact)"
+      },
+      {
+        "need": "rewind-swoosh",
+        "note": "reverse/rewind swoosh (synthesizable from the whoosh family, reversed with rising pitch)"
+      },
+      {
+        "need": "air-suction-loop",
+        "note": "thin airy hiss through a small tube (synthesizable: band-passed noise)"
+      },
+      {
+        "need": "air-stop",
+        "note": "airflow cut-off (hiss choking off; synthesizable)"
+      },
+      {
+        "need": "diaphragm-flex",
+        "note": "soft rubbery thump (synthesizable)"
+      },
+      {
+        "need": "latch-release",
+        "note": "small metal snick (synthesizable)"
+      },
+      {
+        "need": "gas-station ambience profile",
+        "note": "outdoor station bed: light wind, distant traffic, canopy-light hum; distant traffic needs a CC0 recording or a careful synthesis"
+      }
+    ]
+  },
+  "stage": {
+    "background": "#9fb8cf",
+    "fog": {
+      "near": 18,
+      "far": 60
+    },
+    "ground": {
+      "color": "#8c8f94"
+    },
+    "light": {
+      "key": "#fff4e2",
+      "keyIntensity": 3,
+      "keyPosition": [
+        3.5,
+        6,
+        4
+      ],
+      "sky": "#cfe0f2",
+      "bounce": "#7d7a74",
+      "ambient": 1.1,
+      "environment": 0.8,
+      "exposure": 1.15
+    }
+  },
+  "props": [
+    {
+      "id": "car",
+      "asset": {
+        "query": "car",
+        "style": "stylized"
+      },
+      "position": [
+        1,
+        0,
+        -0.3
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "sizeHint": [
+        4.3,
+        1.45,
+        1.8
+      ]
+    },
+    {
+      "id": "fuel-pump",
+      "asset": {
+        "query": "gas pump",
+        "style": "stylized"
+      },
+      "position": [
+        -1.5,
+        0,
+        -0.6
+      ],
+      "rotation": [
+        0,
+        20,
+        0
+      ],
+      "sizeHint": [
+        0.9,
+        1.9,
+        0.55
+      ]
+    },
+    {
+      "id": "nozzle",
+      "asset": {
+        "query": "fuel nozzle",
+        "style": "stylized"
+      },
+      "position": [
+        -0.95,
+        0.88,
+        0.62
+      ],
+      "rotation": [
+        0,
+        0,
+        35
+      ],
+      "grounded": false,
+      "sizeHint": [
+        0.34,
+        0.2,
+        0.08
+      ]
+    },
+    {
+      "id": "nozzle-cutaway",
+      "asset": {
+        "query": "fuel nozzle cutaway",
+        "style": "stylized"
+      },
+      "position": [
+        12,
+        1.2,
+        0
+      ],
+      "grounded": false,
+      "sizeHint": [
+        0.6,
+        0.32,
+        0.12
+      ]
+    },
+    {
+      "id": "spout-tip-cutaway",
+      "asset": {
+        "query": "fuel filler pipe cutaway",
+        "style": "stylized"
+      },
+      "position": [
+        12.6,
+        0.6,
+        0
+      ],
+      "grounded": false,
+      "sizeHint": [
+        0.16,
+        0.4,
+        0.16
+      ]
+    }
+  ],
+  "cast": [
+    {
+      "id": "driver",
+      "character": "gas-pump-shutoff-protagonist",
+      "start": {
+        "position": [
+          -0.55,
+          0.85
+        ],
+        "face": "nozzle"
+      }
+    }
+  ],
+  "beats": [
+    {
+      "id": "hook",
+      "purpose": "The what-if: the pump doesn't stop and gasoline overflows. Then the CLICK snaps it back.",
+      "shots": [
+        {
+          "id": "overflow",
+          "purpose": "First-second impact: gasoline gushing out of the filler neck, down the car and across the pavement; the driver recoils",
+          "subject": "nozzle",
+          "camera": {
+            "move": "push-in",
+            "framing": "medium",
+            "azimuth": 35,
+            "elevation": 4,
+            "focus": [
+              0,
+              -0.25,
+              0
+            ],
+            "to": {
+              "framing": "close"
+            },
+            "during": {
+              "to": "stop?"
+            },
+            "ease": "dolly"
+          },
+          "focus": [
+            "stop?"
+          ],
+          "events": [
+            {
+              "character": "driver",
+              "at": "shot-start",
+              "do": "expression",
+              "params": {
+                "face": "surprised"
+              }
+            },
+            {
+              "character": "driver",
+              "at": "know",
+              "do": "pose",
+              "params": {
+                "preset": "surprised",
+                "target": "nozzle"
+              },
+              "duration": 1.2
+            }
+          ],
+          "planned": [
+            "fuel overflow (stylized liquid): a ribbon from the filler neck, a sheet down the panel, a spreading puddle; ~1 s to fill the frame edge",
+            "puddle reflection (screen-space or baked)"
+          ]
+        },
+        {
+          "id": "click-rewind",
+          "start": "It",
+          "purpose": "The contrast: CLICK, the overflow rewinds into the filler neck, the nozzle sits normally; the twist line lands on the nozzle (held still: the rewind is the motion; three push-ins in a row would feel mechanical)",
+          "subject": "nozzle",
+          "transition": {
+            "type": "cut",
+            "motivation": "Cut on the click"
+          },
+          "camera": {
+            "move": "hold",
+            "framing": "detail",
+            "azimuth": 20,
+            "elevation": 8
+          },
+          "focus": [
+            "nozzle"
+          ],
+          "events": [
+            {
+              "character": "driver",
+              "at": "shot-start",
+              "do": "expression",
+              "params": {
+                "face": "concerned"
+              }
+            },
+            {
+              "character": "driver",
+              "at": "nozzle",
+              "do": "pose",
+              "params": {
+                "preset": "point",
+                "target": "nozzle"
+              },
+              "duration": 1
+            }
+          ],
+          "planned": [
+            "rewind: the overflow plays backwards in ~0.6 s with a brief VHS-free 'snap back' (motion trail, no glitch effects)",
+            "nozzle handle lever visibly drops a few degrees with the click"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reveal",
+      "purpose": "Curiosity: it's not electronic, it's air, and it starts at a tiny hole",
+      "shots": [
+        {
+          "id": "tip-hole",
+          "purpose": "X-ray into the filler neck: the spout becomes transparent and the camera finds the sensing hole near the tip",
+          "subject": "spout-tip-cutaway",
+          "start": "And#1",
+          "transition": {
+            "type": "cut",
+            "motivation": "Into the nozzle"
+          },
+          "camera": {
+            "move": "push-in",
+            "framing": "medium",
+            "azimuth": 15,
+            "elevation": 6,
+            "to": {
+              "framing": "detail"
+            },
+            "during": {
+              "from": "And#1",
+              "to": "hole#1"
+            },
+            "ease": "dolly"
+          },
+          "focus": [
+            "hole#1"
+          ],
+          "captions": {
+            "position": "upper"
+          },
+          "planned": [
+            "x-ray transition: car body and filler pipe fade to a cool blue ghost; the spout stays solid",
+            "hole highlight: a soft pulsing ring on 'hole' (not a cartoon arrow)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mechanism",
+      "purpose": "The explanation, as one continuous journey through a clear cutaway",
+      "shots": [
+        {
+          "id": "venturi",
+          "purpose": "Inside the nozzle: fuel races through the narrow throat beside the main valve seat and creates suction",
+          "subject": "nozzle-cutaway",
+          "start": "Inside",
+          "transition": {
+            "type": "cut",
+            "motivation": "Inside the nozzle"
+          },
+          "camera": {
+            "move": "track",
+            "framing": "close",
+            "azimuth": 0,
+            "elevation": 4,
+            "params": {
+              "distance": 0.25,
+              "direction": "right"
+            },
+            "during": {
+              "from": "Inside",
+              "to": "suction#1"
+            },
+            "ease": "dolly"
+          },
+          "focus": [
+            "suction#1"
+          ],
+          "captions": {
+            "position": "upper"
+          },
+          "planned": [
+            "fuel: warm amber stream through the main valve and venturi (streak particles, speed lines at the narrow spot)",
+            "suction: the venturi throat pulses a subtle low-pressure tint"
+          ]
+        },
+        {
+          "id": "air-path",
+          "purpose": "Follow the air: from the tip hole, up the thin sensing tube, into the throat; it keeps flowing while air gets in",
+          "subject": "nozzle-cutaway",
+          "start": "That#1",
+          "transition": {
+            "type": "cut",
+            "motivation": "Follow the air back to its source"
+          },
+          "camera": {
+            "move": "pullback",
+            "framing": "detail",
+            "azimuth": -25,
+            "elevation": 10,
+            "to": {
+              "framing": "close"
+            },
+            "during": {
+              "from": "That#1",
+              "to": "tube."
+            },
+            "ease": "settle"
+          },
+          "focus": [
+            "air#2",
+            "tube."
+          ],
+          "captions": {
+            "position": "upper"
+          },
+          "planned": [
+            "air: cool white-blue wisps entering the tip hole and travelling up the sensing tube to the venturi",
+            "the tube path lights briefly as the air travels it"
+          ]
+        },
+        {
+          "id": "covered",
+          "purpose": "The trigger: fuel rises in the filler pipe and covers the hole; the air stream chokes off",
+          "subject": "spout-tip-cutaway",
+          "start": "When#2",
+          "transition": {
+            "type": "cut",
+            "motivation": "Back to the tip"
+          },
+          "camera": {
+            "move": "hold",
+            "framing": "close",
+            "azimuth": 10,
+            "elevation": 2
+          },
+          "focus": [
+            "covers",
+            "No"
+          ],
+          "captions": {
+            "position": "upper"
+          },
+          "planned": [
+            "fuel level (stylized surface) rising inside the filler pipe until it covers the hole on 'covers'",
+            "air wisps stop on 'No more air'"
+          ]
+        },
+        {
+          "id": "diaphragm",
+          "purpose": "With no air to draw, the suction pulls on the diaphragm chamber instead",
+          "subject": "nozzle-cutaway",
+          "start": "So",
+          "transition": {
+            "type": "cut",
+            "motivation": "Where the suction goes now"
+          },
+          "camera": {
+            "move": "push-in",
+            "framing": "close",
+            "azimuth": 20,
+            "elevation": 12,
+            "to": {
+              "framing": "detail"
+            },
+            "during": {
+              "from": "So",
+              "to": "diaphragm."
+            },
+            "ease": "out"
+          },
+          "focus": [
+            "diaphragm"
+          ],
+          "captions": {
+            "position": "upper"
+          },
+          "planned": [
+            "vacuum chamber tints and the diaphragm flexes upward (on 'tugs')"
+          ]
+        },
+        {
+          "id": "latch",
+          "purpose": "The chain reaction: pin rises, latch balls let go, the plunger and the lever drop",
+          "subject": "nozzle-cutaway",
+          "start": "That#2",
+          "transition": {
+            "type": "cut",
+            "motivation": "Follow the pin to the latch"
+          },
+          "camera": {
+            "move": "track",
+            "framing": "close",
+            "azimuth": -10,
+            "elevation": 6,
+            "params": {
+              "distance": 0.2,
+              "direction": "left"
+            },
+            "during": {
+              "from": "That#2",
+              "to": "drops,"
+            },
+            "ease": "dolly"
+          },
+          "focus": [
+            "pin,",
+            "latch",
+            "drops,"
+          ],
+          "captions": {
+            "position": "upper"
+          },
+          "planned": [
+            "latch pin rises, latch balls slip inward, plunger drops (on 'latch')",
+            "the lever's pivot point drops; lever swings (on 'drops')"
+          ]
+        },
+        {
+          "id": "snap",
+          "purpose": "The payoff: the spring slams the main valve (poppet) shut; fuel flow stops",
+          "subject": "nozzle-cutaway",
+          "start": "spring",
+          "transition": {
+            "type": "cut",
+            "motivation": "On the spring"
+          },
+          "camera": {
+            "move": "hold",
+            "framing": "detail",
+            "azimuth": -40,
+            "elevation": 4
+          },
+          "focus": [
+            "snaps"
+          ],
+          "captions": {
+            "position": "upper"
+          },
+          "planned": [
+            "main valve spring extends; poppet slams onto its seat on 'snaps' (2-frame slam, small camera shake)",
+            "amber fuel stream cuts off cleanly"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "payoff",
+      "purpose": "Back outside: the clean stop, the driver impressed, the memorable last line",
+      "shots": [
+        {
+          "id": "outro",
+          "purpose": "Pull out from the nozzle tip to the station: no spill, the driver hangs up the nozzle, impressed",
+          "subject": "nozzle",
+          "start": "All",
+          "transition": {
+            "type": "cut",
+            "motivation": "Back outside"
+          },
+          "camera": {
+            "move": "pullback",
+            "framing": "close",
+            "azimuth": 30,
+            "elevation": 8,
+            "to": {
+              "framing": "wide",
+              "azimuth": 38,
+              "elevation": 14
+            },
+            "ease": "settle"
+          },
+          "events": [
+            {
+              "character": "driver",
+              "at": "shot-start",
+              "do": "expression",
+              "params": {
+                "face": "happy"
+              }
+            },
+            {
+              "character": "driver",
+              "at": "tiny#2",
+              "do": "pose",
+              "params": {
+                "preset": "thumbs-up",
+                "target": "camera"
+              }
+            }
+          ],
+          "planned": [
+            "the tip hole glints once as the camera leaves it (visual callback to 'one tiny hole')"
+          ]
+        }
+      ]
+    }
+  ]
+}

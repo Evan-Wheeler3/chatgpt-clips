@@ -1,0 +1,32 @@
+{
+  "id": "gas-pump-shutoff-protagonist",
+  "name": "protagonist (gas-pump-shutoff)",
+  "status": "awaiting-artwork",
+  "story": "gas-pump-shutoff",
+  "slot": "protagonist",
+  "created": "2026-11-14",
+  "request": {
+    "roles": [
+      "driver"
+    ],
+    "era": {
+      "from": 2026,
+      "to": 2026
+    },
+    "description": "An ordinary, relatable modern adult filling up their own car: the viewer's stand-in. Expressive and a little comedic; on screen briefly in the hook, the rewind and the payoff.",
+    "age": "adult (mid 20s to 30s)"
+  },
+  "resolution": {
+    "decision": "new",
+    "character": null
+  },
+  "artwork": [],
+  "approvals": {},
+  "log": [
+    {
+      "on": "2026-11-14",
+      "event": "brief",
+      "decision": "new"
+    }
+  ]
+}
