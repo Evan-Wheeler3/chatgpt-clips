@@ -71,6 +71,8 @@ export async function compileStory(story, wordsDoc, {catalogPath = resolve(root,
       asset:asset && {id:asset.id, name:asset.name, localPath:asset.localPath, sha256:asset.sha256 ?? null, license:asset.license, creator:asset.creator, sourceUrl:asset.sourceUrl},
       ...(asset ? await shapeFor(resolve(rootDir, asset.localPath), asset.sha256).then(({min, max, points, nodes, sockets}) => ({bounds:{min, max}, points, nodes:nodes ?? null, sockets:sockets ?? null})) : {bounds:null, points:null, nodes:null, sockets:null}),
       attach:prop.attach ?? null, holes:prop.holes ?? null,
+      // Ink outline multiplier: the style's hull width suits props of everyday size, not millimetre mechanism parts
+      outline:prop.outline ?? 1,
       base:{position:prop.position ?? [0, 0, 0], rotation:prop.rotation ?? [0, 0, 0], scale:prop.scale ?? 1, visible:prop.visible ?? true, grounded:prop.grounded ?? true},
       actions:[]
     });

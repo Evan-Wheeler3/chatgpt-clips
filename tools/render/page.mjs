@@ -84,7 +84,7 @@ window.setup = async (planJson, size, issueList, qualityName) => {
     if (prop.missing) continue;
     const model = (await loadGLB(prop.asset.id)).scene.clone(true);
     model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.material = o.material.clone(); } });
-    if (quality.stylize) stylizeObject(model, style.materials.hero, style.palette, {outlineScale:quality.name === 'production' ? 1 : 1.6});
+    if (quality.stylize) stylizeObject(model, style.materials.hero, style.palette, {outlineScale:(quality.name === 'production' ? 1 : 1.6) * (prop.outline ?? 1)});
     const group = new THREE.Group(); group.add(model); scene.add(group);
     groups.set(prop.id, group);
     rigs.set(prop.id, {parts:partRig(model), material:materialRig(model, group, {prop})});

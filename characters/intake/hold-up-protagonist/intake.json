@@ -1,7 +1,7 @@
 {
   "id": "hold-up-protagonist",
   "name": "protagonist (gas-pump-shutoff)",
-  "status": "awaiting-design-approval",
+  "status": "promoted",
   "story": "gas-pump-shutoff",
   "slot": "protagonist",
   "created": "2026-11-15",
@@ -33,7 +33,16 @@
       "importedOn": "2026-11-15"
     }
   ],
-  "approvals": {},
+  "approvals": {
+    "design": {
+      "status": "approved",
+      "by": "Evan Wheeler",
+      "on": "2026-11-15",
+      "evidence": "Owner message 2026-11-15 (Phase 7B priority change): 'Finish integrating the approved protagonist artwork and rig. Preserve the existing character design.'",
+      "artwork": "artwork/sheet-v1.png",
+      "artworkSha256": "ab00fe6d7f126bb00b0982a78cff93f0a353e542311d987826015c06a771de73"
+    }
+  },
   "log": [
     {
       "on": "2026-11-15",
@@ -46,6 +55,18 @@
       "file": "artwork/sheet-v1.png",
       "sha256": "ab00fe6d7f126bb00b0982a78cff93f0a353e542311d987826015c06a771de73",
       "source": "chatgpt-image"
+    },
+    {
+      "on": "2026-11-15",
+      "event": "design-approved",
+      "by": "Evan Wheeler",
+      "artwork": "artwork/sheet-v1.png"
+    },
+    {
+      "on": "2026-11-15",
+      "event": "promote",
+      "to": "characters/hold-up-protagonist/"
     }
-  ]
+  ],
+  "promotedTo": "characters/hold-up-protagonist/"
 }

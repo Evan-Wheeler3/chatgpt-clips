@@ -90,13 +90,15 @@ function travellers(p, kind) {
   }};
 }
 
-// A liquid surface rising inside a cylinder (bottom centre, radius, from/to heights in local units)
+// A liquid surface rising inside a cylinder (bottom centre, radius, from/to heights in local units, optional rotation)
 function level(p) {
   const group = new THREE.Group(), material = fuelMaterial(p.color, 0.88);
   const column = new THREE.Mesh(new THREE.CylinderGeometry(p.radius, p.radius, 1, 40, 1, true), material);
   const top = new THREE.Mesh(new THREE.CircleGeometry(p.radius, 40).rotateX(-Math.PI / 2), material);
   group.add(column, top);
   group.position.copy(v3(p.center));
+  // An optional tilt (degrees XYZ) fills a slanted pipe along its axis, e.g. a filler neck seen in section
+  if (p.rotation) group.rotation.set(...p.rotation.map(THREE.MathUtils.degToRad));
   return {group, update:({height}, time) => {
     const y = p.from + (p.to - p.from) * height, h = Math.max(1e-4, y - p.from);
     group.visible = height > 0.001 || p.from !== 0;
@@ -174,7 +176,7 @@ export function buildEffects(plan, {scene, groups}) {
     if (effect.attach?.prop) {
       const group = groups.get(effect.attach.prop);
       if (!group) continue; // A missing prop is flagged by the plan; its effects cannot be placed
-      parent = effect.attach.part ? group.getObjectByName(effect.attach.part) ?? group : group;
+      parent = effect.attach.part ? partNamed(group, effect.attach.part) ?? group : group;
     }
     parent.add(fx.group);
     built.set(effect.id, fx);
@@ -183,10 +185,14 @@ export function buildEffects(plan, {scene, groups}) {
 }
 
 // --- Named parts and material states for props ---------------------------------------------------------------
+// GLTFLoader strips "/" (and . : [ ]) from node names; the original glTF name, which stories use ("nozzle/lever"), is kept in userData
+export const partName = o => o.userData?.name ?? o.name;
+export function partNamed(root, name) { let found; root.traverse(o => { if (!found && partName(o) === name) found = o; }); return found; }
+
 // Rest transforms of every named node, so part offsets are applied relative to rest each frame
 export function partRig(model) {
   const rest = new Map();
-  model.traverse(o => { if (o.name) rest.set(o.name, {object:o, position:o.position.clone(), quaternion:o.quaternion.clone(), scale:o.scale.clone()}); });
+  model.traverse(o => { const name = partName(o); if (name && !rest.has(name)) rest.set(name, {object:o, position:o.position.clone(), quaternion:o.quaternion.clone(), scale:o.scale.clone()}); });
   const e = new THREE.Euler(), q = new THREE.Quaternion();
   return parts => {
     for (const [name, r] of rest) {
@@ -235,7 +241,7 @@ export function materialRig(model, group, {prop = null} = {}) {
   const ghost = new THREE.ShaderMaterial({uniforms:{color:{value:new THREE.Color(DEFAULT_GHOST.color)}, opacity:{value:0}}, vertexShader:GHOST_VERTEX, fragmentShader:GHOST_FRAGMENT,
     transparent:true, depthWrite:false, side:THREE.DoubleSide, clipping:true});
   const capMaterial = new THREE.MeshBasicMaterial({color:DEFAULT_GHOST.cap, side:THREE.BackSide, clippingPlanes:[plane]});
-  const kept = (o, keep) => { for (let x = o; x && x !== model.parent; x = x.parent) if (keep.includes(x.name)) return true; return false; };
+  const kept = (o, keep) => { for (let x = o; x && x !== model.parent; x = x.parent) if (keep.includes(partName(x))) return true; return false; };
   const caps = new Map();
   return m => {
     const look = {...DEFAULT_GHOST, ...(m.ghost ?? {})};
@@ -263,9 +269,9 @@ export function materialRig(model, group, {prop = null} = {}) {
       }
       for (const o of entry.outlines) {
         o.visible = x < 0.25;
-        // The ink hull must be cut by the same hole, or its dark back faces show through the opening
-        const mode = hole && x < 0.5 ? 'hole' : 'none';
-        if (o.material.userData.clipMode !== mode) { o.material.clippingPlanes = mode === 'hole' ? hole : null; o.material.clipIntersection = mode === 'hole'; o.material.needsUpdate = true; o.material.userData.clipMode = mode; }
+        // The ink hull must be cut by the same section or hole, or the removed half's outline (or its dark back faces) shows
+        const mode = cut ? 'cut' : hole && x < 0.5 ? 'hole' : 'none';
+        if (o.material.userData.clipMode !== mode) { o.material.clippingPlanes = mode === 'cut' ? [plane] : mode === 'hole' ? hole : null; o.material.clipIntersection = mode === 'hole'; o.material.needsUpdate = true; o.material.userData.clipMode = mode; }
         else if (mode === 'hole') o.material.clippingPlanes = hole;
       }
       // Caps: a back-face copy in a flat colour shows through the cut wherever the solid shell is open

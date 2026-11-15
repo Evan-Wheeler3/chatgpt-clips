@@ -63,7 +63,7 @@ const headHalfWidth = (H, y) => y > 0 ? H.rx * Math.max(0, 1 - Math.abs(y / H.ry
 
 export const EXPRESSION_FALLBACK = 'neutral';
 // Newer storyboard faces fall back to an existing expression on characters drawn before them (their artwork untouched)
-export const FACE_FALLBACK = {relieved:'happy'};
+export const FACE_FALLBACK = {relieved:'happy', panicked:'surprised', impressed:'surprised'};
 export function resolveExpression(def, face) {
   const shared = FACE_FALLBACK[face] && def.expressions[FACE_FALLBACK[face]] ? FACE_FALLBACK[face] : null;
   const name = def.expressions[face] ? face : def.faceMap?.[face] ?? shared ?? EXPRESSION_FALLBACK;
@@ -90,10 +90,11 @@ export function buildFigure(def, state) {
   const headAngle = -(p.torso + p.head + nod);
   const headCenter = [F.head.offsetX, R.headCenter];
   const Hc = q => add(neck, rot(add(headCenter, q), headAngle));
-  const capPivot = F.cap.pivot;
+  // Hatless characters (cap: null) skip the cap items; the cap frame then follows the head
+  const capPivot = F.cap?.pivot ?? [0, 0];
   // Bone frames for attachments (outfit and accessory layers): rig millimetres in each bone's own frame
   const frames = {hip:q => add(hip, q), torso:T, head:q => Hc(q)};
-  const Cp = q => Hc(add([capPivot[0], capPivot[1] - (F.cap.drop ?? 0)], rot([q[0] - capPivot[0], q[1] - capPivot[1]], (F.cap.tilt ?? 0) - (p.cap ?? 0))));
+  const Cp = q => Hc(add([capPivot[0], capPivot[1] - (F.cap?.drop ?? 0)], rot([q[0] - capPivot[0], q[1] - capPivot[1]], (F.cap?.tilt ?? 0) - (p.cap ?? 0))));
   const joints = {hip, neck, headCenter:Hc([0, 0])};
 
   function arm(side) {
@@ -159,10 +160,10 @@ export function buildFigure(def, state) {
   item('neck', true, stroke([T(F.neck.base), Hc([F.neck.top[0], -R.headCenter + F.neck.top[1]])], C.skin, F.neck.width));
   item('torso', true, fill(chaikin(F.torso, 2).map(T), C.shirt));
   const A = F.apron;
-  item('straps', true, ...A.straps.map(s => stroke(s.map(T), C.apron, A.strapWidth)));
+  item('straps', true, ...(A.straps ?? []).map(s => stroke(s.map(T), C.apron, A.strapWidth)));
   item('apron', true, fill(chaikin(A.outline, 2).map(T), C.apron));
-  item('pocket', false, stroke(chaikin(A.pocket, 2, false).map(T), C.line, 7));
-  item('buttons', true, ...A.buttons.map(([x, y]) => fill(ellipse(x, y, A.buttonRadius, A.buttonRadius, 0, 20).map(T), C.buttons)));
+  if (A.pocket?.length > 1) item('pocket', false, stroke(chaikin(A.pocket, 2, false).map(T), C.line, 7));
+  item('buttons', true, ...(A.buttons ?? []).map(([x, y]) => fill(ellipse(x, y, A.buttonRadius, A.buttonRadius, 0, 20).map(T), C.buttons)));
   item('collar', true, ...F.collar.map(c => fill(c.map(T), C.shirt)));
   attach('body');
 
@@ -171,14 +172,20 @@ export function buildFigure(def, state) {
   item('head', true, fill(headOutline(Hd).map(Hc), C.skin));
   faceItems(def, state, Hc, item, fill, stroke);
   const hair = F.hair;
-  item('hair', true, fill(scalloped(hair.cx, hair.cy, hair.rx, hair.ry, hair.scallops, hair.amp).map(Hc), C.hair));
+  // Hair: a scalloped mass (the cooper's curls under his cap), or a drawn shape in head coordinates (a quiff), optionally
+  // with a back layer behind the head
+  if (hair.shape) item('hair', true, fill(chaikin(hair.shape, hair.smooth ?? 2).map(Hc), C.hair));
+  else item('hair', true, fill(scalloped(hair.cx, hair.cy, hair.rx, hair.ry, hair.scallops, hair.amp).map(Hc), C.hair));
   const cap = F.cap;
-  item('brim', true, fill(chaikin(cap.brim, 2).map(Cp), C.hair));
-  item('crown', true, fill(chaikin(cap.crown, 3).map(Cp), C.cap));
-  item('capLines', false, ...[cap.band, cap.seam].filter(l => l?.length).map((l, i) => stroke(chaikin(l, 2, false).map(Cp), C.line, i ? 5 : 8)));
+  if (cap) {
+    item('brim', true, fill(chaikin(cap.brim, 2).map(Cp), C.hair));
+    item('crown', true, fill(chaikin(cap.crown, 3).map(Cp), C.cap));
+    item('capLines', false, ...[cap.band, cap.seam].filter(l => l?.length).map((l, i) => stroke(chaikin(l, 2, false).map(Cp), C.line, i ? 5 : 8)));
+  }
   // Reference points inside large flat areas, for colour sampling on rendered frames
-  Object.assign(joints, {capSample:Cp([-60, 220]), hairSample:Hc([hair.cx - hair.rx * 0.3, hair.cy]), apronSample:T([0, 60]), cheekSample:Hc([-40, -40])});
-  item('capButton', true, fill(ellipse(cap.button[0], cap.button[1], cap.button[2], cap.button[2] * 0.7, 0, 20).map(Cp), C.cap));
+  const hairSample = hair.sample ? Hc(hair.sample) : Hc([hair.cx - hair.rx * 0.3, hair.cy]);
+  Object.assign(joints, {capSample:cap ? Cp([-60, 220]) : hairSample, hairSample, apronSample:T([0, 60]), cheekSample:Hc([-40, -40])});
+  if (cap) item('capButton', true, fill(ellipse(cap.button[0], cap.button[1], cap.button[2], cap.button[2] * 0.7, 0, 20).map(Cp), C.cap));
   attach('head');
   arm('B');
   attach('front');

@@ -111,3 +111,27 @@ test('render: effects, part motion, x-ray and freeze are visible in real Three.j
     } finally { await r.close(); }
   } finally { await rm(dir, {recursive:true, force:true}); }
 });
+
+test('render rig: parts are found by their glTF names even though GLTFLoader strips "/" from node names', async () => {
+  const { Document, NodeIO } = await import('@gltf-transform/core');
+  const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
+  const { partRig, partNamed } = await import('../tools/render/effects.mjs');
+  const doc = new Document(); doc.createBuffer();
+  doc.createScene().addChild(doc.createNode('nozzle/body').addChild(doc.createNode('nozzle/lever').setTranslation([0.1, 0, 0])));
+  const glb = await new NodeIO().writeBinary(doc);
+  const gltf = await new Promise((ok, fail) => new GLTFLoader().parse(glb.buffer.slice(glb.byteOffset, glb.byteOffset + glb.byteLength), '', ok, fail));
+  const lever = partNamed(gltf.scene, 'nozzle/lever');
+  assert.ok(lever, 'found by the original name'); assert.equal(lever.name, 'nozzlelever', 'three.js sanitized the node name');
+  partRig(gltf.scene)({'nozzle/lever':{position:[0, -0.01, 0], rotation:[0, 0, 0], scale:0.5, morph:{}}});
+  assert.deepEqual(lever.position.toArray().map(v => +v.toFixed(6)), [0.1, -0.01, 0]); assert.equal(lever.scale.x, 0.5);
+});
+
+test('overlapping actions on different parts of one prop are allowed; on the same part they are an error', async () => {
+  const { validatePlan } = await import('../tools/storyboard/validate.mjs');
+  const parallel = effectsStory(), lever = parallel.beats[0].shots[0].events[1];
+  parallel.beats[0].shots[0].events.push({...lever, params:{part:'body', position:[0, 0.01, 0]}});
+  assert.ok(!validatePlan(await compileFixture(parallel)).errors.some(e => e.code === 'ACTION_OVERLAP'));
+  const clash = effectsStory();
+  clash.beats[0].shots[0].events.push({...lever, params:{part:'lever', rotation:[0, 0, 5]}});
+  assert.ok(validatePlan(await compileFixture(clash)).errors.some(e => e.code === 'ACTION_OVERLAP'));
+});

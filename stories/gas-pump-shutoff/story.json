@@ -2,7 +2,7 @@
   "version": 1,
   "slug": "gas-pump-shutoff",
   "title": "How does a gas pump know when to stop?",
-  "status": "pre-production APPROVED (Phase 7A): narration revision 4 with the two technical fixes; approved take rev4-recommended; 10-shot storyboard approved with a relieved reaction in shot 9. Not rendered.",
+  "status": "pre-production APPROVED (Phase 7A); first full preview (Phase 7B priority change): B2 provisionally accepted, A1 approved.",
   "fps": 30,
   "size": {
     "width": 1080,
@@ -57,7 +57,7 @@
           "at": "How",
           "offset": -0.5
         },
-        "asset": "fuel-gush-loop",
+        "asset": "fuel-gush-loop-synth",
         "reason": "gasoline overflowing the filler neck; cut dead on the click",
         "until": {
           "at": "That#1",
@@ -68,7 +68,7 @@
       {
         "id": "spill-splash",
         "at": "know",
-        "asset": "fuel-splash",
+        "asset": "fuel-splash-synth",
         "reason": "fuel hitting the pavement"
       },
       {
@@ -77,7 +77,7 @@
           "at": "That#1",
           "offset": -0.1
         },
-        "asset": "nozzle-click",
+        "asset": "nozzle-click-synth",
         "gainDb": 2,
         "reason": "THE click: the overflow freezes on it and the gush hard-stops on the same sample"
       },
@@ -87,7 +87,7 @@
           "at": "That#1",
           "offset": 0.03
         },
-        "asset": "fuel-gush-reversed",
+        "asset": "fuel-gush-reversed-synth",
         "reason": "the overflow recording reversed, so the sound rewinds with the picture"
       },
       {
@@ -97,14 +97,14 @@
           "edge": "end",
           "offset": 0.05
         },
-        "asset": "fuel-gulp",
+        "asset": "fuel-gulp-synth",
         "gainDb": -3,
         "reason": "the last fuel swallowed back into the filler neck"
       },
       {
         "id": "air-sip",
         "at": "sucks",
-        "asset": "air-suction-loop",
+        "asset": "air-suction-loop-synth",
         "gainDb": -4,
         "reason": "air drawn in through the sensing hole until the hole is covered (the choke-off takes over)",
         "until": "stops#1",
@@ -113,25 +113,25 @@
       {
         "id": "airflow-cut",
         "at": "stops#1",
-        "asset": "air-stop",
+        "asset": "air-stop-synth",
         "reason": "the airflow stops when gasoline covers the hole"
       },
       {
         "id": "diaphragm",
         "at": "pulls",
-        "asset": "diaphragm-flex",
+        "asset": "diaphragm-flex-synth",
         "reason": "the suction pulls the diaphragm"
       },
       {
         "id": "latch-release",
         "at": "releasing",
-        "asset": "latch-release",
+        "asset": "latch-release-synth",
         "reason": "the latch lets go"
       },
       {
         "id": "shutoff-click-2",
         "at": "valve.",
-        "asset": "nozzle-click",
+        "asset": "nozzle-click-synth",
         "gainDb": 2,
         "reason": "the payoff click, synchronized to valve closure (callback to the hook)"
       }
@@ -303,40 +303,28 @@
       }
     },
     {
-      "id": "nozzle-cutaway",
+      "id": "internals",
       "asset": {
-        "query": "fuel nozzle cutaway",
+        "query": "nozzle internals mechanism cutaway",
         "style": "stylized"
       },
-      "position": [
-        12,
-        1.2,
-        0
-      ],
       "grounded": false,
+      "visible": false,
       "sizeHint": [
-        0.6,
-        0.32,
-        0.12
-      ]
-    },
-    {
-      "id": "spout-tip-cutaway",
-      "asset": {
-        "query": "fuel filler pipe cutaway",
-        "style": "stylized"
+        0.28,
+        0.1,
+        0.04
+      ],
+      "attach": {
+        "to": "nozzle",
+        "socket": "internals",
+        "via": "mount",
+        "depthRange": [
+          -0.001,
+          0.001
+        ]
       },
-      "position": [
-        12.6,
-        0.6,
-        0
-      ],
-      "grounded": false,
-      "sizeHint": [
-        0.16,
-        0.4,
-        0.16
-      ]
+      "outline": 0.06
     }
   ],
   "cast": [
@@ -345,8 +333,8 @@
       "character": "hold-up-protagonist",
       "start": {
         "position": [
-          -0.55,
-          0.85
+          5.57,
+          2.05
         ],
         "face": "nozzle"
       }
@@ -363,16 +351,21 @@
           "subject": "nozzle",
           "camera": {
             "move": "push-in",
-            "framing": "medium",
-            "azimuth": 35,
-            "elevation": 4,
+            "framing": "wide",
+            "azimuth": 12,
+            "elevation": 6,
             "focus": [
               0,
-              -0.25,
+              1.6,
               0
             ],
             "to": {
-              "framing": "close"
+              "framing": "close",
+              "focus": [
+                0,
+                -0.25,
+                0
+              ]
             },
             "during": {
               "to": "stop?"
@@ -400,6 +393,16 @@
                 "target": "nozzle"
               },
               "duration": 1.2
+            },
+            {
+              "effect": "spill",
+              "do": "animate",
+              "set": {
+                "progress": 1
+              },
+              "at": "How",
+              "until": "stop?",
+              "ease": "in"
             }
           ],
           "planned": [
@@ -420,15 +423,20 @@
           "camera": {
             "move": "pullback",
             "framing": "close",
-            "azimuth": 35,
-            "elevation": 4,
+            "azimuth": 12,
+            "elevation": 6,
             "focus": [
               0,
               -0.25,
               0
             ],
             "to": {
-              "framing": "medium"
+              "framing": "wide",
+              "focus": [
+                0,
+                1.6,
+                0
+              ]
             },
             "during": {
               "from": {
@@ -453,13 +461,29 @@
               "params": {
                 "preset": "idle"
               }
+            },
+            {
+              "effect": "spill",
+              "do": "animate",
+              "set": {
+                "progress": 0
+              },
+              "at": {
+                "at": "That#1",
+                "offset": 0.03
+              },
+              "until": "click?",
+              "ease": "expo"
             }
           ],
           "planned": [
             "frames 0-2 after the click: freeze on the overflow at its peak",
             "then ~0.6 s rewind on an expo curve: puddle shrinks, sheet climbs, ribbon swallowed by the filler neck; recoil un-plays",
             "last frame: normal pumping, lever visibly dropped"
-          ]
+          ],
+          "freeze": {
+            "frames": 3
+          }
         },
         {
           "id": "the-nozzle",
@@ -505,6 +529,16 @@
                 "target": "nozzle"
               },
               "duration": 1
+            },
+            {
+              "effect": "glint",
+              "do": "animate",
+              "set": {
+                "progress": 1
+              },
+              "at": "nozzle",
+              "duration": 0.7,
+              "ease": "linear"
             }
           ],
           "planned": [
@@ -520,7 +554,7 @@
         {
           "id": "tip-hole",
           "purpose": "Extreme close-up of the spout tip in the filler neck; the sensing hole is highlighted",
-          "subject": "spout-tip-cutaway",
+          "subject": "internals",
           "start": "See",
           "transition": {
             "type": "cut",
@@ -529,8 +563,8 @@
           "camera": {
             "move": "push-in",
             "framing": "close",
-            "azimuth": 15,
-            "elevation": 6,
+            "azimuth": -12,
+            "elevation": 4,
             "to": {
               "framing": "detail"
             },
@@ -538,7 +572,12 @@
               "from": "See",
               "to": "hole#1"
             },
-            "ease": "dolly"
+            "ease": "dolly",
+            "focus": [
+              -0.38,
+              -0.15,
+              0
+            ]
           },
           "focus": [
             "hole#1"
@@ -548,12 +587,114 @@
           },
           "planned": [
             "a soft pulsing ring on the hole on \"hole\""
+          ],
+          "events": [
+            {
+              "prop": "car",
+              "do": "hide",
+              "at": "shot-start"
+            },
+            {
+              "prop": "nozzle",
+              "do": "material",
+              "at": "shot-start",
+              "duration": 0,
+              "params": {
+                "xray": 1,
+                "ghost": {
+                  "opacity": 0.32
+                }
+              }
+            },
+            {
+              "prop": "filler",
+              "do": "material",
+              "at": "shot-start",
+              "duration": 0,
+              "params": {
+                "xray": 0,
+                "section": {
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ],
+                  "constant": 0
+                },
+                "ghost": {
+                  "cap": "#c9ced6"
+                }
+              }
+            },
+            {
+              "prop": "internals",
+              "do": "appear",
+              "at": "shot-start"
+            },
+            {
+              "character": "driver",
+              "do": "place",
+              "at": "shot-start",
+              "params": {
+                "position": [
+                  5.3,
+                  5.6
+                ],
+                "face": "nozzle"
+              }
+            },
+            {
+              "effect": "fuel",
+              "do": "animate",
+              "set": {
+                "amount": 1
+              },
+              "at": "shot-start",
+              "duration": 0
+            },
+            {
+              "effect": "air",
+              "do": "animate",
+              "set": {
+                "amount": 1
+              },
+              "at": "shot-start",
+              "duration": 0
+            },
+            {
+              "effect": "hole-ring",
+              "do": "animate",
+              "set": {
+                "amount": 1
+              },
+              "at": "hole#1",
+              "duration": 0.25
+            },
+            {
+              "effect": "hose",
+              "do": "animate",
+              "set": {
+                "amount": 0
+              },
+              "at": "shot-start",
+              "duration": 0
+            },
+            {
+              "prop": "filler",
+              "do": "part",
+              "at": "shot-start",
+              "duration": 0,
+              "params": {
+                "part": "filler/door",
+                "scale": 0.001
+              }
+            }
           ]
         },
         {
           "id": "airflow",
           "purpose": "Into the transparent cutaway: rushing amber fuel in the venturi throat pulls pale-blue air in through the hole and up the tube",
-          "subject": "nozzle-cutaway",
+          "subject": "internals",
           "start": "While",
           "transition": {
             "type": "cut",
@@ -562,8 +703,8 @@
           "camera": {
             "move": "track",
             "framing": "close",
-            "azimuth": 0,
-            "elevation": 6,
+            "azimuth": -12,
+            "elevation": 3,
             "params": {
               "distance": 0.25,
               "direction": "right"
@@ -572,7 +713,12 @@
               "from": "While",
               "to": "it#2"
             },
-            "ease": "dolly"
+            "ease": "dolly",
+            "focus": [
+              0,
+              0,
+              0
+            ]
           },
           "focus": [
             "fuel",
@@ -585,12 +731,46 @@
             "x-ray dissolve over 0.4 s: the shell turns pale cyan, the cut faces solid",
             "amber fuel streaks accelerate through the venturi throat on \"rushing fuel\" (a violet tint pulses at the throat)",
             "pale-blue arrows/wisps enter the sensing hole and travel up the tube to the throat on \"air in through it\""
+          ],
+          "events": [
+            {
+              "effect": "hole-ring",
+              "do": "animate",
+              "set": {
+                "amount": 0
+              },
+              "at": "shot-start",
+              "duration": 0
+            },
+            {
+              "effect": "fuel",
+              "do": "animate",
+              "set": {
+                "speed": 2
+              },
+              "at": "rushing",
+              "duration": 0.5,
+              "ease": "out"
+            },
+            {
+              "prop": "filler",
+              "do": "material",
+              "at": "shot-start",
+              "duration": 0,
+              "params": {
+                "xray": 1,
+                "section": null,
+                "ghost": {
+                  "opacity": 0.25
+                }
+              }
+            }
           ]
         },
         {
           "id": "covered",
           "purpose": "The trigger: amber gasoline rises in the filler neck to the spout tip and covers the hole; the air arrows stop",
-          "subject": "spout-tip-cutaway",
+          "subject": "internals",
           "start": "But",
           "transition": {
             "type": "cut",
@@ -598,9 +778,14 @@
           },
           "camera": {
             "move": "hold",
-            "framing": "close",
-            "azimuth": 10,
-            "elevation": 2
+            "framing": "detail",
+            "azimuth": -2,
+            "elevation": 2,
+            "focus": [
+              -0.38,
+              -0.15,
+              0
+            ]
           },
           "focus": [
             "cover",
@@ -612,12 +797,54 @@
           "planned": [
             "the fuel level rises toward the tip and covers the hole on \"cover\" (nozzle patents: the liquid level reaches the opening in the spout)",
             "the pale-blue arrows stop on \"stops\""
+          ],
+          "events": [
+            {
+              "effect": "neck-level",
+              "do": "animate",
+              "set": {
+                "height": 0.7
+              },
+              "at": "rises",
+              "until": "cover",
+              "ease": "sine"
+            },
+            {
+              "effect": "air",
+              "do": "animate",
+              "set": {
+                "amount": 0
+              },
+              "at": "stops#1",
+              "duration": 0.15,
+              "ease": "out"
+            },
+            {
+              "prop": "filler",
+              "do": "material",
+              "at": "shot-start",
+              "duration": 0,
+              "params": {
+                "xray": 0,
+                "section": {
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ],
+                  "constant": 0
+                },
+                "ghost": {
+                  "cap": "#c9ced6"
+                }
+              }
+            }
           ]
         },
         {
           "id": "diaphragm",
           "purpose": "Suction with no air to draw: violet pressure tint, the diaphragm pulls up and its pin releases the latch",
-          "subject": "nozzle-cutaway",
+          "subject": "internals",
           "start": "Now",
           "transition": {
             "type": "cut",
@@ -626,8 +853,8 @@
           "camera": {
             "move": "push-in",
             "framing": "close",
-            "azimuth": 20,
-            "elevation": 12,
+            "azimuth": -22,
+            "elevation": 10,
             "to": {
               "framing": "detail"
             },
@@ -635,7 +862,12 @@
               "from": "Now",
               "to": "releasing"
             },
-            "ease": "out"
+            "ease": "out",
+            "focus": [
+              0.2,
+              0.15,
+              0
+            ]
           },
           "focus": [
             "suction",
@@ -649,12 +881,107 @@
             "violet tint fills the sensing passage and diaphragm chamber on \"suction\"",
             "the diaphragm flexes up on \"pulls\"",
             "on \"releasing\": the pin rises, the latch balls slip, the plunger and the lever pivot drop (the latch sits just below the chamber in the same section)"
+          ],
+          "events": [
+            {
+              "effect": "suction",
+              "do": "animate",
+              "set": {
+                "amount": 1
+              },
+              "at": "suction",
+              "duration": 0.4
+            },
+            {
+              "prop": "internals",
+              "do": "part",
+              "at": "pulls",
+              "duration": 0.35,
+              "ease": "out",
+              "params": {
+                "part": "nozzle/diaphragm",
+                "morph": {
+                  "flex": 1
+                }
+              }
+            },
+            {
+              "prop": "internals",
+              "do": "part",
+              "at": "pulls",
+              "duration": 0.35,
+              "ease": "out",
+              "params": {
+                "part": "nozzle/pin",
+                "position": [
+                  0,
+                  0.0045,
+                  0
+                ]
+              }
+            },
+            {
+              "prop": "internals",
+              "do": "part",
+              "at": "releasing",
+              "duration": 0.15,
+              "params": {
+                "part": "nozzle/ball-1",
+                "position": [
+                  0.0025,
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "prop": "internals",
+              "do": "part",
+              "at": "releasing",
+              "duration": 0.15,
+              "params": {
+                "part": "nozzle/ball-2",
+                "position": [
+                  -0.0025,
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "prop": "internals",
+              "do": "part",
+              "at": "releasing",
+              "duration": 0.3,
+              "ease": "in",
+              "params": {
+                "part": "nozzle/plunger",
+                "position": [
+                  0,
+                  -0.008,
+                  0
+                ]
+              }
+            },
+            {
+              "prop": "filler",
+              "do": "material",
+              "at": "shot-start",
+              "duration": 0,
+              "params": {
+                "xray": 1,
+                "section": null,
+                "ghost": {
+                  "opacity": 0.25
+                }
+              }
+            }
           ]
         },
         {
           "id": "valve-shut",
           "purpose": "The payoff: the main valve spring slams the poppet shut",
-          "subject": "nozzle-cutaway",
+          "subject": "internals",
           "start": "a#4",
           "transition": {
             "type": "cut",
@@ -663,8 +990,8 @@
           "camera": {
             "move": "push-in",
             "framing": "close",
-            "azimuth": -40,
-            "elevation": 4,
+            "azimuth": -34,
+            "elevation": 5,
             "to": {
               "framing": "detail"
             },
@@ -675,7 +1002,17 @@
                 "edge": "start"
               }
             },
-            "ease": "in"
+            "ease": "in",
+            "shake": {
+              "at": "valve.",
+              "frames": 3,
+              "amplitude": 0.02
+            },
+            "focus": [
+              0.35,
+              0,
+              0
+            ]
           },
           "focus": [
             "valve."
@@ -685,6 +1022,69 @@
           },
           "planned": [
             "on \"valve\": the spring slams the poppet onto its seat (2 frames); the accelerating camera creep stops dead, 3-frame decaying shake; the amber stream cuts off"
+          ],
+          "events": [
+            {
+              "prop": "internals",
+              "do": "part",
+              "at": "valve.",
+              "duration": 0.07,
+              "ease": "in",
+              "params": {
+                "part": "nozzle/poppet",
+                "position": [
+                  0,
+                  -0.008,
+                  0
+                ]
+              }
+            },
+            {
+              "prop": "internals",
+              "do": "part",
+              "at": "valve.",
+              "duration": 0.07,
+              "ease": "in",
+              "params": {
+                "part": "nozzle/spring",
+                "morph": {
+                  "extended": 1
+                }
+              }
+            },
+            {
+              "prop": "internals",
+              "do": "part",
+              "at": "valve.",
+              "duration": 0.07,
+              "ease": "in",
+              "params": {
+                "part": "nozzle/stem",
+                "position": [
+                  0,
+                  -0.008,
+                  0
+                ]
+              }
+            },
+            {
+              "effect": "fuel",
+              "do": "animate",
+              "set": {
+                "amount": 0
+              },
+              "at": "valve.",
+              "duration": 0.12
+            },
+            {
+              "effect": "suction",
+              "do": "animate",
+              "set": {
+                "amount": 0
+              },
+              "at": "valve.",
+              "duration": 0.3
+            }
           ]
         }
       ]
@@ -705,14 +1105,48 @@
           "camera": {
             "move": "pullback",
             "framing": "close",
-            "azimuth": 30,
-            "elevation": 8,
+            "azimuth": 14,
+            "elevation": 6,
             "to": {
-              "framing": "medium"
+              "framing": "wide",
+              "focus": [
+                0,
+                1.6,
+                0
+              ]
             },
-            "ease": "settle"
+            "ease": "settle",
+            "focus": [
+              0,
+              0,
+              0
+            ]
           },
           "events": [
+            {
+              "prop": "car",
+              "do": "appear",
+              "at": "shot-start"
+            },
+            {
+              "prop": "nozzle",
+              "do": "material",
+              "at": "shot-start",
+              "duration": 0,
+              "params": {
+                "xray": 0
+              }
+            },
+            {
+              "prop": "filler",
+              "do": "material",
+              "at": "shot-start",
+              "duration": 0,
+              "params": {
+                "xray": 0,
+                "section": null
+              }
+            },
             {
               "character": "driver",
               "at": "shot-start",
@@ -727,6 +1161,51 @@
               "do": "expression",
               "params": {
                 "face": "relieved"
+              }
+            },
+            {
+              "prop": "internals",
+              "do": "hide",
+              "at": "shot-start"
+            },
+            {
+              "character": "driver",
+              "do": "place",
+              "at": "shot-start",
+              "params": {
+                "position": [
+                  5.57,
+                  2.05
+                ],
+                "face": "nozzle"
+              }
+            },
+            {
+              "effect": "neck-level",
+              "do": "animate",
+              "set": {
+                "height": 0
+              },
+              "at": "shot-start",
+              "duration": 0
+            },
+            {
+              "effect": "hose",
+              "do": "animate",
+              "set": {
+                "amount": 1
+              },
+              "at": "shot-start",
+              "duration": 0
+            },
+            {
+              "prop": "filler",
+              "do": "part",
+              "at": "shot-start",
+              "duration": 0,
+              "params": {
+                "part": "filler/door",
+                "scale": 1
               }
             }
           ],
@@ -763,6 +1242,27 @@
           ],
           "planned": [
             "the tip hole glints once on \"hole\" (visual loop back to the reveal)"
+          ],
+          "events": [
+            {
+              "effect": "glint",
+              "do": "animate",
+              "set": {
+                "progress": 0
+              },
+              "at": "shot-start",
+              "duration": 0
+            },
+            {
+              "effect": "glint",
+              "do": "animate",
+              "set": {
+                "progress": 1
+              },
+              "at": "hole#3",
+              "duration": 0.6,
+              "ease": "linear"
+            }
           ]
         }
       ]
@@ -790,6 +1290,278 @@
         "clearOf": [
           "car"
         ]
+      }
+    },
+    {
+      "id": "spill",
+      "type": "overflow",
+      "attach": {
+        "prop": "filler"
+      },
+      "params": {
+        "width": 0.022,
+        "path": [
+          [
+            0,
+            -0.005,
+            0.03
+          ],
+          [
+            0,
+            -0.035,
+            -0.012
+          ],
+          [
+            0,
+            -0.1,
+            -0.03
+          ],
+          [
+            0,
+            -0.35,
+            -0.045
+          ],
+          [
+            0,
+            -0.62,
+            -0.07
+          ],
+          [
+            0,
+            -0.775,
+            -0.2
+          ]
+        ],
+        "puddle": {
+          "center": [
+            0,
+            -0.778,
+            -0.38
+          ],
+          "radius": 0.45
+        }
+      }
+    },
+    {
+      "id": "fuel",
+      "type": "flow",
+      "attach": {
+        "prop": "internals"
+      },
+      "params": {
+        "path": [
+          [
+            -0.085,
+            0,
+            0
+          ],
+          [
+            -0.045,
+            0,
+            0
+          ],
+          [
+            0.012,
+            0,
+            0
+          ],
+          [
+            0.03,
+            0.03,
+            0
+          ],
+          [
+            0.05,
+            0.05,
+            0
+          ],
+          [
+            0.086,
+            0.051,
+            0
+          ],
+          [
+            0.158,
+            0.048,
+            0
+          ],
+          [
+            0.194,
+            0.037,
+            0
+          ],
+          [
+            0.218,
+            0.022,
+            0
+          ],
+          [
+            0.24,
+            0.005,
+            0
+          ]
+        ],
+        "radius": 0.006,
+        "narrow": {
+          "from": 0.22,
+          "to": 0.32,
+          "factor": 2.5
+        },
+        "count": 80
+      }
+    },
+    {
+      "id": "air",
+      "type": "air",
+      "attach": {
+        "prop": "internals"
+      },
+      "params": {
+        "path": [
+          [
+            0.205,
+            0.012,
+            0
+          ],
+          [
+            0.213,
+            0.0185,
+            0
+          ],
+          [
+            0.219,
+            0.03,
+            0
+          ],
+          [
+            0.194,
+            0.045,
+            0
+          ],
+          [
+            0.158,
+            0.057,
+            0
+          ],
+          [
+            0.086,
+            0.06,
+            0
+          ],
+          [
+            0.05,
+            0.06,
+            0
+          ],
+          [
+            0.035,
+            0.045,
+            0
+          ],
+          [
+            0.0112,
+            0.028,
+            0
+          ],
+          [
+            0.012,
+            0.018,
+            0
+          ],
+          [
+            0.012,
+            0.0065,
+            0
+          ]
+        ],
+        "radius": 0.0015,
+        "size": 0.005,
+        "count": 22
+      }
+    },
+    {
+      "id": "neck-level",
+      "type": "level",
+      "attach": {
+        "prop": "filler"
+      },
+      "params": {
+        "center": [
+          0,
+          -0.0423,
+          0.1336
+        ],
+        "rotation": [
+          -65,
+          0,
+          0
+        ],
+        "radius": 0.021,
+        "from": 0,
+        "to": 0.1
+      }
+    },
+    {
+      "id": "hole-ring",
+      "type": "ring",
+      "attach": {
+        "prop": "internals"
+      },
+      "params": {
+        "position": [
+          0.213,
+          0.0185,
+          0
+        ],
+        "radius": 0.016
+      }
+    },
+    {
+      "id": "suction",
+      "type": "tint",
+      "attach": {
+        "prop": "internals"
+      },
+      "params": {
+        "center": [
+          -0.004,
+          0.034,
+          0
+        ],
+        "radius": 0.02,
+        "height": 0.014
+      }
+    },
+    {
+      "id": "glint",
+      "type": "glint",
+      "attach": {
+        "prop": "nozzle"
+      },
+      "params": {
+        "path": [
+          [
+            0.1,
+            0.06,
+            0.03
+          ],
+          [
+            0,
+            0.07,
+            0.03
+          ],
+          [
+            -0.1,
+            0.06,
+            0.02
+          ],
+          [
+            -0.165,
+            0.04,
+            0.015
+          ]
+        ],
+        "size": 0.06
       }
     }
   ]

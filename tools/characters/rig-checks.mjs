@@ -22,7 +22,8 @@ export function figureIssues(def, state) {
   const figure = buildFigure(def, state), J = figure.joints;
   const items = Object.fromEntries(figure.items.map(it => [it.id, it]));
   const issues = [];
-  for (const id of REQUIRED_ITEMS) if (!items[id]) issues.push({code:'MISSING_PART', message:`${id} is not painted`});
+  // Cap parts are required only for characters that wear a cap (a hatless design sets forms.cap to null)
+  for (const id of REQUIRED_ITEMS) if (!items[id] && !(def.forms?.cap === null && (id === 'brim' || id === 'crown'))) issues.push({code:'MISSING_PART', message:`${id} is not painted`});
   if (issues.length) return {figure, issues};
   const shape = id => items[id].shapes[0].pts;
   const covered = (label, point, ...ids) => {
@@ -40,7 +41,7 @@ export function figureIssues(def, state) {
   // Hair and cap sit on the head; face features stay on the face
   const head = shape('head');
   if (!shape('hair').some(p => insidePolygon(p, head))) issues.push({code:'DETACHED_PART', message:'the hair does not touch the head'});
-  if (!head.some(p => insidePolygon(p, shape('crown')))) issues.push({code:'DETACHED_PART', message:'the cap does not sit on the head'});
+  if (items.crown && !head.some(p => insidePolygon(p, shape('crown')))) issues.push({code:'DETACHED_PART', message:'the cap does not sit on the head'});
   for (const id of ['eyes', 'brows', 'mouth']) for (const s of items[id].shapes) {
     if (!s.pts.every(p => insidePolygon(p, head))) issues.push({code:'FEATURE_OFF_FACE', message:`${id} leaves the face`});
   }

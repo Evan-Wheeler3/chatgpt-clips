@@ -1,0 +1,594 @@
+{
+  "version": 1,
+  "id": "hold-up-protagonist",
+  "name": "Hold Up protagonist",
+  "description": "Hold Up recurring everyday protagonist: a modern man in his late twenties with a tall dark-brown quiff, an open muted-teal hoodie over a cream T-shirt, navy jeans with rolled cuffs and white sneakers. Rebuilt as a vector rig from the owner-approved ChatGPT sheet (sheet-v1).",
+  "design": {
+    "version": "1.0.0",
+    "status": "rig-pending",
+    "approvedOn": "2026-11-15",
+    "approvedFrom": "characters/intake/hold-up-protagonist/artwork/sheet-v1.png (design approved by the owner)",
+    "note": "Vector rebuild of the approved sheet; changing any visual field needs a new design version"
+  },
+  "heightM": 1.72,
+  "render": {
+    "mode": "vector-2d",
+    "outlineRatio": 0.0085,
+    "outlinePx": [
+      3,
+      8
+    ]
+  },
+  "palette": {
+    "skin": "#FAD7B5",
+    "shirt": "#4F8C87",
+    "cap": "#4B2D1F",
+    "hair": "#4B2D1F",
+    "apron": "#F7EFE1",
+    "trousers": "#2E4F7F",
+    "line": "#1E1A16",
+    "buttons": "#C5524B",
+    "boots": "#F2F0EA",
+    "mouth": "#A94A3E",
+    "tongue": "#D47562"
+  },
+  "paletteSource": {
+    "the approved sheet hex swatches": [
+      "skin",
+      "hair",
+      "shirt",
+      "apron",
+      "trousers",
+      "buttons"
+    ],
+    "sampled from the drawn sheet (no swatch)": [
+      "boots",
+      "mouth",
+      "line"
+    ],
+    "estimated": [
+      "tongue"
+    ],
+    "unused (no cap; kept for the shared palette contract)": [
+      "cap"
+    ]
+  },
+  "rig": {
+    "heightMm": 1600,
+    "hipY": 515,
+    "neckHeight": 545,
+    "headCenter": 220,
+    "shoulderHeight": 495,
+    "shoulderF": [
+      70,
+      0
+    ],
+    "shoulderB": [
+      -108,
+      0
+    ],
+    "hipF": [
+      28,
+      0
+    ],
+    "hipB": [
+      -30,
+      0
+    ],
+    "upperArm": 240,
+    "forearm": 165,
+    "hand": 100,
+    "thigh": 230,
+    "shin": 205,
+    "ankle": 80
+  },
+  "forms": {
+    "head": {
+      "rx": 160,
+      "ry": 165,
+      "jaw": 0.12,
+      "offsetX": 8,
+      "height": 330,
+      "crown": 2.4
+    },
+    "neck": {
+      "width": 66,
+      "base": [
+        -22,
+        515
+      ],
+      "top": [
+        -26,
+        70
+      ]
+    },
+    "hair": {
+      "shape": [
+        [
+          -150,
+          -30
+        ],
+        [
+          -168,
+          40
+        ],
+        [
+          -160,
+          120
+        ],
+        [
+          -132,
+          182
+        ],
+        [
+          -152,
+          226
+        ],
+        [
+          -100,
+          232
+        ],
+        [
+          -112,
+          290
+        ],
+        [
+          -50,
+          252
+        ],
+        [
+          -28,
+          314
+        ],
+        [
+          20,
+          264
+        ],
+        [
+          62,
+          322
+        ],
+        [
+          92,
+          264
+        ],
+        [
+          152,
+          270
+        ],
+        [
+          126,
+          216
+        ],
+        [
+          172,
+          192
+        ],
+        [
+          132,
+          162
+        ],
+        [
+          82,
+          172
+        ],
+        [
+          30,
+          162
+        ],
+        [
+          -20,
+          152
+        ],
+        [
+          -60,
+          122
+        ],
+        [
+          -95,
+          72
+        ],
+        [
+          -110,
+          10
+        ],
+        [
+          -130,
+          -40
+        ]
+      ],
+      "smooth": 1,
+      "sample": [
+        -90,
+        150
+      ]
+    },
+    "cap": null,
+    "torso": [
+      [
+        -117,
+        380
+      ],
+      [
+        -119,
+        468
+      ],
+      [
+        -105,
+        520
+      ],
+      [
+        -72,
+        542
+      ],
+      [
+        -27,
+        550
+      ],
+      [
+        34,
+        550
+      ],
+      [
+        76,
+        542
+      ],
+      [
+        108,
+        520
+      ],
+      [
+        120,
+        468
+      ],
+      [
+        119,
+        380
+      ],
+      [
+        114,
+        150
+      ],
+      [
+        110,
+        -30
+      ],
+      [
+        -114,
+        -30
+      ],
+      [
+        -117,
+        150
+      ]
+    ],
+    "collar": [
+      [
+        [
+          -124,
+          515
+        ],
+        [
+          -86,
+          598
+        ],
+        [
+          -24,
+          566
+        ],
+        [
+          -46,
+          520
+        ]
+      ],
+      [
+        [
+          38,
+          548
+        ],
+        [
+          66,
+          584
+        ],
+        [
+          96,
+          540
+        ]
+      ]
+    ],
+    "apron": {
+      "outline": [
+        [
+          -6,
+          522
+        ],
+        [
+          62,
+          522
+        ],
+        [
+          72,
+          300
+        ],
+        [
+          76,
+          60
+        ],
+        [
+          68,
+          -26
+        ],
+        [
+          2,
+          -26
+        ],
+        [
+          -2,
+          60
+        ],
+        [
+          -4,
+          300
+        ]
+      ],
+      "pocket": [],
+      "straps": [],
+      "strapWidth": 0,
+      "buttons": [],
+      "buttonRadius": 0
+    },
+    "arm": {
+      "sleeve": 100,
+      "cuff": [
+        126,
+        52
+      ],
+      "cuffAt": 12,
+      "forearm": 80,
+      "hand": [
+        92,
+        104
+      ]
+    },
+    "leg": {
+      "width": 100
+    },
+    "boot": {
+      "toe": 140,
+      "heel": 55,
+      "height": 82
+    }
+  },
+  "face": {
+    "eyes": {
+      "x": [
+        24,
+        118
+      ],
+      "y": 42,
+      "w": 26,
+      "h": 50
+    },
+    "brows": {
+      "x": [
+        4,
+        112
+      ],
+      "y": 94,
+      "w": 58,
+      "thick": 13,
+      "arch": 6
+    },
+    "mouth": {
+      "x": 59,
+      "y": -58,
+      "thick": 9
+    },
+    "gazeShift": [
+      10,
+      8
+    ],
+    "turnShift": 36,
+    "nod": 7
+  },
+  "expressions": {
+    "neutral": {
+      "eyes": "oval",
+      "brows": {
+        "raise": 0,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "line",
+        "w": 32
+      }
+    },
+    "speaking": {
+      "eyes": "oval",
+      "brows": {
+        "raise": 4,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "open",
+        "w": 50,
+        "h": 34
+      }
+    },
+    "happy": {
+      "eyes": "arc",
+      "brows": {
+        "raise": 10,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "open",
+        "w": 58,
+        "h": 38
+      }
+    },
+    "surprised": {
+      "eyes": "oval",
+      "eyeScale": 1.12,
+      "brows": {
+        "raise": 16,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "o",
+        "w": 28,
+        "h": 36
+      }
+    },
+    "concerned": {
+      "eyes": "oval",
+      "brows": {
+        "raise": 8,
+        "tilt": 20
+      },
+      "mouth": {
+        "shape": "frown",
+        "w": 44
+      }
+    },
+    "thinking": {
+      "eyes": "oval",
+      "brows": {
+        "raise": [
+          2,
+          12
+        ],
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "line",
+        "w": 34,
+        "x": 8
+      }
+    },
+    "confused": {
+      "eyes": "oval",
+      "brows": {
+        "raise": [
+          14,
+          0
+        ],
+        "tilt": [
+          0,
+          -8
+        ]
+      },
+      "mouth": {
+        "shape": "o",
+        "w": 20,
+        "h": 24,
+        "x": 10
+      }
+    },
+    "determined": {
+      "eyes": "oval",
+      "brows": {
+        "raise": -6,
+        "tilt": -18
+      },
+      "mouth": {
+        "shape": "line",
+        "w": 34
+      }
+    },
+    "realization": {
+      "eyes": "oval",
+      "brows": {
+        "raise": 16,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "open",
+        "w": 54,
+        "h": 36
+      },
+      "spark": true
+    },
+    "disappointed": {
+      "eyes": "lid",
+      "brows": {
+        "raise": 0,
+        "tilt": 12
+      },
+      "mouth": {
+        "shape": "frown",
+        "w": 40
+      }
+    },
+    "relieved": {
+      "eyes": "arc",
+      "brows": {
+        "raise": -2,
+        "tilt": -8
+      },
+      "mouth": {
+        "shape": "smile",
+        "w": 44
+      }
+    },
+    "curious": {
+      "eyes": "oval",
+      "brows": {
+        "raise": [
+          16,
+          2
+        ],
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "o",
+        "w": 18,
+        "h": 20,
+        "x": 6
+      }
+    },
+    "panicked": {
+      "eyes": "oval",
+      "eyeScale": 1.2,
+      "brows": {
+        "raise": 20,
+        "tilt": 16
+      },
+      "mouth": {
+        "shape": "open",
+        "w": 52,
+        "h": 46
+      }
+    },
+    "impressed": {
+      "eyes": "oval",
+      "eyeScale": 1.1,
+      "brows": {
+        "raise": 18,
+        "tilt": 0
+      },
+      "mouth": {
+        "shape": "o",
+        "w": 30,
+        "h": 38
+      }
+    },
+    "proud": {
+      "eyes": "arc",
+      "brows": {
+        "raise": 6,
+        "tilt": -4
+      },
+      "mouth": {
+        "shape": "smile",
+        "w": 56
+      }
+    }
+  },
+  "faceMap": {
+    "effort": "determined"
+  },
+  "parts": {},
+  "anchors": {},
+  "reference": "characters/hold-up-protagonist/reference.png"
+}

@@ -153,9 +153,15 @@ export function validatePlan(plan) {
   for (const prop of plan.props) for (const action of prop.actions) {
     if (INSTANT_ACTIONS.has(action.type) && !cutFrames.has(action.startFrame)) errors.push({code:'CONTINUITY_POP', prop:prop.id, shot:action.shot, message:`"${action.type}" at frame ${action.startFrame} is not on a cut`});
   }
-  for (const prop of plan.props) for (let i = 1; i < prop.actions.length; i++) {
-    const a = prop.actions[i - 1], b = prop.actions[i];
-    if (b.startFrame < a.endFrame && !INSTANT_ACTIONS.has(a.type)) errors.push({code:'ACTION_OVERLAP', prop:prop.id, shot:b.shot, message:`${b.type} starts before ${a.type} ends`});
+  // Actions conflict only when they drive the same channel: the prop transform, its material, or one named part
+  const channel = a => a.type === 'part' ? `part:${a.params?.part}` : a.type === 'material' ? 'material' : 'transform';
+  for (const prop of plan.props) {
+    const last = new Map();
+    for (const b of prop.actions) {
+      const a = last.get(channel(b));
+      if (a && b.startFrame < a.endFrame && !INSTANT_ACTIONS.has(a.type)) errors.push({code:'ACTION_OVERLAP', prop:prop.id, shot:b.shot, message:`${b.type} starts before ${a.type} ends`});
+      last.set(channel(b), b);
+    }
   }
 
   // Sync: visible actions start on (or just before) their word

@@ -21,7 +21,7 @@ export const DEFAULTS = {
   venturi:{x:0.012, throat:0.0065, length:0.018},
   chamber:{x:-0.004, y:0.034, r:0.019, h:0.012},
   latch:{ballR:0.0032, plungerR:0.0062, plungerTop:0.026, plungerBottom:-0.03, pinR:0.0018},
-  spout:{path:[[0.024, 0.02, 0], [0.05, 0.004, 0], [0.12, -0.022, 0], [0.215, -0.062, 0]], tubeR:0.0015, holeR:0.0022}
+  spout:{path:[[0.024, 0.02, 0], [0.05, 0.004, 0], [0.12, -0.022, 0], [0.215, -0.062, 0]], tubeR:0.0015, holeR:0.0022, holeDrop:0.0033}
 };
 export const PARTS = ['nozzle/seat', 'nozzle/poppet', 'nozzle/spring', 'nozzle/stem', 'nozzle/venturi', 'nozzle/port', 'nozzle/chamber', 'nozzle/diaphragm',
   'nozzle/pin', 'nozzle/ball-1', 'nozzle/ball-2', 'nozzle/plunger', 'nozzle/pivot', 'nozzle/tube', 'nozzle/hole'];
@@ -127,7 +127,7 @@ export function buildMechanism(params = {}) {
   const start = [C.x + C.r * 0.8, C.y - C.h / 2, 0];
   add('nozzle/tube', tube([start, ...S.path], S.tubeR), COLORS.tube);
   const tip = S.path.at(-1);
-  add('nozzle/hole', torus(S.holeR, S.holeR * 0.35, 24), [0.95, 0.85, 0.55, 1], [tip[0] - 0.006, tip[1] - S.tubeR * 2.2, 0]);
+  add('nozzle/hole', torus(S.holeR, S.holeR * 0.35, 24), [0.95, 0.85, 0.55, 1], [tip[0] - 0.006, tip[1] - S.holeDrop, 0]);
   return {params:P, parts};
 }
 function rotateX90(mesh) { const p = mesh.positions.slice(); for (let i = 0; i < p.length; i += 3) { const y = p[i + 1], z = p[i + 2]; p[i + 1] = -z; p[i + 2] = y; } return {...mesh, positions:p}; }
@@ -160,6 +160,8 @@ export async function writeMechanismGlb(file, params = {}) {
     (parent ?? root).addChild(node);
     nodes.set(part.name, node);
   }
+  // Mount socket: the internals' origin, +Z along the flow toward the spout (local +x), +Y up
+  root.addChild(doc.createNode('socket/mount').setRotation([0, Math.SQRT1_2, 0, Math.SQRT1_2]));
   doc.createScene('nozzle internals').addChild(root);
   await new NodeIO().write(file, doc);
   return {parts:parts.map(p => p.name), params:P};

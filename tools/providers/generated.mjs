@@ -22,9 +22,16 @@ export const GENERATORS = {
 };
 const sha256 = data => createHash('sha256').update(data).digest('hex');
 
-export function createGeneratedProvider({cacheDir = resolve(root, 'assets/cache'), params = {}} = {}) {
+// Fits for specific sourced shells. The sensing tube follows the measured centreline of the ghostbusterjeffrey spout
+// (holdup-fuel-nozzle), mapped into the internals frame (x' = 0.06 - x, mounted at the nozzle's "internals" socket)
+export const FITS = {
+  'nozzle-internals':{spout:{path:[[0.035, 0.045, 0], [0.05, 0.06, 0], [0.086, 0.06, 0], [0.158, 0.057, 0], [0.194, 0.045, 0], [0.219, 0.03, 0]], tubeR:0.0015, holeR:0.0024, holeDrop:0.0115}}
+};
+
+export function createGeneratedProvider({cacheDir = resolve(root, 'assets/cache'), params = null} = {}) {
   async function fetchModel(id) {
     const g = GENERATORS[id];
+    params = params ?? FITS[id] ?? {};
     if (!g) throw new Error(`No generator "${id}" (${Object.keys(GENERATORS).join(', ')})`);
     const version = sha256(JSON.stringify({v:g.module.VERSION, source:sha256(await readFile(join(root, g.source))), params})).slice(0, 12);
     const dest = join(cacheDir, 'generated', id, version);

@@ -119,9 +119,11 @@ export function planCaptions(plan, story) {
   const shotRules = Object.fromEntries((story.beats ?? []).flatMap(b => b.shots).filter(s => s.captions).map(s => [s.id, s.captions]));
   const t = style.timing, lists = groupWords(words, style.grouping);
   const groups = lists.map((list, n) => {
-    const first = words[list[0]], last = words[list.at(-1)], next = lists[n + 1] ? words[lists[n + 1][0]] : null;
-    const start = Math.max(0, first.start - t.leadSec);
-    const naturalEnd = last.end + t.holdSec, end = next ? (next.start - last.end > t.gapHideSec ? naturalEnd : next.start - t.leadSec) : Math.min(naturalEnd, plan.durationFrames / fps);
+    const first = words[list[0]], last = words[list.at(-1)], next = lists[n + 1] ? words[lists[n + 1][0]] : null, prev = n ? words[lists[n - 1].at(-1)] : null;
+    // The lead-in never replaces a group before the middle of its last (possibly very short) spoken word
+    const lead = (word, before) => before ? Math.max(word.start - t.leadSec, (before.start + before.end) / 2 + 1 / fps) : word.start - t.leadSec;
+    const start = Math.max(0, lead(first, prev));
+    const naturalEnd = last.end + t.holdSec, end = next ? (next.start - last.end > t.gapHideSec ? naturalEnd : lead(next, last)) : Math.min(naturalEnd, plan.durationFrames / fps);
     const text = list.map(k => words[k].text).join(' ');
     // Placement: the band that covers the least of what matters, sampled across the group's frames
     const frames = [];
