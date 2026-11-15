@@ -248,7 +248,7 @@ export async function build(ctx) {
   // the retractor on the post: a housing whose reel visibly turns as webbing pays out
   const labRetractor = new THREE.Group(); labRetractor.position.set(0.5, FLOOR + 0.2, 0.585); sled.add(labRetractor);
   mesh(rbox(0.15, 0.17, 0.09, 0.02), std(0x2f3338, { r: 0.5, m: 0.5 }), [0, 0, -0.03], [0, 0, 0], labRetractor);
-  const labReel = mesh(cyl(0.052, 0.03, 20), std(0xe2a23a, { r: 0.45, m: 0.5 }), [0, -0.01, 0.025], [Math.PI / 2, 0, 0], labRetractor);
+  const labReel = mesh(cyl(0.042, 0.03, 20), std(0xd9a441, { r: 0.5, m: 0.2 }), [0, -0.01, 0.025], [Math.PI / 2, 0, 0], labRetractor);
   mesh(rbox(0.012, 0.09, 0.012, 0.004), std(0x2a2826, { r: 0.5 }), [0, 0, 0.016], [0, 0, 0], labReel);
   stylize(labRetractor, 'hero', { outlineScale: 0.7 });
   const labDRing = buildDRing(sled, 0.5, 1.26, 0.56), labBuckle = buildBuckle(sled, -0.2, 0.57, -0.2); stylize(labDRing, 'hero'); stylize(labBuckle, 'hero', { outlineScale: 0.6 });
@@ -362,8 +362,8 @@ export async function build(ctx) {
   // ---------------------------------------------------------------- the dummy on the sled
   const DSIT = { ...SIT, torso: -9, head: 4, handF: 'open', handB: 'open' };
   // lurch 0..1 is how far he is thrown; `locked` decides how far that is. Returns the shoulder point the belt rides over
-  function poseDummy(lurch, locked, t) {
-    const far = locked ? 15 : 41, torso = DSIT.torso + far * lurch, slide = (locked ? 0.025 : 0.09) * lurch;
+  function poseDummy(lurch, locked, t, held = 15) {
+    const far = locked ? held : 41, torso = DSIT.torso + far * lurch, slide = (locked ? 0.025 : 0.09) * lurch;
     const pose = { ...DSIT, torso, head: DSIT.head + (locked ? 16 : 26) * lurch, armB: [20 + (locked ? 46 : 96) * lurch, 60 - 44 * lurch], armF: [30 + (locked ? 40 : 88) * lurch, 50 - 36 * lurch], legB: [86 - 4 * lurch, 72 - 26 * lurch * (locked ? 0.4 : 1)], legF: [80 - 4 * lurch, 66 - 22 * lurch * (locked ? 0.4 : 1)] };
     dummy.set({ pose, face: 'neutral', gaze: [0, 0], blink: 0 }, { hip: [HIP[0] - slide, HIP[1], HIP[2]], mirror: -1, outlineMm: 7.5, tint: new THREE.Color(1, 0.98, 0.95) });
     const sh = dummy.joint('shoulderB'), nk = dummy.joint('neck');
@@ -379,13 +379,13 @@ export async function build(ctx) {
     labReel.rotation.y = feed / 0.05;
   }
   // The sled runs in from screen right and stops dead against the barrier at `tHit`. After the hit, time runs slow
-  function crash(t, tHit, locked, { slow = 0.32, speed = 7 } = {}) {
+  function crash(t, tHit, locked, { slow = 0.32, speed = 7, held = 15 } = {}) {
     const stopX = -0.72, x = t < tHit ? stopX + speed * (tHit - t) * (1 - 0.0) : stopX + 0.03 * damped(t - tHit, 7, 10);
     sled.position.x = x;
     const u = Math.max(0, t - tHit) * slow;                         // slowed time since the hit
     // thrown forward, then (locked) held with a small rebound, or (no lock) still going
     const lurch = locked ? easeOut(seg(u, 0, 0.11)) * (1 - 0.3 * sseg(u, 0.11, 0.32)) + 0.05 * damped(u - 0.11, 6, 9) : easeOut(seg(u, 0, 0.42));
-    const shoulder = poseDummy(lurch, locked, t);
+    const shoulder = poseDummy(lurch, locked, t, held);
     const payout = locked ? 0.02 * Math.min(1, lurch * 3) : 0.52 * lurch;
     labBelt(shoulder, { feed: payout, twang: locked ? 0.012 * damped(u - 0.1, 14, 16) : 0, slack: locked ? 0 : lurch });
     return { x, u, lurch };
@@ -432,7 +432,7 @@ export async function build(ctx) {
         const jerk = after > 0 ? damped(after, 7, 8) * amp : 0;
         hand = [hand[0] + 0.03 * jerk, hand[1] + 0.01 * jerk];
         torso = SIT.torso - (4 + 3 * i) * snap * (1 - relax) + 5 * jerk; head = SIT.head + 7 * snap * (1 - relax) - 7 * jerk;
-        face = ['confused', 'determined', 'panicked'][i]; if (i === 1 && after < 0) face = 'concerned';
+        face = ['confused', 'determined', 'surprised'][i]; if (i === 1 && after < 0) face = 'concerned';
         twang = after > 0 ? 0.02 * damped(after, 13, 10) * amp : 0; feed = 0.42 + 0.2 * snap * (1 - relax);
         shake = after > 0 && after < 0.12 ? 0.008 + 0.004 * i : 0;
       }
@@ -446,7 +446,7 @@ export async function build(ctx) {
     twist(t, T) {
       const a = W('Annoying'), b = W('But') - 0.1, e = S.twist.endSec;
       const slump = sseg(T, a - 0.1, a + 0.4), look = sseg(T, a + 0.25, a + 0.6);
-      const h = poseDriver({ hand: [lerp(0.02, -0.08, slump), lerp(0.95, 0.86, slump)], torso: SIT.torso + 4 * slump, head: SIT.head + 6 * slump, face: T < a + 0.2 ? 'panicked' : 'disappointed', gaze: [lerp(-0.6, 0.15, look) - 0.5 * sseg(T, b, b + 0.4), -0.25], blink: T < b ? blinkAt(T + 1.1) : 0 });
+      const h = poseDriver({ hand: [lerp(0.02, -0.08, slump), lerp(0.95, 0.86, slump)], torso: SIT.torso + 4 * slump, head: SIT.head + 6 * slump, face: T < a + 0.2 ? 'surprised' : 'disappointed', gaze: [lerp(-0.6, 0.15, look) - 0.5 * sseg(T, b, b + 0.4), -0.25], blink: T < b ? blinkAt(T + 1.1) : 0 });
       carBelt(h, { feed: 0.36, taut: 0.85 });
       const push = smooth(seg(T, b, e - 0.05)), p2 = push * push;
       cam([lerp(0.02, h.x + 0.14, p2), lerp(1.31, h.y + 0.1, p2), lerp(3.3, 0.75, p2)], [lerp(-0.04, h.x + 0.16, push), lerp(1.25, h.y + 0.1, push), 0.2 * push], 30);
@@ -455,7 +455,7 @@ export async function build(ctx) {
     },
     // 4. The sled hits the barrier; the dummy keeps going (slow motion after the hit)
     crash(t, T) {
-      const hit = W('crash') + 0.08, st = crash(T, hit, true);
+      const hit = W('crash') + 0.08, st = crash(T, hit, true, { slow: 0.22, held: 30 });
       cam([LAB_X - 1.3, 1.6, 7.0], [LAB_X - 1.3, 1.45, 0], 30, T > hit && T < hit + 0.16 ? 0.02 : 0, T);
       return { fade: 1 - sseg(T, S.crash.startSec, S.crash.startSec + 0.16) };
     },
@@ -463,10 +463,10 @@ export async function build(ctx) {
     tension(t, T) {
       const a = S.tension.startSec, e = S.tension.endSec, hold = crash(100, 0, true);
       sled.position.x = -0.72;
-      const sh = poseDummy(0.7, true, T); labBelt(sh, { feed: 0.02, twang: 0.006 * Math.sin(T * 40) * (1 - seg(T, a, a + 0.6)) });
+      const sh = poseDummy(0.7, true, T, 30); labBelt(sh, { feed: 0.02, twang: 0.006 * Math.sin(T * 40) * (1 - seg(T, a, a + 0.6)) });
       const X = LAB_X + sled.position.x, u1 = smooth(seg(T, a + 0.5, W('lock') + 0.1)), u2 = smooth(seg(T, W('lock') + 0.1, e));
-      const look = [X + lerp(lerp(sh.x + 0.1, 0.5, u1), 0.5, u2), lerp(lerp(sh.y + 0.02, 1.18, u1), FLOOR + 0.24, u2), 0.5];
-      cam([look[0] - 0.1 + 0.25 * u2, look[1] + 0.05, lerp(lerp(2.3, 2.0, u1), 1.15, u2)], look, 30);
+      const look = [X + lerp(lerp(sh.x + 0.1, 0.5, u1), 0.5, u2), lerp(lerp(sh.y - 0.16, 1.14, u1), FLOOR + 0.3, u2), 0.5];
+      cam([look[0] - 0.1 + 0.25 * u2, look[1] + 0.05, lerp(lerp(2.5, 2.1, u1), 1.5, u2)], look, 30);
       labReel.rotation.y = 0;
       return {};
     },
@@ -486,7 +486,7 @@ export async function build(ctx) {
       const tug = T > W('stops') - 0.05 ? 0.012 * Math.abs(Math.sin((T - W('stops')) * 9)) * (1 - seg(T, W('out'), e)) : 0;
       retWeb.position.x = -0.715 + (locked ? 0.01 * damped(T - jerk - 0.13, 16, 10) : 0); retWeb.userData.face.position.x = retWeb.position.x - 0.02; retWeb.position.y = 3 + tug; retWeb.userData.face.position.y = 3 + tug;
       const push = smooth(seg(T, a, e)), bump = locked && T < jerk + 0.25 ? 0.03 : 0;
-      cam([RET_X + lerp(-3.3, -2.7, push), 2 + lerp(1.5, 1.2, push), lerp(10.4, 9.2, push)], [RET_X - 0.25, 2.55, -0.3], 30, bump, T);
+      cam([RET_X + lerp(-3.0, -2.4, push), 2 + lerp(1.4, 1.15, push), lerp(9.4, 8.2, push)], [RET_X + 0.3, 2.55, -0.3], 30, bump, T);
       return { fade: 1 - sseg(T, a, a + 0.12) };
     },
     // 7. No lock: the webbing pays out and he keeps going
