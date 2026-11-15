@@ -28,13 +28,20 @@ test('barrel-bilge: narrate, align, compile, validate and render the animatic', 
     assert.ok(words.quality.exactRatio >= 0.9, JSON.stringify(words.quality));
     assert.equal(words.quality.unaligned, 0);
     assert.ok(words.audio.durationSec >= 10 && words.audio.durationSec <= 15);
-    for (const word of words.words) assert.ok(words.islands.some(island => word.start >= island.start && word.end <= island.end), `${word.text} is inside measured speech`);
+    // Whisper reports speech islands; the forced aligner (Phase 6.1) times the known script directly, so check its bounds instead
+    if (words.islands) for (const word of words.words) assert.ok(words.islands.some(island => word.start >= island.start && word.end <= island.end), `${word.text} is inside measured speech`);
+    else {
+      assert.equal(words.aligner.name, 'qwen3-forced-aligner');
+      words.words.forEach((word, i) => assert.ok(word.start >= 0 && word.end > word.start && word.end <= words.audio.durationSec + 1e-6 && (!i || word.start >= words.words[i - 1].start), `${word.text} is timed inside the audio`));
+    }
 
     const plan = await compileStory(story, words);
     const validation = validatePlan(plan);
     assert.equal(validation.status, 'pass', JSON.stringify(validation.errors));
-    // Regressions from the animatic reviews: no cut jumps (contact->roll, profile->hoops) and no dead starts (roll, turn)
-    assert.deepEqual(validation.warnings.map(w => `${w.code}:${w.shot}`), []);
+    // Regressions from the animatic reviews: no cut jumps (contact->roll, profile->hoops) and no dead starts (roll, turn).
+    // The approved cooper production (Phases 5.4-6.2) renders with exactly these reviewed character framing warnings;
+    // anything new fails the regression
+    assert.deepEqual(validation.warnings.map(w => `${w.code}:${w.shot}`), ['CHARACTER_HEAD_CROPPED:reveal', 'CHARACTER_STRAY_LIMB:profile', 'CHARACTER_HEAD_CROPPED:profile']);
     for (const cut of validation.cuts) assert.ok(cut.scaleRatio <= 1.5 && cut.shiftNdc <= 0.35, JSON.stringify(cut));
     for (const id of ['roll', 'turn']) {
       const shot = plan.shots.find(s => s.id === id);

@@ -200,3 +200,61 @@ test('audio QA flags clipping, loudness off target and a narrator buried under e
     assert.ok((await measureLoudness(file)).integratedLufs > -6);
   } finally { await rm(dir, {recursive:true, force:true}); }
 });
+
+test('mixer additions: effects that run until a cue and stop dead, per-shot ambience levels and ambience dips', async () => {
+  const { ambienceLevel, HARD_STOP_SEC } = await import('../tools/audio/mix.mjs');
+  const { dbToGain } = await import('../tools/audio/dsp.mjs');
+  const words = spoken('one two three', {start:1, word:0.6, gap:1.8}), fps = 30, durationSec = 8;
+  const plan = {fps, durationFrames:durationSec * fps, size:{width:1080, height:1920}, words, props:[], cast:[],
+    shots:[{id:'outside', startFrame:0, endFrame:120}, {id:'inside', startFrame:120, endFrame:240}]};
+  const story = {audio:{auto:false, sfx:[{id:'bed', at:1, until:{at:'two', offset:-0.1}, stop:'hard', asset:'barrel-roll-loop'}],
+    ambience:{profile:'workshop', shots:{inside:-6}, dips:[{at:'three', durationSec:0.15, db:-6}]}}};
+  // Schedule: "until" sets the length from the spoken word; the stop is hard
+  const [bed] = scheduleSfx(plan, story);
+  assert.equal(bed.durationSec, +(words[1].start - 0.1 - 1).toFixed(3)); assert.equal(bed.hardStop, true);
+  assert.throws(() => scheduleSfx(plan, {audio:{auto:false, sfx:[{id:'x', at:'two', until:'one', asset:'barrel-thud'}]}}), /must come after/);
+  assert.throws(() => scheduleSfx(plan, {audio:{auto:false, sfx:[{id:'x', at:1, stop:'abrupt', asset:'barrel-thud'}]}}), /stop must be/);
+  // Ambience level: 0 dB outside, -6 dB inside (smooth across the cut), a further -6 dB dip at "three"
+  const length = durationSec * SAMPLE_RATE, {gain, dips} = ambienceLevel(plan, story.audio.ambience, length), at = s => gain[Math.round(s * SAMPLE_RATE)];
+  assert.ok(Math.abs(at(2) - 1) < 1e-6 && Math.abs(at(5) - dbToGain(-6)) < 1e-6);
+  assert.ok(at(4) < 1 && at(4) > dbToGain(-6), 'the level eases across the cut');
+  assert.ok(Math.abs(at(words[2].start + 0.05) - dbToGain(-12)) < 1e-6, 'the dip stacks on the shot level');
+  assert.ok(Math.abs(at(words[2].start + 0.5) - dbToGain(-6)) < 1e-6, 'the dip recovers');
+  assert.equal(dips.length, 1);
+  assert.throws(() => ambienceLevel(plan, {shots:{nowhere:-3}}, length), /unknown shot/);
+  // Mix: the bed is audible right up to its cue and silent a few milliseconds after it
+  const dir = await temp();
+  try {
+    const voice = new Float32Array(length); const noise = rng(3);
+    for (const w of words) for (let i = Math.floor(w.start * SAMPLE_RATE); i < w.end * SAMPLE_RATE; i++) voice[i] = 0.3 * (noise() * 2 - 1);
+    const narration = join(dir, 'narration.wav'); await writeWav(narration, voice);
+    const mix = await mixStory({plan, story, narrationFile:narration, outDir:join(dir, 'out')});
+    const sfx = mix.stems.sfx[0], stop = words[1].start - 0.1;
+    assert.ok(rms(sfx, Math.floor((stop - 0.2) * SAMPLE_RATE), Math.floor((stop - 0.01) * SAMPLE_RATE)) > 1e-3, 'audible before the stop');
+    assert.equal(rms(sfx, Math.ceil((stop + HARD_STOP_SEC + 0.002) * SAMPLE_RATE), Math.floor((stop + 0.3) * SAMPLE_RATE)), 0, 'silent right after the stop');
+    assert.equal(mix.report.ambience.dips.length, 1);
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});
+
+test('derived sounds: recorded operations, inherited license, provenance and checksum', async () => {
+  const { applyOps, deriveAsset } = await import('../tools/audio/derive.mjs');
+  const ramp = Float32Array.from({length:SAMPLE_RATE}, (_, i) => i / SAMPLE_RATE);
+  const out = applyOps(ramp, [{trim:[0.5, 1]}, {reverse:true}, {speed:2}]);
+  assert.equal(out.length, Math.floor((SAMPLE_RATE / 2 - 1) / 2));
+  assert.ok(out[0] > out[out.length - 1], 'reversed');
+  assert.throws(() => applyOps(ramp, [{trim:[0.5, 2]}]), /outside the source/);
+  assert.throws(() => applyOps(ramp, [{wobble:1}]), /Unknown derive operation/);
+  const dir = await temp();
+  try {
+    await mkdir(join(dir, 'audio/sfx'), {recursive:true});
+    await writeWav(join(dir, 'audio/sfx/src.wav'), ramp.map(v => v * 0.5));
+    const sha = createHash('sha256').update(await readFile(join(dir, 'audio/sfx/src.wav'))).digest('hex');
+    const catalogFile = join(dir, 'catalog.json');
+    await writeFile(catalogFile, JSON.stringify({assets:[{id:'src', description:'a pour', category:'liquid', file:'audio/sfx/src.wav', durationSec:1, source:{type:'recorded', url:'https://example.org/s'},
+      license:'CC-BY-4.0', licenseEvidence:'https://example.org/s', attribution:'"Pour" by Someone (CC BY 4.0)', author:'Someone', status:'approved', gainDb:-12, sha256:sha}]}));
+    const a = await deriveAsset({from:'src', id:'src-reversed', ops:[{reverse:true}], root:dir, catalogFile});
+    assert.equal(a.license, 'CC-BY-4.0'); assert.equal(a.attribution, '"Pour" by Someone (CC BY 4.0)'); assert.equal(a.author, 'Someone');
+    assert.deepEqual(a.source, {type:'derived', from:'src', fromSha256:sha, ops:[{reverse:true}]});
+    await assert.rejects(deriveAsset({from:'missing', id:'x', ops:[], root:dir, catalogFile}), /No source asset/);
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});

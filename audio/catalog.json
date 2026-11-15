@@ -414,6 +414,262 @@
         "seamless": true
       },
       "sha256": "4bb041709cceb995d4020206fde81d3cccb574406c5a55abdbb043200fdf9b15"
+    },
+    {
+      "id": "fuel-gush-loop-synth",
+      "description": "Fuel gushing out of a filler neck and running down (bubble-model synthesis; seamless loop)",
+      "category": "liquid",
+      "file": "audio/sfx/fuel-gush-loop-synth.wav",
+      "durationSec": 3,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#liquidGush",
+        "params": {
+          "duration": 3
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -12,
+      "loop": {
+        "seamless": true
+      },
+      "sha256": "5161621460d5176a6b5d7344062e8ed5824dc6ca08fd130cfe300dcb258374fa"
+    },
+    {
+      "id": "fuel-splash-synth",
+      "description": "Liquid slapping onto concrete (bubble-model synthesis)",
+      "category": "liquid",
+      "file": "audio/sfx/fuel-splash-synth.wav",
+      "durationSec": 0.9,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#liquidSplash",
+        "params": {
+          "duration": 0.9
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -10,
+      "loop": null,
+      "sha256": "24ab8774cc7b33d8d0fcc11ad1569942f254b2cd9144ac07e94fbb447c1a98c8"
+    },
+    {
+      "id": "fuel-gulp-synth",
+      "description": "A short gulp as the last fuel is swallowed back into the filler neck",
+      "category": "liquid",
+      "file": "audio/sfx/fuel-gulp-synth.wav",
+      "durationSec": 0.45,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#liquidGulp",
+        "params": {}
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -12,
+      "loop": null,
+      "sha256": "2642633d880c03c161e462b2095e2ba99db0d826539d4000814e4d8da7d2b493"
+    },
+    {
+      "id": "nozzle-click-synth",
+      "description": "A fuel nozzle shut-off click: latch tick then valve clack",
+      "category": "mechanism",
+      "file": "audio/sfx/nozzle-click-synth.wav",
+      "durationSec": 0.3,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#shutoffClick",
+        "params": {}
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -6,
+      "loop": null,
+      "sha256": "c786b55fbc08bc3cbf79c7e5ad4410e458c25079b95e7fe36b1a14448b9ba765"
+    },
+    {
+      "id": "latch-release-synth",
+      "description": "A small metal snick (latch balls slip, plunger released)",
+      "category": "mechanism",
+      "file": "audio/sfx/latch-release-synth.wav",
+      "durationSec": 0.07,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#latchSnick",
+        "params": {}
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -16,
+      "loop": null,
+      "sha256": "e06b02e7eb4364c2b43aafd45ef01c9154092de753a134eabd440de0cc87c051"
+    },
+    {
+      "id": "diaphragm-flex-synth",
+      "description": "A soft rubbery thump (a diaphragm pulled by suction)",
+      "category": "mechanism",
+      "file": "audio/sfx/diaphragm-flex-synth.wav",
+      "durationSec": 0.25,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#rubberThump",
+        "params": {}
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -14,
+      "loop": null,
+      "sha256": "bd216ecd2bb9da5b70043b5f589bac3132d5f47e56975dfbe97999e36d5ccc2d"
+    },
+    {
+      "id": "air-suction-loop-synth",
+      "description": "Air drawn through a small tube: a thin hiss (seamless loop)",
+      "category": "air",
+      "file": "audio/sfx/air-suction-loop-synth.wav",
+      "durationSec": 3,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#airHiss",
+        "params": {
+          "duration": 3
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -22,
+      "loop": {
+        "seamless": true
+      },
+      "sha256": "5c5972c76ac4b83323dad62a3d86e48aa330883af4500db562fa357bfca9557b"
+    },
+    {
+      "id": "air-stop-synth",
+      "description": "An airflow choking off as an opening is covered",
+      "category": "air",
+      "file": "audio/sfx/air-stop-synth.wav",
+      "durationSec": 0.6,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#airStop",
+        "params": {
+          "duration": 0.6
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -22,
+      "loop": null,
+      "sha256": "313da6f440a4d1b5168d8376f190351faa42300ae8b92420cfeda2dd12f2e075"
+    },
+    {
+      "id": "ambience-gas-station-synth",
+      "description": "Outdoor gas station: soft wind, distant traffic swells, faint canopy hum (seamless loop)",
+      "category": "ambience",
+      "file": "audio/sfx/ambience-gas-station-synth.wav",
+      "durationSec": 16,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#stationBed",
+        "params": {
+          "duration": 16
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -24,
+      "loop": {
+        "seamless": true
+      },
+      "sha256": "25cbefa02e65da0a4ffbe01e40208120121bf92ba040ee2e7401129fc512bad6"
+    },
+    {
+      "id": "fuel-gush-reversed-synth",
+      "description": "The overflow gush played backwards and slightly higher, for the rewind (derived from fuel-gush-loop-synth)",
+      "category": "liquid",
+      "sampleRate": 48000,
+      "channels": 1,
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -12,
+      "file": "audio/sfx/fuel-gush-reversed-synth.wav",
+      "durationSec": 0.554,
+      "loop": null,
+      "source": {
+        "type": "derived",
+        "from": "fuel-gush-loop-synth",
+        "fromSha256": "5161621460d5176a6b5d7344062e8ed5824dc6ca08fd130cfe300dcb258374fa",
+        "ops": [
+          {
+            "trim": [
+              2.02,
+              2.64
+            ]
+          },
+          {
+            "reverse": true
+          },
+          {
+            "speed": 1.12
+          },
+          {
+            "fade": [
+              0.005,
+              0.06
+            ]
+          }
+        ]
+      },
+      "sha256": "f140919cf548d4a8245dbe374601d34d170a6eac05bd53f06d022f65029004de"
     }
   ]
 }

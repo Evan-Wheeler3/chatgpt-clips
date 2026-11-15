@@ -11,7 +11,8 @@ import { normalizeWord } from '../narration/align.mjs';
  *   push    a clothing wind-up and the contact thud      touch  a light knock when the hand lands
  *   walk    a footstep per stride (from the measured path)  pose  a subtle cloth rustle for big gestures
  *   whip    a soft whoosh centred on the whip pan
- * story.audio: {auto: true | false | {exclude:[rule...]}, sfx:[{at, asset, gainDb, pan}], mute:[eventId...], gainDb:{sfx}}
+ * story.audio: {auto: true | false | {exclude:[rule...]}, sfx:[{at, asset, gainDb, pan, durationSec | until, stop}], mute:[eventId...], gainDb:{sfx}}
+ *   until  a word anchor where the effect ends (a loop runs until then); stop: 'hard' cuts it dead (3 ms declick) instead of fading
  * Every event says which rule made it and why, so a reviewer can mute or override it.
  */
 export const RULES = ['roll', 'pivot', 'wobble', 'push', 'touch', 'walk', 'gesture', 'whip'];
@@ -40,7 +41,7 @@ function propMotion(plan, prop, from, to) {
   return out;
 }
 
-function resolveTime(plan, at) {
+export function resolveTime(plan, at) {
   if (typeof at === 'number') return at;
   const spec = typeof at === 'string' ? {at} : at;
   const [word, nth] = String(spec.at).split('#'), wanted = normalizeWord(word);
@@ -105,7 +106,14 @@ export function scheduleSfx(plan, story = {}) {
   }
   for (const s of audio.sfx ?? []) {
     const time = resolveTime(plan, s.at);
-    events.push({id:s.id ?? `manual-${events.length + 1}`, rule:'manual', asset:s.asset, time:+time.toFixed(3), frame:Math.round(time * fps), gainDb:s.gainDb ?? 0, pan:s.pan ?? 0, durationSec:s.durationSec, reason:s.reason ?? 'story'});
+    if (s.stop && s.stop !== 'hard' && s.stop !== 'fade') throw new Error(`Sound event ${s.id}: stop must be "hard" or "fade"`);
+    let durationSec = s.durationSec;
+    if (s.until !== undefined) {
+      durationSec = resolveTime(plan, s.until) - time;
+      if (!(durationSec > 0)) throw new Error(`Sound event ${s.id}: "until" must come after "at"`);
+    }
+    events.push({id:s.id ?? `manual-${events.length + 1}`, rule:'manual', asset:s.asset, time:+time.toFixed(3), frame:Math.round(time * fps), gainDb:s.gainDb ?? 0, pan:s.pan ?? 0,
+      durationSec:durationSec === undefined ? undefined : +durationSec.toFixed(3), ...(s.stop === 'hard' && {hardStop:true}), reason:s.reason ?? 'story'});
   }
   const muted = new Set(audio.mute ?? []);
   return events.filter(e => !muted.has(e.id)).sort((a, b) => a.time - b.time);

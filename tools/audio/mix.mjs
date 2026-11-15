@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 import { SAMPLE_RATE, dbToGain, gainToDb, rms } from './dsp.mjs';
 import { writeWav, decodeAudio } from './wav.mjs';
 import { loadCatalog, usableAsset, ROOT } from './catalog.mjs';
-import { scheduleSfx } from './schedule.mjs';
+import { scheduleSfx, resolveTime } from './schedule.mjs';
 
 /*
  * Multitrack mix for a story: narration, sound effects, ambience and optional music, mixed locally and mastered for
@@ -14,11 +14,14 @@ import { scheduleSfx } from './schedule.mjs';
  * mix stays frame-locked to the video.
  *   narration   matched to TARGETS.narrationLufs, centred
  *   sfx         scheduled events (tools/audio/schedule.mjs), constant-power pan, speed-following envelopes, -3 dB under speech
- *   ambience    profile layers looped with crossfades, faded in and out, ducked under speech
+ *   ambience    profile layers looped with crossfades, faded in and out, ducked under speech; optional per-shot levels
+ *               (ambience.shots {shotId: dB}) and short dips at cues (ambience.dips [{at, durationSec, db}])
  *   music       optional, trimmed and faded, ducked well under speech (TARGETS.musicDuckDb)
  *   master      two-pass loudnorm to TARGETS.lufs / TARGETS.truePeakDb, 48 kHz stereo
  */
 const run = promisify(execFile);
+// A cut dead still needs a few milliseconds of fade, or the waveform step clicks
+export const HARD_STOP_SEC = 0.003, SHOT_LEVEL_FADE_SEC = 0.15;
 export const TARGETS = {lufs:-14, truePeakDb:-1.5, lra:11, narrationLufs:-16, sfxDuckDb:-3, musicDuckDb:-12, duckAttackSec:0.08, duckReleaseSec:0.35, speechPadSec:0.12};
 
 export async function measureLoudness(file) {
@@ -48,6 +51,37 @@ function envelopeAt(points, i) {
   return points.at(-1)[1];
 }
 
+// Ambience gain per sample: per-shot levels (eased over SHOT_LEVEL_FADE_SEC across each cut) times any dips at cues
+export function ambienceLevel(plan, ambience = {}, length) {
+  const db = new Float32Array(length);
+  if (ambience.shots) {
+    for (const id of Object.keys(ambience.shots)) if (!plan.shots.some(s => s.id === id)) throw new Error(`ambience.shots: unknown shot "${id}"`);
+    const levelOf = shot => ambience.shots[shot.id] ?? 0, half = SHOT_LEVEL_FADE_SEC / 2;
+    plan.shots.forEach((shot, k) => {
+      const from = Math.round(shot.startFrame / plan.fps * SAMPLE_RATE), to = Math.min(length, Math.round(shot.endFrame / plan.fps * SAMPLE_RATE));
+      for (let i = from; i < to; i++) db[i] = levelOf(shot);
+      const prev = plan.shots[k - 1];
+      if (prev && levelOf(prev) !== levelOf(shot)) { // Smoothstep across the cut
+        const a = Math.max(0, from - Math.round(half * SAMPLE_RATE)), b = Math.min(length, from + Math.round(half * SAMPLE_RATE));
+        for (let i = a; i < b; i++) { const u = (i - a) / Math.max(1, b - a), w = u * u * (3 - 2 * u); db[i] = levelOf(prev) * (1 - w) + levelOf(shot) * w; }
+      }
+    });
+  }
+  const dips = [];
+  for (const d of ambience.dips ?? []) {
+    if (!(d.db < 0)) throw new Error('ambience.dips: db must be negative');
+    const t = resolveTime(plan, d.at), hold = d.durationSec ?? 0.15, att = d.attackSec ?? 0.005, rel = d.releaseSec ?? 0.08;
+    dips.push({time:+t.toFixed(3), durationSec:hold, db:d.db, reason:d.reason ?? null});
+    const a = Math.round(t * SAMPLE_RATE), n0 = Math.round(att * SAMPLE_RATE), n1 = Math.round(hold * SAMPLE_RATE), n2 = Math.round(rel * SAMPLE_RATE);
+    for (let k = 0; k < n0 + n1 + n2; k++) {
+      const i = a + k; if (i < 0 || i >= length) continue;
+      const w = k < n0 ? k / Math.max(1, n0) : k < n0 + n1 ? 1 : 1 - (k - n0 - n1) / Math.max(1, n2);
+      db[i] += d.db * w;
+    }
+  }
+  return {gain:db.map(v => dbToGain(v)), dips};
+}
+
 export async function mixStory({plan, story, narrationFile, outDir, catalog = null, ambienceFile = join(ROOT, 'audio/ambience.json'), root = ROOT}) {
   catalog ??= await loadCatalog();
   await mkdir(outDir, {recursive:true});
@@ -68,7 +102,7 @@ export async function mixStory({plan, story, narrationFile, outDir, catalog = nu
   for (const e of events) {
     const {asset, data} = await load(e.asset), [gl, gr] = panGains(e.pan ?? 0), start = Math.round(e.time * SAMPLE_RATE);
     const n = e.durationSec ? Math.round(e.durationSec * SAMPLE_RATE) : data.length, base = dbToGain(asset.gainDb + (e.gainDb ?? 0)) * sfxGain;
-    const fadeOut = e.durationSec ? Math.round(0.25 * SAMPLE_RATE) : 0;
+    const fadeOut = e.durationSec ? Math.max(1, Math.round((e.hardStop ? HARD_STOP_SEC : 0.25) * SAMPLE_RATE)) : 0;
     for (let k = 0; k < n && start + k < length; k++) {
       const i = start + k; if (i < 0) continue;
       const src = asset.loop ? data[k % data.length] : data[k]; if (src === undefined) break;
@@ -84,7 +118,9 @@ export async function mixStory({plan, story, narrationFile, outDir, catalog = nu
     const profiles = JSON.parse(await readFile(ambienceFile, 'utf8')).profiles;
     const profile = profiles[audio.ambience.profile];
     if (!profile) throw new Error(`Unknown ambience profile "${audio.ambience.profile}" (${Object.keys(profiles).join(', ')})`);
-    ambience = {profile:audio.ambience.profile, layers:[]};
+    ambience = {profile:audio.ambience.profile, layers:[], shots:audio.ambience.shots ?? null, dips:[]};
+    const level = ambienceLevel(plan, audio.ambience, length);
+    ambience.dips = level.dips;
     for (const layer of profile.layers) {
       const {asset, data} = await load(layer.asset), g = dbToGain(asset.gainDb + (layer.gainDb ?? 0) + (audio.ambience.gainDb ?? 0));
       const fi = (layer.fadeInSec ?? 1) * SAMPLE_RATE, fo = (layer.fadeOutSec ?? 1) * SAMPLE_RATE, xf = Math.round(0.5 * SAMPLE_RATE);
@@ -92,7 +128,7 @@ export async function mixStory({plan, story, narrationFile, outDir, catalog = nu
         // Loop with a short equal-power crossfade at each wrap, so repeats have no seam
         const k = i % data.length, wrapIn = i >= data.length && k < xf ? Math.sin(k / xf * Math.PI / 2) : 1;
         const src = data[k] * wrapIn + (i >= data.length && k < xf ? data[data.length - xf + k] * Math.cos(k / xf * Math.PI / 2) : 0);
-        const v = src * g * Math.min(1, i / fi, (length - 1 - i) / fo) * dbToGain((layer.duckDb ?? -3) * duck[i]) * Math.SQRT1_2;
+        const v = src * g * level.gain[i] * Math.min(1, i / fi, (length - 1 - i) / fo) * dbToGain((layer.duckDb ?? -3) * duck[i]) * Math.SQRT1_2;
         stems.ambience[0][i] += v; stems.ambience[1][i] += v;
       }
       ambience.layers.push({asset:layer.asset, gainDb:asset.gainDb + (layer.gainDb ?? 0)});

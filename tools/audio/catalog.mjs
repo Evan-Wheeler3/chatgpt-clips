@@ -14,7 +14,7 @@ export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const CATALOG = join(ROOT, 'audio/catalog.json');
 // Licenses that allow commercial use in a video; attribution licenses carry their credit line
 export const ALLOWED_LICENSES = {'CC0-1.0':{attribution:false}, 'CC-BY-4.0':{attribution:true}, 'CC-BY-3.0':{attribution:true}};
-export const CATEGORIES = ['impact', 'wood', 'movement', 'footsteps', 'clothing', 'transition', 'comedic', 'ambience', 'music', 'environment', 'other'];
+export const CATEGORIES = ['impact', 'wood', 'movement', 'footsteps', 'clothing', 'transition', 'comedic', 'ambience', 'music', 'environment', 'liquid', 'mechanism', 'air', 'other'];
 const REQUIRED = ['id', 'description', 'category', 'file', 'durationSec', 'source', 'license', 'licenseEvidence', 'status', 'gainDb', 'sha256'];
 const NOT_A_PERSON = /^(|claude.*|ai|assistant|bot|automation|auto|pipeline|system|ci|test)$/i;
 const sha256 = async file => createHash('sha256').update(await readFile(file)).digest('hex');

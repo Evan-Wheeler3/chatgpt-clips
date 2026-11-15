@@ -1,12 +1,14 @@
 import { relative } from 'node:path';
 import { createPolyHavenProvider } from './providers/polyhaven.mjs';
 import { createSketchfabProvider } from './providers/sketchfab.mjs';
+import { loadSecrets } from './env.mjs';
 import { convertAsset } from './convert/pipeline.mjs';
 
 const PROVIDERS = {polyhaven:createPolyHavenProvider, sketchfab:createSketchfabProvider};
 
 // Fetches (cache-validated) and converts one provider asset to a validated GLB with a Three.js preview
 async function main(args) {
+  await loadSecrets(['SKETCHFAB_API_TOKEN']); // From the gitignored .env if not exported; never printed
   let provider, id, resolution = '1k', quantize = false, preview = true, force = false;
   for (let i=0; i<args.length; i++) {
     if (args[i] === '--provider') provider=args[++i];

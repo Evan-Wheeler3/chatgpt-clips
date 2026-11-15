@@ -214,3 +214,15 @@ test('zip extraction refuses unsafe archives', async () => {
     assert.equal(await readFile(join(dir, 'ok', 'scene.gltf'), 'utf8'), gltf.toString());
   } finally { await rm(dir, {recursive:true, force:true}); }
 });
+
+test('.env secrets: only named keys are read, quotes stripped, shell values win', async () => {
+  const { parseEnv, loadSecrets } = await import('../tools/env.mjs');
+  assert.deepEqual(parseEnv('# c\nSKETCHFAB_API_TOKEN="abc"\nOTHER=x\nexport A_B=\'q\'\nEMPTY=\n', ['SKETCHFAB_API_TOKEN', 'A_B', 'EMPTY']), {SKETCHFAB_API_TOKEN:'abc', A_B:'q'});
+  const dir = await mkdtemp(join(tmpdir(), 'hold-up-env-'));
+  try {
+    await writeFile(join(dir, '.env'), 'SKETCHFAB_API_TOKEN=from-file\n');
+    const env = {}; await loadSecrets(['SKETCHFAB_API_TOKEN'], {file:join(dir, '.env'), env}); assert.equal(env.SKETCHFAB_API_TOKEN, 'from-file');
+    const shell = {SKETCHFAB_API_TOKEN:'from-shell'}; await loadSecrets(['SKETCHFAB_API_TOKEN'], {file:join(dir, '.env'), env:shell}); assert.equal(shell.SKETCHFAB_API_TOKEN, 'from-shell');
+    const none = {}; await loadSecrets(['SKETCHFAB_API_TOKEN'], {file:join(dir, 'missing'), env:none}); assert.deepEqual(none, {});
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});

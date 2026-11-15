@@ -4,7 +4,25 @@
     "workshop": {
       "description": "A large brick workshop: soft room tone, faded in and out, ducked a little under the narrator",
       "layers": [
-        {"asset": "room-tone-workshop", "gainDb": 0, "fadeInSec": 1.2, "fadeOutSec": 1.0, "duckDb": -3}
+        {
+          "asset": "room-tone-workshop",
+          "gainDb": 0,
+          "fadeInSec": 1.2,
+          "fadeOutSec": 1,
+          "duckDb": -3
+        }
+      ]
+    },
+    "gas-station": {
+      "description": "An outdoor self-service gas station: soft wind, distant traffic, faint canopy-light hum, ducked under the narrator. Layer is the synthesized bed until the owner chooses between it and a CC0 recording (Phase 7B, E1)",
+      "layers": [
+        {
+          "asset": "ambience-gas-station-synth",
+          "gainDb": 0,
+          "fadeInSec": 0.8,
+          "fadeOutSec": 1,
+          "duckDb": -3
+        }
       ]
     }
   }

@@ -30,7 +30,24 @@
   },
   "audio": {
     "ambience": {
-      "profile": "gas-station"
+      "profile": "gas-station",
+      "shots": {
+        "airflow": -3,
+        "covered": -3,
+        "diaphragm": -3,
+        "valve-shut": -3
+      },
+      "dips": [
+        {
+          "at": {
+            "at": "That#1",
+            "offset": -0.1
+          },
+          "durationSec": 0.15,
+          "db": -6,
+          "reason": "near-silence under the hook click"
+        }
+      ]
     },
     "auto": true,
     "sfx": [
@@ -41,8 +58,12 @@
           "offset": -0.5
         },
         "asset": "fuel-gush-loop",
-        "durationSec": 2.6,
-        "reason": "gasoline overflowing the filler neck"
+        "reason": "gasoline overflowing the filler neck; cut dead on the click",
+        "until": {
+          "at": "That#1",
+          "offset": -0.1
+        },
+        "stop": "hard"
       },
       {
         "id": "spill-splash",
@@ -84,9 +105,10 @@
         "id": "air-sip",
         "at": "sucks",
         "asset": "air-suction-loop",
-        "durationSec": 2.2,
         "gainDb": -4,
-        "reason": "air drawn in through the sensing hole"
+        "reason": "air drawn in through the sensing hole until the hole is covered (the choke-off takes over)",
+        "until": "stops#1",
+        "stop": "hard"
       },
       {
         "id": "airflow-cut",
