@@ -52,6 +52,8 @@ void main() {
   });
   const dome = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 16), material);
   dome.renderOrder = -10; dome.frustumCulled = false; dome.name = 'sky';
+  // Centred on the camera every frame, so no part of it ever falls beyond the far plane (which shows as black)
+  dome.onBeforeRender = (renderer, scene, camera) => { dome.position.copy(camera.position); dome.updateMatrixWorld(); };
   return dome;
 }
 
@@ -261,7 +263,8 @@ export async function buildEnvironment({scene, renderer, env, style, quality, lo
         if (treatment === 'full') addOutline(inst, style.materials.set.outline * (quality.name === 'production' ? 1 : 1.6), palette.outline);
       }
     }
-    for (const item of list) if (item.box.min[1] < 0.05) blobs.push(item.box);
+    // Ground contact blobs for small stock only: large structures (a canopy, a building) cast real sun shadows
+    for (const item of list) if (item.box.min[1] < 0.05 && Math.max(item.box.max[0] - item.box.min[0], item.box.max[2] - item.box.min[2]) < 4) blobs.push(item.box);
   }
   if (blobs.length) {
     const ao = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({map:blob, color:0x000000, transparent:true, opacity:0.5, depthWrite:false}), blobs.length);
@@ -294,7 +297,7 @@ export async function buildEnvironment({scene, renderer, env, style, quality, lo
   }
   // Reflections: the sky itself outdoors, a neutral room indoors
   if (env.atmosphere.sky) {
-    root.add(skyDome(env.atmosphere.sky, 95));
+    root.add(skyDome(env.atmosphere.sky, 100));
     const skyScene = new THREE.Scene(); skyScene.add(skyDome(env.atmosphere.sky, 50));
     scene.environment = new THREE.PMREMGenerator(renderer).fromScene(skyScene, 0.04).texture;
   } else scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;

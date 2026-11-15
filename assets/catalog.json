@@ -2,6 +2,211 @@
   "version": 1,
   "assets": [
     {
+      "id": "holdup-fuel-dispenser",
+      "name": "Fuel dispenser (Hold Up)",
+      "description": "Modern self-service fuel dispenser with hoses and holstered nozzles; original flat Hold Up colours, no text, stickers or branding",
+      "tags": [
+        "fuel",
+        "dispenser",
+        "gas",
+        "pump",
+        "station",
+        "modern",
+        "props"
+      ],
+      "style": "stylized",
+      "localPath": "assets/library/holdup-fuel-dispenser.glb",
+      "sourceUrl": "https://sketchfab.com/3d-models/gas-pump-add0f902b9164718bd0540e88bf9927e",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "https://api.sketchfab.com/v3/models/add0f902b9164718bd0540e88bf9927e (license.slug \"by\", http://creativecommons.org/licenses/by/4.0/)",
+      "creator": "kunkun",
+      "attribution": {
+        "required": true,
+        "credit": "\"gas pump\" by kunkun (https://sketchfab.com/youoyouyou), https://sketchfab.com/3d-models/gas-pump-add0f902b9164718bd0540e88bf9927e, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); modified by Hold Up: textures flattened to one colour per UV island (Hold Up palette); scaled ×1.000, grounded, centred"
+      },
+      "provider": {
+        "name": "derived",
+        "id": "holdup-fuel-dispenser",
+        "version": "cd9e30c0f381",
+        "resolution": null
+      },
+      "sha256": "78ec37593f37a84a29fcec01ba5efb70025bc9624de7d40171fa01d011dcea02",
+      "bytes": 672136,
+      "dimensionsM": [
+        1.81571,
+        2.32197,
+        0.81273
+      ],
+      "triangles": 13405,
+      "conversion": {
+        "key": "08ea8e16cf792d6a",
+        "converterVersion": 1,
+        "report": "assets/converted/derived/holdup-fuel-dispenser/08ea8e16cf792d6a/report.json"
+      },
+      "review": {
+        "approvedBy": "Evan Wheeler",
+        "approvedAt": "2026-11-15T03:22:12.293Z",
+        "note": "B1 approved by the owner 2026-11-14; adapted per assets/recipes; B2 visual review pending",
+        "warnings": [
+          "No provider dimensions available; scale and orientation were not cross-checked"
+        ]
+      }
+    },
+    {
+      "id": "holdup-fuel-nozzle",
+      "name": "Fuel nozzle (Hold Up)",
+      "description": "Automatic fuel nozzle exterior with named, animatable parts (lever, spout, body, guard); real-world scale",
+      "tags": [
+        "nozzle",
+        "fuel",
+        "gas",
+        "pump",
+        "automatic",
+        "exterior",
+        "props",
+        "vehicle"
+      ],
+      "style": "stylized",
+      "localPath": "assets/library/holdup-fuel-nozzle.glb",
+      "sourceUrl": "https://sketchfab.com/3d-models/gas-pump-nozzle-5343a980106c41609a4ba34786d8a088",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "https://api.sketchfab.com/v3/models/5343a980106c41609a4ba34786d8a088 (license.slug \"by\", http://creativecommons.org/licenses/by/4.0/)",
+      "creator": "ghostbusterjeffrey",
+      "attribution": {
+        "required": true,
+        "credit": "\"Gas Pump Nozzle\" by ghostbusterjeffrey (https://sketchfab.com/ghostbusterjeffrey), https://sketchfab.com/3d-models/gas-pump-nozzle-5343a980106c41609a4ba34786d8a088, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); modified by Hold Up: renamed parts; scaled ×0.06719, centred"
+      },
+      "provider": {
+        "name": "derived",
+        "id": "holdup-fuel-nozzle",
+        "version": "b542d149d9da",
+        "resolution": null
+      },
+      "sha256": "0ba3cc1353eb589c3d9cff6fdea996d5776e653b1fa0f87215918aba3817d79e",
+      "bytes": 199808,
+      "dimensionsM": [
+        0.34,
+        0.21988,
+        0.04237
+      ],
+      "triangles": 10030,
+      "conversion": {
+        "key": "4987a7695bbbff2e",
+        "converterVersion": 1,
+        "report": "assets/converted/derived/holdup-fuel-nozzle/4987a7695bbbff2e/report.json"
+      },
+      "review": {
+        "approvedBy": "Evan Wheeler",
+        "approvedAt": "2026-11-15T03:22:16.757Z",
+        "note": "B1 approved by the owner 2026-11-14; adapted per assets/recipes; B2 visual review pending",
+        "warnings": [
+          "No provider dimensions available; scale and orientation were not cross-checked",
+          "Model base is -0.12394 m from y=0; it will not rest on the ground without an offset"
+        ]
+      }
+    },
+    {
+      "id": "holdup-sedan",
+      "name": "Generic sedan (Hold Up)",
+      "description": "Generic modern four-door sedan resembling no real car; muted steel-blue paint; real-world scale",
+      "tags": [
+        "car",
+        "sedan",
+        "vehicle",
+        "modern",
+        "generic",
+        "vehicles"
+      ],
+      "style": "stylized",
+      "localPath": "assets/library/holdup-sedan.glb",
+      "sourceUrl": "https://sketchfab.com/3d-models/generic-passenger-car-pack-20f9af9b8a404d5cb022ac6fe87f21f5",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "https://api.sketchfab.com/v3/models/20f9af9b8a404d5cb022ac6fe87f21f5 (license.slug \"by\", http://creativecommons.org/licenses/by/4.0/)",
+      "creator": "Comrade1280",
+      "attribution": {
+        "required": true,
+        "credit": "\"Generic passenger car pack\" by Comrade1280 (https://sketchfab.com/comrade1280), https://sketchfab.com/3d-models/generic-passenger-car-pack-20f9af9b8a404d5cb022ac6fe87f21f5, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); modified by Hold Up: kept Sedan Body, Wheel_A, Wheel_A001, Wheel_A002, Wheel_A003; recoloured Body_5; scaled ×1.000, grounded, centred"
+      },
+      "provider": {
+        "name": "derived",
+        "id": "holdup-sedan",
+        "version": "aaddfc980169",
+        "resolution": null
+      },
+      "sha256": "448de1ee24d0ff6a89a7f90d0f54fa450bd83deab5e0dab6995bcd03d5fe5cc7",
+      "bytes": 1223984,
+      "dimensionsM": [
+        1.94152,
+        1.34216,
+        4.35907
+      ],
+      "triangles": 5938,
+      "conversion": {
+        "key": "24daba226444949c",
+        "converterVersion": 1,
+        "report": "assets/converted/derived/holdup-sedan/24daba226444949c/report.json"
+      },
+      "review": {
+        "approvedBy": "Evan Wheeler",
+        "approvedAt": "2026-11-15T03:22:08.254Z",
+        "note": "B1 approved by the owner 2026-11-14; adapted per assets/recipes; B2 visual review pending",
+        "warnings": [
+          "No provider dimensions available; scale and orientation were not cross-checked"
+        ]
+      }
+    },
+    {
+      "id": "holdup-station-canopy",
+      "name": "Gas station canopy and pump islands (Hold Up)",
+      "description": "Forecourt canopy on pillars with two pump islands and ceiling lamps; plain original fascia (no logo, no stripes), flat Hold Up colours; the kit's own pumps removed (dispensers are placed separately)",
+      "tags": [
+        "gas",
+        "station",
+        "canopy",
+        "forecourt",
+        "island",
+        "modern",
+        "architecture"
+      ],
+      "style": "stylized",
+      "localPath": "assets/library/holdup-station-canopy.glb",
+      "sourceUrl": "https://sketchfab.com/3d-models/gas-station-props-8fcd52f1b12e4b4296589b4c6328b777",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "https://api.sketchfab.com/v3/models/8fcd52f1b12e4b4296589b4c6328b777 (license.slug \"by\", http://creativecommons.org/licenses/by/4.0/)",
+      "creator": "Elbolillo",
+      "attribution": {
+        "required": true,
+        "credit": "\"Gas station Props\" by Elbolillo (https://sketchfab.com/Elbolilloduro), https://sketchfab.com/3d-models/gas-station-props-8fcd52f1b12e4b4296589b4c6328b777, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); modified by Hold Up: kept The_ceiling; removed Fuel_pump_01, Fuel_pump, Fuel_pump_02, Fuel_pump_03; recoloured Sign, Roof_tiles, Asphalt, Concrete; textures flattened to one colour per UV island (Hold Up palette); emissive Light; scaled ×1.000, grounded, centred"
+      },
+      "provider": {
+        "name": "derived",
+        "id": "holdup-station-canopy",
+        "version": "2aa29195e1b0",
+        "resolution": null
+      },
+      "sha256": "111c7fa5b2a26273b04c7a4a5b497c77be8e45d2fa2d2191395a55e4d82b312b",
+      "bytes": 16720,
+      "dimensionsM": [
+        21.67491,
+        7.60227,
+        16.72745
+      ],
+      "triangles": 106,
+      "conversion": {
+        "key": "41157f0c084906c8",
+        "converterVersion": 1,
+        "report": "assets/converted/derived/holdup-station-canopy/41157f0c084906c8/report.json"
+      },
+      "review": {
+        "approvedBy": "Evan Wheeler",
+        "approvedAt": "2026-11-15T03:22:02.718Z",
+        "note": "B1 approved by the owner 2026-11-14; adapted per assets/recipes; B2 visual review pending",
+        "warnings": [
+          "No provider dimensions available; scale and orientation were not cross-checked"
+        ]
+      }
+    },
+    {
       "id": "polyhaven-painted-wooden-stool",
       "name": "Painted Wooden Stool",
       "description": "Free 4K model - painted wooden stool with chipped paint, worn edges and rustic farmhouse charm; simple antique carpentry.",
@@ -48,6 +253,64 @@
       "review": {
         "approvedBy": "Claude Code (preview review, pending human confirmation)",
         "approvedAt": "2026-11-14T05:40:53.547Z",
+        "warnings": [
+          "Khronos glTF validator reported 1 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+        ]
+      }
+    },
+    {
+      "id": "polyhaven-wet-floor-sign-01",
+      "name": "Wet Floor Sign 01",
+      "description": "Free 4K model of a yellow plastic A-frame wet floor sign with molded handle, bold \"CAUTION / WET FLOOR\" icon and worn scuffs and grime for realistic detail.",
+      "tags": [
+        "prop",
+        "plastic",
+        "sign",
+        "safety",
+        "caution",
+        "warning",
+        "yellow",
+        "hazard",
+        "slippery",
+        "slippery when wet",
+        "utility",
+        "industrial & infrastructure",
+        "traffic & safety",
+        "signs"
+      ],
+      "style": "realistic",
+      "localPath": "assets/library/polyhaven-wet-floor-sign-01.glb",
+      "sourceUrl": "https://polyhaven.com/a/WetFloorSign_01",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "Fran Calvente",
+      "attribution": {
+        "required": false,
+        "credit": "Powered by Poly Haven (https://polyhaven.com)"
+      },
+      "provider": {
+        "name": "polyhaven",
+        "id": "WetFloorSign_01",
+        "version": "79eb7de75bfe5924b67412f11e3e63c8abb82593",
+        "resolution": "1k"
+      },
+      "sha256": "3386400b4b6cc85ab72b52648f78e460e05dd7b5332b0d66929686db1aec49a4",
+      "bytes": 265888,
+      "dimensionsM": [
+        0.30005,
+        0.62954,
+        0.35851
+      ],
+      "triangles": 228,
+      "conversion": {
+        "key": "60ba9bf72787574f",
+        "converterVersion": 1,
+        "report": "assets/converted/polyhaven/WetFloorSign_01/60ba9bf72787574f/report.json"
+      },
+      "review": {
+        "approvedBy": "Evan Wheeler",
+        "approvedAt": "2026-11-15T03:18:52.954Z",
+        "note": "B1 approved by the owner 2026-11-14",
         "warnings": [
           "Khronos glTF validator reported 1 warning(s): MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
         ]

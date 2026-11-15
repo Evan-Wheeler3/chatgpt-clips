@@ -1,4 +1,4 @@
-# Asset review (★B1): converted, awaiting owner approval
+# Asset review: ★B1 decided (2026-11-14); ★B2 adapted look awaiting review
 
 Nothing below is registered in the catalog yet. Each asset passed (or failed) the converter's checks: Khronos validation, the Three.js load check, scale against the provider's dimensions, and a 4-view `preview.png`.
 
@@ -43,3 +43,55 @@ node tools/register-texture.mjs --provider polyhaven --id <id> --resolution 2k -
 2. Hold Up material pass: the dispenser repaint and the station retexture.
 3. Scale the nozzle.
 4. Render one exterior still for ★B2.
+
+
+## ★B1 decisions (owner, 2026-11-14)
+**Approved:**
+- the nozzle (ghostbusterjeffrey);
+- the dispenser (kunkun), with original Hold Up styling replacing its branding and textures;
+- the station props kit (Elbolillo), selected components only: the canopy and pump islands;
+- the car pack (Comrade1280), using the sedan;
+- the Poly Haven asphalt and concrete textures, and the wet-floor sign.
+
+**Rejected:** the full Elbolillo station scene.
+
+**Skipped:** the hydrant and the Korean-labelled extinguisher.
+
+**Excluded:** the 6twelve shop and sign, the photo-textured trees, any branding.
+
+## B2 adaptation (done; awaiting the ★B2 visual review)
+Reproducible recipes live in `assets/recipes/`, built by `tools/convert/derive-model.mjs` through the `derived` provider. Each adapted model was converted, validated and registered with the note "B1 approved; B2 visual review pending".
+
+| Catalog id | From | What changed |
+|---|---|---|
+| `holdup-fuel-nozzle` | ghostbusterjeffrey nozzle | Parts renamed for animation (`nozzle/lever`, `nozzle/spout`, `nozzle/body`, `nozzle/guard`, `nozzle/bellows`, `nozzle/swivel`, `nozzle/clip`, `nozzle/grip`); scaled to 0.34 m |
+| `holdup-fuel-dispenser` | kunkun gas pump | All textures replaced by one flat Hold Up colour per UV island (red, white, greys, near-black), so **no text, stickers or branding remain**; grounded |
+| `holdup-station-canopy` | Elbolillo props kit | Canopy + islands + pillars + lamps only; the kit's pumps removed; **plain fascia** (the striped and logo glow removed); flat colours; 360 triangles |
+| `holdup-sedan` | Comrade1280 pack | The sedan and its own four wheels only; muted steel-blue paint |
+| `polyhaven-wet-floor-sign-01`, textures `polyhaven-clean-asphalt`, `polyhaven-asphalt-floor` | Poly Haven | Registered as is (CC0) |
+
+**Environment `environments/gas-station.json`:**
+- concrete forecourt and sky dome;
+- the canopy, plus three island dispensers (the fourth spot is the story's hero dispenser);
+- the wet-floor sign;
+- sun plus canopy practical lights.
+
+**Story staging:** the sedan is parked beside the east island, with the hero dispenser opposite its rear quarter, and the nozzle sits in the fuel-door position above the rear wheel.
+
+**★B2 stills** (production quality, 1080×1920, gitignored): `production/gas-pump-shutoff/review/b2-wide.png`, `b2-medium.png`, `b2-close.png`, and the side-by-side `b2-exterior-sheet.png`.
+
+**Not in these stills yet** (later tracks and checkpoints):
+- the protagonist (★A1/A2);
+- the hose from the dispenser to the nozzle;
+- the car's fuel door and filler neck (small custom parts);
+- the overflow and other effects;
+- the cutaway internals (★C1/C2);
+- final lighting and grade (R2).
+
+The under-canopy floor is still darker than a lit forecourt; that's for R2.
+
+**Engine fixes found by this review** (all tests and the barrel-bilge integration pass):
+- the sky dome now follows the camera, because far-plane clipping showed as black;
+- ground contact blobs are skipped for large structures, because they darkened the whole forecourt;
+- outlines are skipped on flat single-sided meshes;
+- `recolor` now also clears emissive maps and metalness.

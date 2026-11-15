@@ -2,6 +2,113 @@
   "version": 1,
   "textures": [
     {
+      "id": "polyhaven-asphalt-floor",
+      "name": "Asphalt Floor",
+      "provider": {
+        "name": "polyhaven",
+        "id": "asphalt_floor",
+        "version": "12f555317411ad74c385f67210226d20ac73c262",
+        "resolution": "2k"
+      },
+      "sourceUrl": "https://polyhaven.com/a/asphalt_floor",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "eye-candy.xyz",
+      "realSizeM": [
+        2.3499999046325684,
+        2.3499999046325684
+      ],
+      "tags": [
+        "flat",
+        "asphalt",
+        "brown",
+        "even",
+        "dry",
+        "smooth",
+        "ground"
+      ],
+      "maps": {
+        "color": {
+          "localPath": "assets/library/textures/polyhaven-asphalt-floor/color.jpg",
+          "sha256": "bdba2751c9e6ea3b9822438ad60b638f53bf1de7743ac8f396c2d9f19e8b0916",
+          "bytes": 4789685
+        },
+        "normal": {
+          "localPath": "assets/library/textures/polyhaven-asphalt-floor/normal.jpg",
+          "sha256": "44354b153dccdfed38487cfe1523eabdba6294f47676c0e28c3bbe121f0d65e9",
+          "bytes": 5453334
+        },
+        "arm": {
+          "localPath": "assets/library/textures/polyhaven-asphalt-floor/arm.jpg",
+          "sha256": "529dbbc20c82a949398e3dc7e8413d039f7ec047f8a3297df364c906444bf4e1",
+          "bytes": 3333987
+        }
+      },
+      "review": {
+        "approvedBy": "Evan Wheeler",
+        "approvedAt": "2026-11-15T03:18:53.514Z"
+      }
+    },
+    {
+      "id": "polyhaven-clean-asphalt",
+      "name": "Clean Asphalt",
+      "provider": {
+        "name": "polyhaven",
+        "id": "clean_asphalt",
+        "version": "402035bf9077d331e5de76b938c8b6d818aed6a0",
+        "resolution": "2k"
+      },
+      "sourceUrl": "https://polyhaven.com/a/clean_asphalt",
+      "license": "CC0-1.0",
+      "licenseEvidence": "https://polyhaven.com/license",
+      "creator": "Dimitrios Savva",
+      "realSizeM": [
+        2.0999999046325684,
+        2.0999999046325684
+      ],
+      "tags": [
+        "rough",
+        "asphalt",
+        "grey",
+        "gray",
+        "course",
+        "gritty",
+        "fine-grained",
+        "road",
+        "asphalt road",
+        "roadway",
+        "tarmac road",
+        "tar",
+        "scratches",
+        "racing",
+        "bitumen",
+        "speedway",
+        "race track",
+        "pit lane"
+      ],
+      "maps": {
+        "color": {
+          "localPath": "assets/library/textures/polyhaven-clean-asphalt/color.jpg",
+          "sha256": "9d58f263b695c268e391aa39ea2f6b30ab9f36d279715cc78593a4d43368039c",
+          "bytes": 3314999
+        },
+        "normal": {
+          "localPath": "assets/library/textures/polyhaven-clean-asphalt/normal.jpg",
+          "sha256": "ee6e217a75851a73ab0ce54501e787b63707e0cf8dfd7293989adf7d3e325162",
+          "bytes": 3923727
+        },
+        "arm": {
+          "localPath": "assets/library/textures/polyhaven-clean-asphalt/arm.jpg",
+          "sha256": "88e7f69b2b749559841c46c5f7732c1dc59f15acca7bb8f27c6a8b3a6f22cfac",
+          "bytes": 3461113
+        }
+      },
+      "review": {
+        "approvedBy": "Evan Wheeler",
+        "approvedAt": "2026-11-15T03:18:53.267Z"
+      }
+    },
+    {
       "id": "polyhaven-cobblestone-floor-08",
       "name": "Cobblestone Floor 08",
       "provider": {

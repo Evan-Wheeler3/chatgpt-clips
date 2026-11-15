@@ -26,7 +26,7 @@ function catalogTags(report, extra) {
 
 // Copies an approved, validated GLB into the library and records it in the catalog; refuses anything unreviewed
 export async function registerAsset(reportPath, {
-  approve = false, approvedBy, catalogId, style, tags = [], replace = false,
+  approve = false, approvedBy, note = null, catalogId, style, tags = [], replace = false,
   catalogPath = resolve(root, 'assets/catalog.json'), libraryDir = resolve(root, 'assets/library'), rootDir = root,
   now = () => Date.now()
 } = {}) {
@@ -58,7 +58,7 @@ export async function registerAsset(reportPath, {
     sha256:report.glb.sha256, bytes:report.glb.bytes,
     dimensionsM:validation.checks.bounds.extentsM, triangles:validation.checks.geometry.triangles,
     conversion:{key:report.key, converterVersion:report.converterVersion, report:toPosix(relative(rootDir, reportPath))},
-    review:{approvedBy:approvedBy.trim(), approvedAt:new Date(now()).toISOString(), warnings:validation.warnings}
+    review:{approvedBy:approvedBy.trim(), approvedAt:new Date(now()).toISOString(), ...(note && {note}), warnings:validation.warnings}
   };
   if (!entry.style) throw new Error('Catalog entries need a style (--style)');
 

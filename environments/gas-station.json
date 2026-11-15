@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "id": "gas-station",
+  "name": "Gas station forecourt",
+  "period": "modern",
+  "location": "A modern self-service forecourt: a canopy on pillars over two pump islands, asphalt, open sky",
+  "bounds": {
+    "min": [
+      -30,
+      0,
+      -30
+    ],
+    "max": [
+      30,
+      14,
+      30
+    ]
+  },
+  "keepClear": [
+    {
+      "center": [
+        5.6,
+        0,
+        1.6
+      ],
+      "radius": 2.4,
+      "note": "The car, the hero dispenser and the protagonist"
+    }
+  ],
+  "materials": {
+    "concrete": {
+      "texture": "polyhaven-asphalt-floor",
+      "tint": "#e6e8ec",
+      "role": "architecture"
+    }
+  },
+  "architecture": [
+    {
+      "type": "floor",
+      "material": "concrete"
+    }
+  ],
+  "dressing": [
+    {
+      "asset": "holdup-station-canopy",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "layer": "midground"
+    },
+    {
+      "asset": "holdup-fuel-dispenser",
+      "position": [
+        7.33,
+        0.13,
+        -2.67
+      ],
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "layer": "midground"
+    },
+    {
+      "asset": "holdup-fuel-dispenser",
+      "position": [
+        -6.68,
+        0.13,
+        2.76
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "layer": "background"
+    },
+    {
+      "asset": "holdup-fuel-dispenser",
+      "position": [
+        -6.68,
+        0.13,
+        -2.67
+      ],
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "layer": "background"
+    },
+    {
+      "asset": "polyhaven-wet-floor-sign-01",
+      "position": [
+        8.7,
+        0,
+        5.4
+      ],
+      "rotation": [
+        0,
+        -30,
+        0
+      ],
+      "layer": "background"
+    }
+  ],
+  "lighting": {
+    "key": {
+      "type": "sun",
+      "direction": [
+        -0.35,
+        -0.8,
+        -0.45
+      ],
+      "color": "#fff1dc",
+      "intensity": 3.2,
+      "shadow": true
+    },
+    "practicals": [
+      {
+        "position": [
+          4.2,
+          6.4,
+          3
+        ],
+        "color": "#fff3e0",
+        "intensity": 14,
+        "distance": 11,
+        "glow": 0
+      },
+      {
+        "position": [
+          4.2,
+          6.4,
+          -3
+        ],
+        "color": "#fff3e0",
+        "intensity": 14,
+        "distance": 11,
+        "glow": 0
+      },
+      {
+        "position": [
+          -4,
+          6.4,
+          3
+        ],
+        "color": "#fff3e0",
+        "intensity": 14,
+        "distance": 11,
+        "glow": 0
+      },
+      {
+        "position": [
+          -4,
+          6.4,
+          -3
+        ],
+        "color": "#fff3e0",
+        "intensity": 14,
+        "distance": 11,
+        "glow": 0
+      },
+      {
+        "position": [
+          0,
+          6.4,
+          0
+        ],
+        "color": "#fff3e0",
+        "intensity": 14,
+        "distance": 11,
+        "glow": 0
+      }
+    ],
+    "ambient": {
+      "sky": "#cfe0f2",
+      "ground": "#8a857c",
+      "intensity": 1.25
+    },
+    "environment": 0.85
+  },
+  "atmosphere": {
+    "sky": {
+      "top": "#6f9fd6",
+      "horizon": "#e2eaf1",
+      "ground": "#8a8478"
+    }
+  }
+}

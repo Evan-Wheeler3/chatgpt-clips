@@ -2,12 +2,13 @@ import { resolve } from 'node:path';
 import { registerAsset } from './convert/register.mjs';
 
 async function main(args) {
-  let reportPath, approve = false, approvedBy, catalogId, style, replace = false;
+  let reportPath, approve = false, approvedBy, note = null, catalogId, style, replace = false;
   const tags = [];
   for (let i=0; i<args.length; i++) {
     if (args[i] === '--report') reportPath=args[++i];
     else if (args[i] === '--approve') approve=true;
     else if (args[i] === '--approved-by') approvedBy=args[++i];
+    else if (args[i] === '--note') note=args[++i];
     else if (args[i] === '--id') catalogId=args[++i];
     else if (args[i] === '--style') style=args[++i];
     else if (args[i] === '--tag') tags.push(args[++i]);
@@ -15,7 +16,7 @@ async function main(args) {
     else throw new Error(`Unknown argument: ${args[i]}`);
   }
   if (!reportPath) throw new Error('Provide --report <assets/converted/.../report.json>');
-  const result = await registerAsset(resolve(process.cwd(), reportPath), {approve, approvedBy, catalogId, style, tags, replace});
+  const result = await registerAsset(resolve(process.cwd(), reportPath), {approve, approvedBy, note, catalogId, style, tags, replace});
   process.stdout.write(JSON.stringify(result, null, 2) + '\n');
 }
 

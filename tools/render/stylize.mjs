@@ -47,8 +47,15 @@ void main() {`)
 }
 
 // Ink outline by inverted hull: a back-face copy pushed out along normals (works for instanced meshes too)
+// A single-sided flat surface (a roof plane, a ceiling panel) has no back to hide its hull: its outline shows as a black slab
+export function isPlanar(geometry) {
+  if (!geometry.boundingBox) geometry.computeBoundingBox();
+  const size = geometry.boundingBox.getSize(new THREE.Vector3()), dims = [size.x, size.y, size.z].sort((a, b) => a - b);
+  return dims[2] > 0 && dims[0] / dims[2] < 0.01;
+}
+
 export function addOutline(mesh, width, color) {
-  if (!width || !mesh.geometry?.attributes?.normal) return null;
+  if (!width || !mesh.geometry?.attributes?.normal || isPlanar(mesh.geometry)) return null;
   const material = new THREE.MeshBasicMaterial({color, side:THREE.BackSide, fog:true});
   material.onBeforeCompile = shader => {
     shader.uniforms.holdUpOutline = {value:width};

@@ -1,0 +1,18 @@
+{
+  "id": "holdup-station-canopy",
+  "name": "Gas station canopy and pump islands (Hold Up)",
+  "description": "Forecourt canopy on pillars with two pump islands and ceiling lamps; plain original fascia (no logo, no stripes), flat Hold Up colours; the kit's own pumps removed (dispensers are placed separately)",
+  "tags": ["gas", "station", "canopy", "forecourt", "island", "modern"],
+  "category": "Architecture/Station",
+  "style": "stylized",
+  "from": {"provider": "sketchfab", "id": "8fcd52f1b12e4b4296589b4c6328b777"},
+  "approval": {"by": "Evan Wheeler", "on": "2026-11-14", "note": "B1: approved selected components (canopy and pump island); 6twelve shop and sign, trees and branding excluded"},
+  "ops": [
+    {"keep": ["The_ceiling"]},
+    {"drop": ["Fuel_pump_01", "Fuel_pump", "Fuel_pump_02", "Fuel_pump_03"]},
+    {"recolor": {"Sign": "#E9E4D8", "Roof_tiles": "#6E7176", "Asphalt": "#B4B0A6", "Concrete": "#C9C5BC"}},
+    {"flatten": {"materials": ["MetalPlates"], "palette": ["#D9D6CF", "#A7A9AC", "#6E7176"], "roughness": 0.7}},
+    {"emit": {"Light": "#FFF6E4"}},
+    {"ground": true, "center": true}
+  ]
+}

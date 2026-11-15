@@ -1,0 +1,14 @@
+{
+  "id": "holdup-fuel-nozzle",
+  "name": "Fuel nozzle (Hold Up)",
+  "description": "Automatic fuel nozzle exterior with named, animatable parts (lever, spout, body, guard); real-world scale",
+  "tags": ["nozzle", "fuel", "gas", "pump", "automatic", "exterior"],
+  "category": "Props/Vehicle",
+  "style": "stylized",
+  "from": {"provider": "sketchfab", "id": "5343a980106c41609a4ba34786d8a088"},
+  "approval": {"by": "Evan Wheeler", "on": "2026-11-14", "note": "B1: approved for adaptation, subject to the B2 visual review"},
+  "ops": [
+    {"rename": {"Cube_1": "nozzle/lever", "Cylinder_4": "nozzle/spout", "Circle_0": "nozzle/bellows", "Cube.004_10": "nozzle/body", "Cube.001_2": "nozzle/guard", "Cylinder.003_9": "nozzle/swivel", "Cube.002_3": "nozzle/clip", "Cylinder.001_5": "nozzle/grip"}},
+    {"fit": {"axis": "x", "length": 0.34}, "center": true}
+  ]
+}

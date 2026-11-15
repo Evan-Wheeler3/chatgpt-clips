@@ -211,9 +211,9 @@
         "style": "stylized"
       },
       "position": [
-        1,
+        4.5,
         0,
-        -0.3
+        1.5
       ],
       "rotation": [
         0,
@@ -233,13 +233,13 @@
         "style": "stylized"
       },
       "position": [
-        -1.5,
-        0,
-        -0.6
+        7.33,
+        0.13,
+        2.76
       ],
       "rotation": [
         0,
-        20,
+        90,
         0
       ],
       "sizeHint": [
@@ -255,14 +255,14 @@
         "style": "stylized"
       },
       "position": [
-        -0.95,
-        0.88,
-        0.62
+        5.6,
+        0.8,
+        3.1
       ],
       "rotation": [
         0,
         0,
-        35
+        25
       ],
       "grounded": false,
       "sizeHint": [
@@ -736,5 +736,8 @@
         }
       ]
     }
-  ]
+  ],
+  "environment": {
+    "id": "gas-station"
+  }
 }
