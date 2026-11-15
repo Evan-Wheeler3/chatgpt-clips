@@ -165,7 +165,9 @@ export async function compileEnvironment(id, {style, catalogPath = resolve(root,
       fill:env.lighting.fill && {...env.lighting.fill, color:color(palette, env.lighting.fill.color)},
       ambient:{...env.lighting.ambient, sky:color(palette, env.lighting.ambient.sky), ground:color(palette, env.lighting.ambient.ground)}
     },
-    atmosphere:{...env.atmosphere, fog:env.atmosphere.fog && {...env.atmosphere.fog, color:color(palette, env.atmosphere.fog.color)}},
+    atmosphere:{...env.atmosphere, fog:env.atmosphere.fog && {...env.atmosphere.fog, color:color(palette, env.atmosphere.fog.color)},
+      // Outdoor environments: a gradient sky dome that also lights reflections
+      sky:env.atmosphere.sky && Object.fromEntries(Object.entries(env.atmosphere.sky).map(([k, v]) => [k, color(palette, v)]))},
     sources:{spec:sha256(specBytes)}
   };
   await mkdir(cacheDir, {recursive:true});

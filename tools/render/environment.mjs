@@ -35,6 +35,26 @@ function glowTexture() {
   return new THREE.CanvasTexture(c);
 }
 
+// Outdoor sky: a large back-faced sphere with a vertical gradient (zenith, horizon, ground), unaffected by fog
+function skyDome(sky, radius) {
+  const material = new THREE.ShaderMaterial({
+    uniforms:{top:{value:new THREE.Color(sky.top ?? '#7fa8d8')}, horizon:{value:new THREE.Color(sky.horizon ?? '#dfe8f0')}, ground:{value:new THREE.Color(sky.ground ?? '#8a8478')}},
+    vertexShader:'varying vec3 vDir; void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader:`uniform vec3 top; uniform vec3 horizon; uniform vec3 ground; varying vec3 vDir;
+void main() {
+  float y = normalize(vDir).y;
+  vec3 c = y > 0.0 ? mix(horizon, top, pow(y, 0.55)) : mix(horizon, ground, pow(-y, 0.35));
+  gl_FragColor = vec4(c, 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}`,
+    side:THREE.BackSide, depthWrite:false, fog:false
+  });
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 16), material);
+  dome.renderOrder = -10; dome.frustumCulled = false; dome.name = 'sky';
+  return dome;
+}
+
 export async function buildEnvironment({scene, renderer, env, style, quality, loadGLB, loadTexture}) {
   const root = new THREE.Group();
   root.name = `environment:${env.id}`;
@@ -272,7 +292,12 @@ export async function buildEnvironment({scene, renderer, env, style, quality, lo
     fill.target.position.copy(center);
     root.add(fill, fill.target);
   }
-  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+  // Reflections: the sky itself outdoors, a neutral room indoors
+  if (env.atmosphere.sky) {
+    root.add(skyDome(env.atmosphere.sky, 95));
+    const skyScene = new THREE.Scene(); skyScene.add(skyDome(env.atmosphere.sky, 50));
+    scene.environment = new THREE.PMREMGenerator(renderer).fromScene(skyScene, 0.04).texture;
+  } else scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
   scene.environmentIntensity = L.environment ?? 0.3;
   const glow = glowTexture();
   const practicals = L.practicals.map((p, i) => {

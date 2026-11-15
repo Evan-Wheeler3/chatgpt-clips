@@ -242,3 +242,44 @@ test('styled preview renders an environment and a 2D character in headless Chrom
     await rm(dir, {recursive:true, force:true});
   }
 });
+
+test('outdoor environments: no walls, a gradient sky dome that also lights reflections (headless Chrome)', async t => {
+  if (!await findChrome()) return t.skip('No Chrome/Chromium available; set CHROME_PATH');
+  const dir = await world();
+  const gpu = process.env.HOLDUP_GPU;
+  process.env.HOLDUP_GPU = gpu ?? 'swiftshader';
+  try {
+    const yard = {version:1, id:'test-yard', name:'Test yard', period:'modern', location:'fixture', bounds:{min:[-20, 0, -20], max:[20, 10, 20]}, keepClear:[],
+      materials:{brick:{texture:'brick', tint:'#9a9a9a'}}, architecture:[{type:'floor', material:'brick'}],
+      dressing:[{asset:'crate', position:[3, 0, -3], rotation:[0, 20, 0], layer:'midground'}],
+      lighting:{key:{type:'sun', direction:[0.3, -0.6, 0.5], color:'#fff4e2', intensity:3, shadow:true}, practicals:[], ambient:{sky:'#cfe0f2', ground:'#7d7a74', intensity:1}, environment:0.6},
+      atmosphere:{sky:{top:'#5d8fd0', horizon:'#d8e6f2', ground:'#8a8478'}}};
+    await writeFile(join(dir, 'environments/test-yard.json'), JSON.stringify(yard));
+    const s = story({environment:{id:'test-yard'}});
+    s.beats[0].shots = [{...s.beats[0].shots[0], camera:{move:'hold', framing:'wide', azimuth:10, elevation:4}}];
+    s.beats = [s.beats[0]];
+    const plan = await compile(s, dir);
+    assert.ok(plan.environment.atmosphere.sky, 'the sky survives compilation');
+    for (const prop of plan.props) if (prop.asset) prop.asset.localPath = join(dir, prop.asset.localPath);
+    for (const asset of Object.values(plan.environment.assets)) asset.localPath = join(dir, asset.localPath);
+    for (const m of Object.values(plan.environment.materials)) if (m.texture) m.texture.maps = Object.fromEntries(Object.entries(m.texture.maps).map(([k, v]) => [k, join(dir, v)]));
+    const r = await openRenderer(plan, {quality:'preview', scale:0.15});
+    try {
+      // The top of the frame is sky: blue-dominant and bright, not the black clear colour
+      const top = await r.page.evaluate(async () => {
+        const [url] = window.renderFrames([10], 'image/png', false);
+        const img = new Image(); img.src = url; await img.decode();
+        const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+        const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+        const d = g.getImageData(0, 0, c.width, Math.round(c.height * 0.1)).data;
+        let R = 0, G = 0, B = 0; for (let i = 0; i < d.length; i += 4) { R += d[i]; G += d[i + 1]; B += d[i + 2]; }
+        const n = d.length / 4; return [R / n, G / n, B / n];
+      });
+      assert.ok(top[2] > 120 && top[2] > top[0], `sky colour at the top of frame: ${top.map(Math.round)}`);
+      assert.deepEqual(r.problems, []);
+    } finally { await r.close(); }
+  } finally {
+    if (gpu === undefined) delete process.env.HOLDUP_GPU; else process.env.HOLDUP_GPU = gpu;
+    await rm(dir, {recursive:true, force:true});
+  }
+});
