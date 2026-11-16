@@ -98,7 +98,9 @@ function compose(frame) {
   const fx = episode.update({frame, time, shot, shotIndex:si, t:time - shot.startSec, d:shot.endSec - shot.startSec}) ?? {};
   camera.updateProjectionMatrix(); camera.updateMatrixWorld();
   post.setFrame(frame); post.render();
-  ctx.globalAlpha = 1; ctx.drawImage(renderer.domElement, 0, 0);
+  // fx.filter: a canvas filter for the whole frame (e.g. a period look); fx.paint(ctx, W, H): 2D overlay drawn by the scene
+  ctx.globalAlpha = 1; ctx.filter = fx.filter ?? 'none'; ctx.drawImage(renderer.domElement, 0, 0); ctx.filter = 'none';
+  fx.paint?.(ctx, W, H);
   if (fx.fade > 0.003) { ctx.fillStyle = `rgba(${fx.fadeColor ?? '8,6,5'},${Math.min(1, fx.fade)})`; ctx.fillRect(0, 0, W, H); }
   if (plan.captions.enabled && quality.captions !== false) drawCaptions(ctx, plan.captions, time, {width:W, height:H});
 }

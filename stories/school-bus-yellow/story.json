@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "slug": "school-bus-yellow",
+  "title": "Why Are School Buses Yellow?",
+  "status": "look development: 1939 flashback still only (no narration yet)",
+  "fps": 30,
+  "size": {"width": 1080, "height": 1920},
+  "narration": {
+    "script": "Why are school buses yellow? They weren't always that way. Back in 1939, school buses came in all sorts of colors. There was no national standard. So a professor named Frank Cyr gathered experts from across the country to settle on one color. He brought 50 different shades of yellow. After days of debate, they narrowed it down to one. But why this particular shade? Because yellow is one of the easiest colors for your eyes to notice, even out of the corner of your eye. And this specific yellow-orange stands out against its surroundings, making buses easier to spot. Especially on dark, foggy mornings. The color became known as National School Bus Glossy Yellow. And more than 85 years later, it's still the color of school buses across America.",
+    "voice": {"profile": "hold-up-narrator"},
+    "approval": "Final script from the owner; wording must not change."
+  },
+  "captions": {"style": "hold-up", "font": {"family": "\"Avenir Next\", \"Inter\", \"Helvetica Neue\", Arial, sans-serif"}},
+  "shots": [
+    {"id": "flashback-1939", "start": "Back", "target": 3.5, "purpose": "1939: a line of school buses in four different colours passes a brick schoolhouse; no two match"}
+  ]
+}

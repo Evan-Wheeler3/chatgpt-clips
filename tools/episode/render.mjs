@@ -31,10 +31,15 @@ const QUALITY = {
 export async function buildPlan(storyPath) {
   const story = JSON.parse(await readFile(storyPath, 'utf8')), slug = story.slug, fps = story.fps;
   const outDir = join(root, 'production', slug);
-  const wordsDoc = JSON.parse(await readFile(join(outDir, 'words.json'), 'utf8')), words = wordsDoc.words;
-  const durationSec = (wordsDoc.durationSec ?? words.at(-1).end) + (story.tailSec ?? 0.6);
+  // Look development before narration exists: no words.json yet, so shots run for their `target` seconds and there are
+  // no captions. Only for reviewing stills; a real render always needs the measured take.
+  const wordsDoc = await readFile(join(outDir, 'words.json'), 'utf8').then(JSON.parse, () => null);
+  const lookDev = !wordsDoc, words = wordsDoc?.words ?? [];
+  if (lookDev && !story.shots.every(s => s.target > 0)) throw new Error(`No production/${slug}/words.json yet: narrate first, or give every shot a target (seconds) for look-dev stills`);
+  const targetStarts = story.shots.reduce((a, s) => [...a, a.at(-1) + s.target], [0]);
+  const durationSec = lookDev ? targetStarts.at(-1) : (wordsDoc.durationSec ?? words.at(-1).end) + (story.tailSec ?? 0.6);
   const durationFrames = Math.round(durationSec * fps), cutLead = story.timing?.cutLeadSec ?? 0.1;
-  const starts = story.shots.map(s => s.start === 0 ? 0 : Math.max(0, Math.round((resolveAnchor(words, s.start, fps).time - cutLead) * fps)));
+  const starts = story.shots.map((s, i) => lookDev ? Math.round(targetStarts[i] * fps) : s.start === 0 ? 0 : Math.max(0, Math.round((resolveAnchor(words, s.start, fps).time - cutLead) * fps)));
   const shots = story.shots.map((s, i) => ({...s, startFrame:starts[i], endFrame:starts[i + 1] ?? durationFrames, startSec:starts[i] / fps, endSec:(starts[i + 1] ?? durationFrames) / fps}));
   // Captions: the shared grouping and style; one band per shot, pinned in the story
   const style = resolveStyle(story.captions ?? {}), t = style.timing, lists = groupWords(words, style.grouping);
@@ -50,7 +55,7 @@ export async function buildPlan(storyPath) {
   });
   const styleDoc = JSON.parse(await readFile(join(root, 'styles/hold-up.json'), 'utf8'));
   const character = JSON.parse(await readFile(join(root, 'characters/hold-up-protagonist/character.json'), 'utf8'));
-  return {slug, fps, size:story.size, durationSec, durationFrames, shots, words, standIn:!!wordsDoc.standIn, captions:{enabled:story.captions !== false, style, groups}, style:styleDoc, character, outDir, story};
+  return {slug, fps, size:story.size, durationSec, durationFrames, shots, words, lookDev, standIn:!!wordsDoc?.standIn, captions:{enabled:story.captions !== false && !lookDev, style, groups}, style:styleDoc, character, outDir, story};
 }
 
 const PAGE = `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#000">
@@ -100,6 +105,7 @@ async function main() {
     page.on('pageerror', e => problems.push(e.message));
     page.on('response', r => { if (r.status() >= 400) problems.push(`http ${r.status()}: ${r.url()}`); });
     await page.goto(`http://127.0.0.1:${server.address().port}/`);
+    if (plan.lookDev) { if (!opt('stills')) throw new Error('Look-dev mode (no narration yet) renders stills only'); console.log('look-dev: no narration yet, shot timing from story targets'); }
     await page.waitForFunction('window.ready === true || window.failed', {timeout:120000});
     const {outDir, story, ...sendable} = plan;
     const setup = await page.evaluate((p, s, q) => window.setup(p, s, q), sendable, size, quality).catch(e => { throw new Error(`setup failed: ${e.message}\n${problems.join('\n')}`); });
