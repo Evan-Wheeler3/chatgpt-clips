@@ -7,7 +7,7 @@ Rendered on a cloud machine with software GL (SwiftShader), production quality: 
 | --- | --- |
 | Duration | 31.16 s (30.26 s narration + 0.9 s tail). **Over the 30 s target by about 1.2 s** with the stand-in voice at speed 1.1 |
 | Video | H.264, 1080x1920, 30 fps, 935 frames |
-| Loudness | about -14 LUFS integrated, peak below -1.3 dBFS (see `production/seatbelt-locking/audio-report.json` for the pre-master figures) |
+| Loudness | -14.2 LUFS integrated, peak -1.0 dBFS (0.5 dB above the -1.5 dB target); pre-master figures in `production/seatbelt-locking/audio-report.json` |
 | Narration over effects | voice stem -16 LUFS, effects stem -32 LUFS, effects ducked 3 dB under speech |
 | "Clank" words vs lock sounds | each lock sound starts 20 ms after its word starts (by construction: cues are word anchors) |
 | Captions | 2-5 word groups from the same measured words; one band per shot (top), clear of the face and the mechanism in the sampled frames |
