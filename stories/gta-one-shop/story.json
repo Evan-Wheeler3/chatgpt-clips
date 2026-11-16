@@ -1,0 +1,334 @@
+{
+  "version": 1,
+  "slug": "gta-one-shop",
+  "title": "What If Everyone Bought GTA 6 at One Store?",
+  "status": "narrator: Kokoro am_michael (owner-chosen male preset); reuses the owner's gta-one-shop 3D sets",
+  "fps": 30,
+  "size": {
+    "width": 1080,
+    "height": 1920
+  },
+  "tailSec": 1.2,
+  "narration": {
+    "script": "What if everyone buying GTA 6 shopped at the same game store? With an estimated 10 million preorders, the line would stretch nearly 5,700 miles. Almost a quarter of the way around Earth. If everyone paid $80 in pennies, those coins could build a cube over a hundred feet tall. Then all 10 million players go home and play for just three hours. That's over 3,400 years of gaming. On opening night alone. That long ago, pharaohs were ruling ancient Egypt. And 3,425 years from now, we'll still be waiting for GTA 7.",
+    "voice": {
+      "engine": "kokoro",
+      "voice": "am_michael",
+      "note": "Owner chose this preset for this episode (not the cloned narrator)."
+    },
+    "approval": "Owner's script (from the gta-one-shop production), lightly tightened",
+    "standIn": {
+      "voice": "am_michael",
+      "speed": 1.0,
+      "pauseMs": 240
+    },
+    "lines": [
+      {
+        "id": "hook",
+        "text": "What if everyone buying GTA 6 shopped at the same game store?",
+        "say": "What if everyone buying G T A six shopped at the same game store?",
+        "pauseMs": 320
+      },
+      {
+        "id": "line",
+        "text": "With an estimated 10 million preorders, the line would stretch nearly 5,700 miles.",
+        "say": "With an estimated ten million preorders, the line would stretch nearly fifty-seven hundred miles.",
+        "pauseMs": 260
+      },
+      {
+        "id": "quarter",
+        "text": "Almost a quarter of the way around Earth.",
+        "pauseMs": 380
+      },
+      {
+        "id": "pennies",
+        "text": "If everyone paid $80 in pennies, those coins could build a cube over a hundred feet tall.",
+        "say": "If everyone paid eighty dollars in pennies, those coins could build a cube over a hundred feet tall.",
+        "pauseMs": 420
+      },
+      {
+        "id": "play",
+        "text": "Then all 10 million players go home and play for just three hours.",
+        "say": "Then all ten million players go home and play for just three hours.",
+        "pauseMs": 250
+      },
+      {
+        "id": "years",
+        "text": "That's over 3,400 years of gaming.",
+        "say": "That's over thirty-four hundred years of gaming.",
+        "pauseMs": 200
+      },
+      {
+        "id": "night",
+        "text": "On opening night alone.",
+        "pauseMs": 420
+      },
+      {
+        "id": "egypt",
+        "text": "That long ago, pharaohs were ruling ancient Egypt.",
+        "pauseMs": 380
+      },
+      {
+        "id": "future",
+        "text": "And 3,425 years from now,",
+        "say": "And three thousand, four hundred and twenty-five years from now,",
+        "pauseMs": 260
+      },
+      {
+        "id": "waiting",
+        "text": "we'll still be waiting for GTA 7.",
+        "say": "we'll still be waiting for G T A seven.",
+        "pauseMs": 0
+      }
+    ]
+  },
+  "captions": {
+    "style": "hold-up",
+    "font": {
+      "family": "\"Avenir Next\", \"Inter\", \"Helvetica Neue\", Arial, sans-serif"
+    },
+    "layout": {
+      "bands": {
+        "lower": 0.7
+      }
+    }
+  },
+  "shots": [
+    {
+      "id": "hook",
+      "start": 0,
+      "captions": "lower",
+      "purpose": "Night street, one game shop, a queue already out the door"
+    },
+    {
+      "id": "line",
+      "start": "With",
+      "captions": "lower",
+      "purpose": "Rise and pull back along a queue that never ends"
+    },
+    {
+      "id": "globe",
+      "start": "Almost",
+      "captions": "lower",
+      "purpose": "The queue drawn on the planet: almost a quarter of the way round"
+    },
+    {
+      "id": "penny",
+      "start": "If#2",
+      "captions": "lower",
+      "purpose": "One penny, close"
+    },
+    {
+      "id": "cube",
+      "start": "those",
+      "captions": "lower",
+      "purpose": "80 billion pennies become a cube taller than the block"
+    },
+    {
+      "id": "couch",
+      "start": "Then",
+      "captions": "lower",
+      "purpose": "Two players on a couch, three hours of play"
+    },
+    {
+      "id": "years",
+      "start": "That's",
+      "captions": "lower",
+      "purpose": "The hours pile up into 3,425 years"
+    },
+    {
+      "id": "egypt",
+      "start": "That",
+      "captions": "lower",
+      "purpose": "That long ago: pharaohs ruling ancient Egypt"
+    },
+    {
+      "id": "future",
+      "start": "And#2",
+      "captions": "lower",
+      "purpose": "5451 AD: the same shop, a future city, someone still in line"
+    },
+    {
+      "id": "waiting",
+      "start": "we'll",
+      "captions": "lower",
+      "purpose": "Punchline: a skeleton still waiting for GTA 7"
+    }
+  ],
+  "audio": {
+    "ambience": [
+      {
+        "asset": "ambience-gas-station-synth",
+        "shots": [
+          "hook",
+          "line",
+          "cube",
+          "future",
+          "waiting"
+        ],
+        "gainDb": -28
+      },
+      {
+        "asset": "room-tone-workshop",
+        "shots": [
+          "couch",
+          "years"
+        ],
+        "gainDb": -30
+      },
+      {
+        "asset": "ambience-gas-station-synth",
+        "shots": [
+          "egypt"
+        ],
+        "gainDb": -32
+      }
+    ],
+    "sfx": [
+      {
+        "asset": "whoosh-soft",
+        "at": {
+          "shot": "line",
+          "offset": 0.0
+        },
+        "gainDb": -20,
+        "reason": "crane up"
+      },
+      {
+        "asset": "whoosh-soft",
+        "at": {
+          "shot": "globe",
+          "offset": -0.15
+        },
+        "gainDb": -18,
+        "reason": "out to space"
+      },
+      {
+        "asset": "paint-lid-pop-synth",
+        "at": {
+          "shot": "penny",
+          "offset": 0.2
+        },
+        "gainDb": -15,
+        "reason": "the penny rings"
+      },
+      {
+        "asset": "card-flick-1",
+        "at": {
+          "at": "build",
+          "offset": -0.2
+        },
+        "gainDb": -20
+      },
+      {
+        "asset": "card-flick-2",
+        "at": {
+          "at": "build",
+          "offset": -0.04000000000000001
+        },
+        "gainDb": -20
+      },
+      {
+        "asset": "card-flick-3",
+        "at": {
+          "at": "build",
+          "offset": 0.12
+        },
+        "gainDb": -20
+      },
+      {
+        "asset": "card-flick-1",
+        "at": {
+          "at": "build",
+          "offset": 0.27999999999999997
+        },
+        "gainDb": -20
+      },
+      {
+        "asset": "card-flick-2",
+        "at": {
+          "at": "build",
+          "offset": 0.44
+        },
+        "gainDb": -20
+      },
+      {
+        "asset": "card-flick-3",
+        "at": {
+          "at": "build",
+          "offset": 0.6000000000000001
+        },
+        "gainDb": -20
+      },
+      {
+        "asset": "card-flick-1",
+        "at": {
+          "at": "build",
+          "offset": 0.76
+        },
+        "gainDb": -20
+      },
+      {
+        "asset": "card-flick-2",
+        "at": {
+          "at": "build",
+          "offset": 0.9200000000000002
+        },
+        "gainDb": -20
+      },
+      {
+        "asset": "card-flick-3",
+        "at": {
+          "at": "build",
+          "offset": 1.08
+        },
+        "gainDb": -20
+      },
+      {
+        "asset": "card-flick-1",
+        "at": {
+          "at": "build",
+          "offset": 1.24
+        },
+        "gainDb": -20
+      },
+      {
+        "asset": "clock-ticks-fast-synth",
+        "at": {
+          "at": "over#2",
+          "offset": -0.1
+        },
+        "gainDb": -20,
+        "reason": "hours piling up"
+      },
+      {
+        "asset": "whoosh-soft",
+        "at": {
+          "shot": "egypt",
+          "offset": -0.15
+        },
+        "gainDb": -18,
+        "reason": "back in time"
+      },
+      {
+        "asset": "whoosh-soft",
+        "at": {
+          "shot": "future",
+          "offset": -0.15
+        },
+        "gainDb": -18,
+        "reason": "forward in time"
+      },
+      {
+        "asset": "wood-tok",
+        "at": {
+          "at": "GTA#2",
+          "edge": "end",
+          "offset": 0.05
+        },
+        "gainDb": -12,
+        "reason": "a bone drops"
+      }
+    ]
+  }
+}

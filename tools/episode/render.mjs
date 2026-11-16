@@ -61,14 +61,15 @@ export async function buildPlan(storyPath) {
 const PAGE = `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#000">
 <script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
 <script type="module">import '/tools/episode/page.mjs';</script>`;
-const SERVED = [/^tools\/(episode|render|characters|storyboard|captions)\/[\w.-]+\.mjs$/, /^stories\/[\w-]+\/[\w.-]+\.mjs$/];
+const SERVED = [/^tools\/(episode|render|characters|storyboard|captions)\/[\w.-]+\.mjs$/, /^stories\/[\w-]+\/[\w.-]+\.mjs$/,
+  /^production\/[\w-]+\/assets\/[\w.-]+\.(bin|png|jpg|json)$/];   // per-episode imported assets (gitignored; see the story README)
 
 function serve() {
   const threeDir = resolve(root, 'node_modules/three');
   const server = createServer(async (request, response) => {
     try {
       const path = decodeURIComponent(new URL(request.url, 'http://localhost').pathname).slice(1);
-      let body, type = 'text/javascript';
+      let body, type = path.endsWith('.png') ? 'image/png' : path.endsWith('.jpg') ? 'image/jpeg' : path.endsWith('.json') ? 'application/json' : path.endsWith('.bin') ? 'application/octet-stream' : 'text/javascript';
       if (path === '') [body, type] = [PAGE, 'text/html'];
       else if (path === 'favicon.ico') return response.writeHead(204).end();
       else if (SERVED.some(re => re.test(path))) body = await readFile(join(root, path));
