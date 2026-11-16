@@ -2,16 +2,443 @@
   "version": 1,
   "slug": "school-bus-yellow",
   "title": "Why Are School Buses Yellow?",
-  "status": "look development: 1939 flashback still only (no narration yet)",
+  "status": "preview build: stand-in narrator (see README.md)",
   "fps": 30,
-  "size": {"width": 1080, "height": 1920},
+  "size": {
+    "width": 1080,
+    "height": 1920
+  },
   "narration": {
     "script": "Why are school buses yellow? They weren't always that way. Back in 1939, school buses came in all sorts of colors. There was no national standard. So a professor named Frank Cyr gathered experts from across the country to settle on one color. He brought 50 different shades of yellow. After days of debate, they narrowed it down to one. But why this particular shade? Because yellow is one of the easiest colors for your eyes to notice, even out of the corner of your eye. And this specific yellow-orange stands out against its surroundings, making buses easier to spot. Especially on dark, foggy mornings. The color became known as National School Bus Glossy Yellow. And more than 85 years later, it's still the color of school buses across America.",
-    "voice": {"profile": "hold-up-narrator"},
-    "approval": "Final script from the owner; wording must not change."
+    "voice": {
+      "profile": "hold-up-narrator"
+    },
+    "approval": "Final script from the owner; wording must not change.",
+    "standIn": {
+      "voice": "am_michael",
+      "speed": 1.14,
+      "pauseMs": 220
+    },
+    "lines": [
+      {
+        "id": "hook",
+        "text": "Why are school buses yellow?",
+        "pauseMs": 380
+      },
+      {
+        "id": "always",
+        "text": "They weren't always that way.",
+        "pauseMs": 320
+      },
+      {
+        "id": "colors",
+        "text": "Back in 1939, school buses came in all sorts of colors.",
+        "say": "Back in nineteen thirty-nine, school buses came in all sorts of colors.",
+        "pauseMs": 130
+      },
+      {
+        "id": "standard",
+        "text": "There was no national standard.",
+        "pauseMs": 330
+      },
+      {
+        "id": "cyr",
+        "text": "So a professor named Frank Cyr gathered experts from across the country to settle on one color.",
+        "pauseMs": 300
+      },
+      {
+        "id": "fifty",
+        "text": "He brought 50 different shades of yellow.",
+        "say": "He brought fifty different shades of yellow.",
+        "pauseMs": 300
+      },
+      {
+        "id": "debate",
+        "text": "After days of debate, they narrowed it down to one.",
+        "pauseMs": 380
+      },
+      {
+        "id": "why",
+        "text": "But why this particular shade?",
+        "pauseMs": 280
+      },
+      {
+        "id": "eyes",
+        "text": "Because yellow is one of the easiest colors for your eyes to notice, even out of the corner of your eye.",
+        "pauseMs": 280
+      },
+      {
+        "id": "orange",
+        "text": "And this specific yellow-orange stands out against its surroundings, making buses easier to spot.",
+        "say": "And this specific yellow orange stands out against its surroundings, making buses easier to spot.",
+        "pauseMs": 130
+      },
+      {
+        "id": "foggy",
+        "text": "Especially on dark, foggy mornings.",
+        "pauseMs": 380
+      },
+      {
+        "id": "glossy",
+        "text": "The color became known as National School Bus Glossy Yellow.",
+        "pauseMs": 330
+      },
+      {
+        "id": "still",
+        "text": "And more than 85 years later, it's still the color of school buses across America.",
+        "say": "And more than eighty-five years later, it's still the color of school buses across America.",
+        "pauseMs": 0
+      }
+    ]
   },
-  "captions": {"style": "hold-up", "font": {"family": "\"Avenir Next\", \"Inter\", \"Helvetica Neue\", Arial, sans-serif"}},
+  "captions": {
+    "style": "hold-up",
+    "font": {
+      "family": "\"Avenir Next\", \"Inter\", \"Helvetica Neue\", Arial, sans-serif"
+    },
+    "layout": {
+      "bands": {
+        "top": 0.15
+      }
+    }
+  },
   "shots": [
-    {"id": "flashback-1939", "start": "Back", "target": 3.5, "purpose": "1939: a line of school buses in four different colours passes a brick schoolhouse; no two match"}
-  ]
+    {
+      "id": "hook",
+      "start": 0,
+      "captions": "top",
+      "purpose": "A modern yellow school bus pulls up at a stop; low angle, push toward the SCHOOL BUS sign"
+    },
+    {
+      "id": "always",
+      "start": "They#1",
+      "captions": "top",
+      "purpose": "He looks at it; the picture fades to an old-film look: we are going back"
+    },
+    {
+      "id": "flashback-1939",
+      "start": "Back",
+      "captions": "top",
+      "purpose": "1939: four buses in four colours pass a brick schoolhouse (approved still)"
+    },
+    {
+      "id": "standard",
+      "start": "There",
+      "captions": "top",
+      "purpose": "High view down the line: four colours, four shapes, no standard"
+    },
+    {
+      "id": "conference",
+      "start": "So",
+      "captions": "top",
+      "purpose": "A professor at a conference; pull back to the experts around the table"
+    },
+    {
+      "id": "fifty",
+      "start": "He",
+      "captions": "top",
+      "purpose": "Fifty shades of yellow, lemon to orange-red, pop onto the table"
+    },
+    {
+      "id": "debate",
+      "start": "After",
+      "captions": "top",
+      "purpose": "Days pass; swatches are taken away until one yellow-orange card is left and lifts toward camera"
+    },
+    {
+      "id": "why",
+      "start": "But",
+      "captions": "top",
+      "purpose": "Match cut: the card against a modern bus, same colour; pull back"
+    },
+    {
+      "id": "eyes",
+      "start": "Because",
+      "captions": "top",
+      "purpose": "At the stop, eyes on his phone; the bus appears at the edge of his vision and he notices"
+    },
+    {
+      "id": "orange",
+      "start": "And this specific",
+      "captions": "top",
+      "purpose": "Grey morning: a grey car fades into the street; the yellow bus does not"
+    },
+    {
+      "id": "foggy",
+      "start": "Especially",
+      "captions": "top",
+      "purpose": "Dense dark fog; the bus emerges, lights first, unmistakable"
+    },
+    {
+      "id": "glossy",
+      "start": "The color became",
+      "captions": "top",
+      "purpose": "A can of the paint in front of a parked bus; the lid pops: National School Bus Glossy Yellow"
+    },
+    {
+      "id": "still",
+      "start": "And more",
+      "captions": "top",
+      "purpose": "Crane up over a depot at sunrise: rows of identical yellow buses"
+    }
+  ],
+  "tailSec": 0.9,
+  "audio": {
+    "ambience": [
+      {
+        "asset": "ambience-gas-station-synth",
+        "shots": [
+          "hook",
+          "always",
+          "why",
+          "eyes",
+          "glossy",
+          "still"
+        ],
+        "gainDb": -30
+      },
+      {
+        "asset": "bus-diesel-loop-synth",
+        "shots": [
+          "hook"
+        ],
+        "gainDb": -22
+      },
+      {
+        "asset": "bus-diesel-loop-synth",
+        "shots": [
+          "always",
+          "why"
+        ],
+        "gainDb": -30
+      },
+      {
+        "asset": "bus-diesel-loop-synth",
+        "shots": [
+          "orange",
+          "foggy"
+        ],
+        "gainDb": -24
+      },
+      {
+        "asset": "ambience-gas-station-synth",
+        "shots": [
+          "orange",
+          "foggy"
+        ],
+        "gainDb": -34
+      },
+      {
+        "asset": "bus-1930s-engine-loop-synth",
+        "shots": [
+          "flashback-1939",
+          "standard"
+        ],
+        "gainDb": -24
+      },
+      {
+        "asset": "film-projector-loop-synth",
+        "shots": [
+          "flashback-1939",
+          "standard",
+          "conference",
+          "fifty",
+          "debate"
+        ],
+        "gainDb": -31
+      },
+      {
+        "asset": "room-tone-workshop",
+        "shots": [
+          "conference",
+          "fifty",
+          "debate"
+        ],
+        "gainDb": -30
+      }
+    ],
+    "sfx": [
+      {
+        "asset": "bus-air-brake-synth",
+        "at": {
+          "shot": "hook",
+          "offset": 1.12
+        },
+        "reason": "the bus stops"
+      },
+      {
+        "asset": "whoosh-soft",
+        "at": {
+          "shot": "flashback-1939",
+          "offset": -0.3
+        },
+        "gainDb": -19,
+        "reason": "into 1939"
+      },
+      {
+        "asset": "cloth-rustle-1",
+        "at": {
+          "at": "settle",
+          "offset": -0.3
+        },
+        "gainDb": -26,
+        "reason": "his gesture"
+      },
+      {
+        "asset": "card-flick-1",
+        "at": {
+          "at": "brought",
+          "offset": -0.05
+        },
+        "gainDb": -17
+      },
+      {
+        "asset": "card-flick-2",
+        "at": {
+          "at": "brought",
+          "offset": 0.12000000000000001
+        },
+        "gainDb": -18
+      },
+      {
+        "asset": "card-flick-3",
+        "at": {
+          "at": "brought",
+          "offset": 0.29000000000000004
+        },
+        "gainDb": -17
+      },
+      {
+        "asset": "card-flick-1",
+        "at": {
+          "at": "brought",
+          "offset": 0.46
+        },
+        "gainDb": -18
+      },
+      {
+        "asset": "card-flick-2",
+        "at": {
+          "at": "brought",
+          "offset": 0.63
+        },
+        "gainDb": -17
+      },
+      {
+        "asset": "card-flick-3",
+        "at": {
+          "at": "brought",
+          "offset": 0.8
+        },
+        "gainDb": -18
+      },
+      {
+        "asset": "card-flick-1",
+        "at": {
+          "at": "brought",
+          "offset": 0.97
+        },
+        "gainDb": -17
+      },
+      {
+        "asset": "card-flick-2",
+        "at": {
+          "at": "brought",
+          "offset": 1.1400000000000001
+        },
+        "gainDb": -18
+      },
+      {
+        "asset": "card-flick-3",
+        "at": {
+          "at": "brought",
+          "offset": 1.31
+        },
+        "gainDb": -17
+      },
+      {
+        "asset": "card-flick-1",
+        "at": {
+          "at": "brought",
+          "offset": 1.48
+        },
+        "gainDb": -18
+      },
+      {
+        "asset": "card-flick-2",
+        "at": {
+          "at": "brought",
+          "offset": 1.6500000000000001
+        },
+        "gainDb": -17
+      },
+      {
+        "asset": "clock-ticks-fast-synth",
+        "at": {
+          "at": "After",
+          "offset": 0.1
+        },
+        "gainDb": -22,
+        "reason": "days pass"
+      },
+      {
+        "asset": "paper-slide-synth",
+        "at": {
+          "at": "After",
+          "offset": 0.4
+        },
+        "gainDb": -21
+      },
+      {
+        "asset": "paper-slide-synth",
+        "at": {
+          "at": "After",
+          "offset": 0.8500000000000001
+        },
+        "gainDb": -21
+      },
+      {
+        "asset": "paper-slide-synth",
+        "at": {
+          "at": "After",
+          "offset": 1.3
+        },
+        "gainDb": -21
+      },
+      {
+        "asset": "paper-slide-synth",
+        "at": {
+          "at": "After",
+          "offset": 1.75
+        },
+        "gainDb": -21
+      },
+      {
+        "asset": "paper-slide-synth",
+        "at": {
+          "at": "one#2",
+          "offset": -0.15
+        },
+        "gainDb": -17,
+        "reason": "the last card lifts"
+      },
+      {
+        "asset": "bus-air-brake-synth",
+        "at": {
+          "at": "even",
+          "offset": 2.3
+        },
+        "gainDb": -16,
+        "reason": "the bus pulls up behind him"
+      },
+      {
+        "asset": "paint-lid-pop-synth",
+        "at": {
+          "at": "known",
+          "offset": 0.0
+        },
+        "reason": "the lid pops"
+      }
+    ]
+  }
 }

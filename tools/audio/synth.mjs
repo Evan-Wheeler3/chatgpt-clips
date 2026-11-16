@@ -220,6 +220,62 @@ function airBed({seed, duration = 12, lowHz = 180, tone = 0, level = 1}) {
   return normalize(loopable(env(highpass(out, 30), t => 1 + 0.12 * Math.sin(2 * Math.PI * t / 5.3)), 1), 0.5);
 }
 
+// ---- School-bus episode: engines, brakes, a projector, paper swatches, a paint can
+// A diesel bus idling or pulling in: a low firing pulse with harmonics and mechanical clatter (seamless loop)
+function dieselLoop({seed, duration = 6, fire = 28, level = 1}) {
+  const r = rng(seed), d = duration + 1, out = buffer(d);
+  [1, 2, 3, 4.02, 6.1].forEach((k, n) => add(out, mode(d, fire * k, 1e9, 0.5 / (n + 1)), 0));
+  add(out, env(bandpass(white(d, r), 1400, 1.2), t => 0.25 * (0.5 + 0.5 * Math.sin(2 * Math.PI * fire * t)) ** 6), 0);
+  add(out, lowpass(brown(d, r), 160), 0, 2.5 * level);
+  return normalize(loopable(env(highpass(out, 25), t => 1 + 0.06 * Math.sin(2 * Math.PI * 0.7 * t)), 1), 0.6);
+}
+// An older petrol engine: lumpier, higher, with a little tappet tick (seamless loop)
+function oldEngineLoop({seed, duration = 6}) {
+  const r = rng(seed), d = duration + 1, out = buffer(d);
+  for (let t = 0, k = 0; t < d; k++) { const gap = 1 / 22 * (1 + 0.12 * (r() - 0.5)); add(out, env(lowpass(white(0.05, r), 300), u => Math.exp(-u / 0.012)), t, 0.9); if (k % 2) add(out, metalHit({seed:seed + k, modes:[3100, 4700], decay:0.004, tick:0.4, duration:0.02}), t + 0.01, 0.08); t += gap; }
+  add(out, lowpass(brown(d, r), 220), 0, 1.5);
+  return normalize(loopable(highpass(out, 30), 1), 0.6);
+}
+// An air brake: a sharp hiss that tails off
+function airBrake({seed}) {
+  const r = rng(seed), out = buffer(1.1);
+  add(out, env(bandpass(white(1.1, r), 3800, 0.7), t => (t < 0.02 ? t / 0.02 : Math.exp(-(t - 0.02) / 0.28))), 0, 1);
+  add(out, env(highpass(white(0.4, r), 6000), t => Math.exp(-t / 0.08)), 0, 0.4);
+  return normalize(fade(out, 0.001, 0.2), 0.85);
+}
+// A film projector: shutter clatter at 24 per second over a motor whirr (seamless loop)
+function projectorLoop({seed, duration = 4}) {
+  const r = rng(seed), d = duration + 1, out = buffer(d);
+  for (let t = 0; t < d; t += 1 / 24) add(out, env(bandpass(white(0.02, r), 2600 + 400 * r(), 2), u => Math.exp(-u / 0.004)), t, 0.6 + 0.2 * r());
+  add(out, mode(d, 96, 1e9, 0.08), 0); add(out, lowpass(white(d, r), 900), 0, 0.15);
+  return normalize(loopable(highpass(out, 60), 0.5), 0.55);
+}
+// A paper card flicked down onto a table
+function cardFlick({seed}) {
+  const r = rng(seed), out = buffer(0.18);
+  add(out, env(bandpass(white(0.18, r), 2400 + 900 * r(), 1.4), t => Math.exp(-t / 0.025)), 0, 1);
+  add(out, mode(0.1, 420 + 80 * r(), 0.012, 0.3), 0.004);
+  return normalize(fade(out, 0.0005, 0.03), 0.8);
+}
+// Paper slid across wood
+function paperSlide({seed, duration = 0.5}) {
+  const r = rng(seed), body = bandpass(white(duration, r), 0, 1.1, t => 1500 + 1200 * t / duration);
+  return normalize(fade(env(body, t => Math.sin(Math.PI * Math.min(1, t / duration)) ** 1.4), 0.01, 0.06), 0.7);
+}
+// A paint can lid levered off: a tight metal pop and a ring
+function lidPop({seed}) {
+  const out = buffer(0.6);
+  add(out, metalHit({seed, modes:[1240, 2980, 4410, 6200], decay:0.06, tick:1, tickHz:5200, duration:0.55}), 0, 1);
+  add(out, mode(0.2, 180, 0.02, 0.6), 0);
+  return normalize(fade(out, 0.0004, 0.08), 0.85);
+}
+// A wall clock running fast: dry ticks
+function clockTicks({seed, duration = 2, rate = 9}) {
+  const out = buffer(duration);
+  for (let t = 0.02, k = 0; t < duration - 0.04; t += 1 / rate, k++) add(out, metalHit({seed:seed + k, modes:[2700, 4300], decay:0.003, tick:0.8, tickHz:5800, duration:0.03}), t, k % 2 ? 0.6 : 0.85);
+  return normalize(out, 0.7);
+}
+
 const generated = (generator, params) => ({type:'generated', generator:`tools/audio/synth.mjs#${generator}`, params});
 const LICENSE = {license:'CC0-1.0', licenseEvidence:'Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0', author:'Hold Up (generated)'};
 
@@ -255,7 +311,16 @@ export const LIBRARY = [
   {id:'seatbelt-buckle-click-synth', category:'mechanism', description:'A seatbelt tongue sliding into its buckle and latching', make:() => buckleClick({seed:160}), params:{}, gainDb:-8},
   {id:'sled-impact-synth', category:'impact', description:'A crash-test sled stopping against its barrier: low thump, panel crunch, brief rattle (restrained)', make:() => sledImpact({seed:170}), params:{}, gainDb:-7},
   {id:'ambience-car-interior-synth', category:'ambience', description:'Air inside a parked car: close and soft (seamless loop)', make:() => airBed({seed:180, lowHz:160}), params:{duration:12}, gainDb:-26, loop:true},
-  {id:'ambience-test-lab-synth', category:'ambience', description:'A large test hall: wide room air with a faint ventilation tone (seamless loop)', make:() => airBed({seed:181, lowHz:240, tone:120, level:1.6}), params:{duration:12}, gainDb:-25, loop:true}
+  {id:'ambience-test-lab-synth', category:'ambience', description:'A large test hall: wide room air with a faint ventilation tone (seamless loop)', make:() => airBed({seed:181, lowHz:240, tone:120, level:1.6}), params:{duration:12}, gainDb:-25, loop:true},
+  // School-bus episode
+  {id:'bus-diesel-loop-synth', category:'mechanism', description:'A modern diesel school bus idling or pulling in (seamless loop)', make:() => dieselLoop({seed:200}), params:{fire:28}, gainDb:-16, loop:true},
+  {id:'bus-1930s-engine-loop-synth', category:'mechanism', description:'A 1930s petrol bus engine running: lumpy, with tappet ticks (seamless loop)', make:() => oldEngineLoop({seed:201}), params:{}, gainDb:-18, loop:true},
+  {id:'bus-air-brake-synth', category:'mechanism', description:'A bus air brake releasing: sharp hiss tailing off', make:() => airBrake({seed:202}), params:{}, gainDb:-12},
+  {id:'film-projector-loop-synth', category:'ambience', description:'An old film projector: shutter clatter over a motor whirr (seamless loop)', make:() => projectorLoop({seed:203}), params:{}, gainDb:-24, loop:true},
+  ...[1, 2, 3].map(n => ({id:`card-flick-${n}`, category:'movement', description:`A paper card flicked onto a table (variant ${n})`, make:() => cardFlick({seed:210 + n}), params:{variant:n}, gainDb:-16})),
+  {id:'paper-slide-synth', category:'movement', description:'A sheet of paper slid across a wooden table', make:() => paperSlide({seed:215}), params:{duration:0.5}, gainDb:-18},
+  {id:'paint-lid-pop-synth', category:'mechanism', description:'A paint can lid levered off: metal pop and ring', make:() => lidPop({seed:216}), params:{}, gainDb:-10},
+  {id:'clock-ticks-fast-synth', category:'mechanism', description:'A wall clock ticking quickly (time passing)', make:() => clockTicks({seed:217}), params:{rate:9}, gainDb:-20}
 ];
 
 export async function buildLibrary({dir = join(root, 'audio'), catalogFile = join(root, 'audio/catalog.json')} = {}) {

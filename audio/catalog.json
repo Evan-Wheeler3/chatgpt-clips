@@ -918,6 +918,244 @@
       "sha256": "19773b67ba9e4826461d4396257ea25d61471ebd2363315a7b5ed14f9664e95b"
     },
     {
+      "id": "bus-diesel-loop-synth",
+      "description": "A modern diesel school bus idling or pulling in (seamless loop)",
+      "category": "mechanism",
+      "file": "audio/sfx/bus-diesel-loop-synth.wav",
+      "durationSec": 6,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#dieselLoop",
+        "params": {
+          "fire": 28
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -16,
+      "loop": {
+        "seamless": true
+      },
+      "sha256": "3a1a618b7303bd15302bbab08f994844d4ed422d227d4fa3284eadb77b9c8d24"
+    },
+    {
+      "id": "bus-1930s-engine-loop-synth",
+      "description": "A 1930s petrol bus engine running: lumpy, with tappet ticks (seamless loop)",
+      "category": "mechanism",
+      "file": "audio/sfx/bus-1930s-engine-loop-synth.wav",
+      "durationSec": 6,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#oldEngineLoop",
+        "params": {}
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -18,
+      "loop": {
+        "seamless": true
+      },
+      "sha256": "244bed0eb2e2b822b18c981a5e26aac427451dce5226066aa1986d0ad0f365f2"
+    },
+    {
+      "id": "bus-air-brake-synth",
+      "description": "A bus air brake releasing: sharp hiss tailing off",
+      "category": "mechanism",
+      "file": "audio/sfx/bus-air-brake-synth.wav",
+      "durationSec": 1.1,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#airBrake",
+        "params": {}
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -12,
+      "loop": null,
+      "sha256": "a6d5540972fb60edef678e169b52aad99e67ce53540a697907d3314a28c1b273"
+    },
+    {
+      "id": "film-projector-loop-synth",
+      "description": "An old film projector: shutter clatter over a motor whirr (seamless loop)",
+      "category": "ambience",
+      "file": "audio/sfx/film-projector-loop-synth.wav",
+      "durationSec": 4.5,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#projectorLoop",
+        "params": {}
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -24,
+      "loop": {
+        "seamless": true
+      },
+      "sha256": "783241fc8297008069255bba0cee59b401c55c50dcb6b4bc51b29793d18d3e44"
+    },
+    {
+      "id": "card-flick-1",
+      "description": "A paper card flicked onto a table (variant 1)",
+      "category": "movement",
+      "file": "audio/sfx/card-flick-1.wav",
+      "durationSec": 0.18,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#cardFlick",
+        "params": {
+          "variant": 1
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -16,
+      "loop": null,
+      "sha256": "639a495f8e7ba8edaebfbfc78c9871179a4959ca5434b68263ec98e8172dfc7b"
+    },
+    {
+      "id": "card-flick-2",
+      "description": "A paper card flicked onto a table (variant 2)",
+      "category": "movement",
+      "file": "audio/sfx/card-flick-2.wav",
+      "durationSec": 0.18,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#cardFlick",
+        "params": {
+          "variant": 2
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -16,
+      "loop": null,
+      "sha256": "5bd35f829f1090dd498f3d024aadc42ec8794d4af7c3a0e854c539063b129dce"
+    },
+    {
+      "id": "card-flick-3",
+      "description": "A paper card flicked onto a table (variant 3)",
+      "category": "movement",
+      "file": "audio/sfx/card-flick-3.wav",
+      "durationSec": 0.18,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#cardFlick",
+        "params": {
+          "variant": 3
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -16,
+      "loop": null,
+      "sha256": "e3cc5bcabc18d85c43d5f28581112d7e2d0237e6cbfc27cd8ff9899d1fdc7903"
+    },
+    {
+      "id": "paper-slide-synth",
+      "description": "A sheet of paper slid across a wooden table",
+      "category": "movement",
+      "file": "audio/sfx/paper-slide-synth.wav",
+      "durationSec": 0.5,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#paperSlide",
+        "params": {
+          "duration": 0.5
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -18,
+      "loop": null,
+      "sha256": "6c9b9e90d12ffea456788437e6eb372019c1ad95db79f2bc31c142cc6cc2773a"
+    },
+    {
+      "id": "paint-lid-pop-synth",
+      "description": "A paint can lid levered off: metal pop and ring",
+      "category": "mechanism",
+      "file": "audio/sfx/paint-lid-pop-synth.wav",
+      "durationSec": 0.6,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#lidPop",
+        "params": {}
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -10,
+      "loop": null,
+      "sha256": "0b20caa125cb52346b1fd210a4096ed97acba6b4e891d0e10de0acd140db79a7"
+    },
+    {
+      "id": "clock-ticks-fast-synth",
+      "description": "A wall clock ticking quickly (time passing)",
+      "category": "mechanism",
+      "file": "audio/sfx/clock-ticks-fast-synth.wav",
+      "durationSec": 2,
+      "sampleRate": 48000,
+      "channels": 1,
+      "source": {
+        "type": "generated",
+        "generator": "tools/audio/synth.mjs#clockTicks",
+        "params": {
+          "rate": 9
+        }
+      },
+      "license": "CC0-1.0",
+      "licenseEvidence": "Original synthesis by the Hold Up pipeline (tools/audio/synth.mjs); dedicated to the public domain under CC0 1.0",
+      "author": "Hold Up (generated)",
+      "status": "approved",
+      "review": "Approved for use as an original generated asset; listen-through by the owner pending",
+      "gainDb": -20,
+      "loop": null,
+      "sha256": "0a154bcf7e3e9d92fd150dbeaa465f1bf78b23dc77ab9c02f84c8d17336cef55"
+    },
+    {
       "id": "fuel-gush-reversed-synth",
       "description": "The overflow gush played backwards and slightly higher, for the rewind (derived from fuel-gush-loop-synth)",
       "category": "liquid",
