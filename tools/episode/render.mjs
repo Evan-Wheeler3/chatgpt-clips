@@ -7,7 +7,7 @@
  * Shared with the storyboard renderer: the Hold Up style and grade (styles/, tools/render/post.mjs, stylize.mjs), the
  * vector character painter (tools/characters/figure.mjs), burned-in captions (tools/render/captions.mjs + caption styles).
  *
- *   node tools/episode/render.mjs stories/<slug>/story.json [--quality preview|production] [--stills 12,3.5s,...] [--shots a,b] [--out name]
+ *   node tools/episode/render.mjs stories/<slug>/story.json [--quality preview|production] [--stills 12,3.5s,...] [--shots a,b] [--out name] [--no-captions] [--scale n]
  */
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
@@ -81,6 +81,7 @@ function serve() {
 async function main() {
   const storyPath = resolve(args[0]), plan = await buildPlan(storyPath), quality = QUALITY[opt('quality', 'preview')];
   if (!quality) throw new Error('quality: preview | production');
+  if (args.includes('--no-captions')) quality.captions = false;   // clean frames, e.g. for a thumbnail
   const scale = parseFloat(opt('scale', quality.scale));
   const size = {width:Math.round(plan.size.width * scale / 2) * 2, height:Math.round(plan.size.height * scale / 2) * 2};
   await mkdir(plan.outDir, {recursive:true});
