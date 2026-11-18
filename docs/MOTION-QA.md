@@ -6,7 +6,7 @@ Use this gate for declarative storyboards and hand-directed episode scenes. The 
 
 1. **Review the animatic.** Run the declarative compile and animatic once measured words and narration are available. Read `validation.json` and watch the animatic for timing, geography, focal handoffs and planned holds before committing to detailed scene work. For a hand-directed episode, use a lightweight in-engine blockout and a measured take. Its look-development stills can establish composition before narration exists.
 2. **Render a motion preview.** Run the actual scene at delivery FPS and 9:16 with reduced resolution. Keep camera, rig, props, hit frames and caption layout representative. Spend preview time on path, weight, contact and readability. Simplify expensive shading where possible. Review once with narration and once muted. For a hand-directed picture-only preview, mix with the selected take through the existing episode audio workflow to check timing.
-3. **Review shots and joins.** Watch the full sequence at normal speed on a phone-sized display. Mark stagnant beats and any moment where the eye loses the subject. Step through flagged blends, turns, pauses, contacts and the frames on both sides of cuts. Review with captions and the intended crop. For blur-sensitive shots, also check representative frames with final blur settings.
+3. **Review shots and joins.** Run the [opening playback check](#opening-playback-check) and watch the full sequence at normal speed on a phone-sized display. Mark stagnant beats and any moment where the eye loses the subject. Step through flagged blends, turns, pauses, contacts and the frames on both sides of cuts. Review with captions and the intended crop. For blur-sensitive shots, also check representative frames with final blur settings.
 4. **Correct and re-review.** Reblock unsafe paths, fix contact and momentum, and simplify competing movement. Rerender changed shots with their neighbors, then repeat the full-sequence playback. Update the QA notes with the preview version, findings, fixes and any approved intent.
 5. **Approve before final render.** Obtain and record the motion-pass review/approval before starting the expensive final render. If there is no approval, mark it pending. Retime and re-review affected shots when the chosen take changes. Validate the final export against the approved motion pass, including final blur, crop and sync. Existing asset, audio and render gates still apply.
 
@@ -21,6 +21,15 @@ node tools/episode/render.mjs stories/seatbelt-locking/story.json --quality prev
 
 [Storyboard commands and prerequisites](STORYBOARD.md#commands) describe the declarative route. The hand-directed route writes picture only. Its `--shots` filter renders the contiguous range from the first selected shot start to the last selected shot end, including any intervening shots. Record the selected take and, if used, the stand-in status. Use the approved take for final validation.
 
+## Opening playback check
+
+Play the first two seconds at phone size and normal speed with the intended crop. Review once muted and once with narration and captions.
+
+- Pause on frame one. Identify what the viewer should look at and the question or stakes the picture establishes.
+- Play through the first second. Confirm that the planned large movement reads and that the camera stays smooth. Look for changes in subject position, scale, depth, or a prop's state.
+- Play through about two seconds. Identify the first meaningful development and check that the viewer can follow the cause and effect. If the image is unchanged or confusing, reblock the action or reveal and replay before polishing.
+- Record the opening action, the first development's timecode and any approved quiet hold in the motion notes. After publishing, compare viewed versus swiped away and early retention, where available, against comparable Shorts. Record what changed as an opening experiment.
+
 ## Acceptance criteria
 
 | Area | Pass condition |
@@ -28,6 +37,7 @@ node tools/episode/render.mjs stories/seatbelt-locking/story.json --quality prev
 | Camera travel and orientation | Intentional position and orientation through the full shot. No visible jitter, orientation flip, sudden acceleration spike, accidental stop or overshoot where keys, paths or aim targets join. Speed and rotation leave time to read the action. |
 | Scene clearance | Camera and near plane clear solid geometry throughout travel. No unintended character/prop/environment intersections or teleporting poses. Intentional contact and controlled foreground crossings are staged explicitly. |
 | Character movement and contact | The moving body transfers weight plausibly. Planted feet stay anchored to their support. Grabs and releases align with the prop path. Push, pull, carry, sit, stand and other contact actions have believable pose, timing and release. |
+| Opening hook | Frame one gives the eye a clear subject and a reason to keep watching. A substantial movement in the first second develops into a readable beat by about two seconds, or a deliberate quiet opening earns and resolves its hold. |
 | Visual rhythm | During active beats, roughly every 1–2 seconds there is a readable development in the camera composition, action, subject or environment. Each development delivers information, anticipation or consequence. A continuous move and intentional holds pass when the viewer can follow the beat and the hold serves a clear purpose. Blinks, breathing and barely visible drift are secondary. |
 | Framing and readability | Primary action stays visible when needed, with readable silhouettes, phone-safe composition and clear focal priority. A planned entrance or occlusion clears before the important action. Motion blur preserves the key pose, contact or detail. |
 | Edit and narration | Every cut has a motivation. Cuts maintain understandable action phase, direction, eyeline, position and prop state or deliberately signal a change of context. Main action and focal handoffs align with the measured narration or planned silence. |

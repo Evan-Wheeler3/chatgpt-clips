@@ -54,6 +54,20 @@ Use these fields for each shot. Poses can be expressed relative to recognizable 
 | Focal point and composition change | What must be visible at the key anchor, what the viewer sees change and when, and framing or caption-safe requirements. |
 | Transition and continuity | Why the next move or cut happens. Carry screen direction, eyeline, pose phase, contact, prop placement, motion vector and geography as applicable. Mark intentional holds and disguised transitions. |
 
+### First two seconds
+
+Plan the opening as its own beat and record the first frame, initial action and first substantial change.
+
+| Moment | Direction |
+|---|---|
+| Frame 1 | Show the most compelling truthful action, near miss or consequence. Stage one readable subject and a visible cue to the stakes. Where the story supports it, enter on an action already in progress. |
+| First second | Make a deliberate character, prop or camera move visibly change the frame. Use a large gesture, a prop crossing a meaningful area of the frame, a shift in scale, or strong foreground parallax. Lead with the image when narration has a breath or pauses. |
+| By about 2 seconds | Land the first clear development. Show an impact, reversal, new obstacle or reveal that advances the opening question. Let the camera carry smooth momentum into it, or cut where the action motivates a new view. |
+
+Compose for 9:16 at phone size. Give the eye a clear subject and keep the contact or reveal clear of the caption band. A small facial gesture, incidental background motion or a push with negligible framing change is supporting movement. For a deliberate quiet opening, show why the first image earns the pause and identify the exact action that breaks it.
+
+**Blocking example.** Open low beside a loaded cart that's already rolling toward the end of a ramp. Track at wheel speed with the ramp edge readable ahead. In the first second, a boot sweeps in and presses the brake pedal. By about 2 seconds, the cart stops at the edge and the camera lands on the pedal and wheel, setting up how the pedal stopped it. Review the opening at normal speed before adding more angles.
+
 ### Example shot direction
 
 | Field | Example, relative to shot start |
