@@ -65,6 +65,8 @@ node tools/episode/render.mjs stories/mine-cart-motion-test/story.json --quality
 - planted-foot drift
 - hand-to-grip error while the hand is on screen
 - that the cart's front stays in frame
+- that the worker never appears or vanishes while inside the frame
+- limb and torso rotation rates (wrap-aware)
 
 ## Motion QA notes
 
@@ -90,8 +92,14 @@ Fixed during review: cart lost from frame in the rise; track end off frame at 2 
   (Hermite → C2 spline); gate pad lifting 6 mm off the bumper (flex removed); aim overshoot cropping the worker at the end.
 Known limits: Cooper is a flat card. He is read obliquely (~55–60°) while small in frame during 1.6–2.4 s. During
   4.0–5.6 s, when he is off screen, his hand target follows the camera projection and may sit off the grip.
-Motion pass: pending owner review
-Reviewer and date: —
+Motion pass: approved as a test by the owner. "Overall better, I like it." Not to be re-edited.
+Owner notes (2026-11-18), carried forward and not fixed in this video:
+  - Character movements are a little fast and unnatural, especially the arms-up recoil at the end
+    (measured ~1,400°/s on the arms and ~300°/s on the torso at 7.4–7.6 s). Similar 2–3 frame arm snaps
+    occur at the grab (2.7 s) and the release (5.7 s).
+  - The character visibly spawns out of thin air: he becomes visible at 1.50 s while inside the frame.
+  qa.mjs now flags both (areas `pose-speed` and `entrance`). Lessons: docs/MOTION-LESSONS.md.
+Reviewer and date: owner, 2026-11-18
 ```
 
 ## Not done in this pass

@@ -2,7 +2,7 @@
 
 Smoothness comes first, followed by meaningful visual development and then shot frequency. Give the viewer a new action, relationship, scale or point of attention roughly every 1–2 seconds. A continuous five-second move can work when the composition keeps developing. Give brief comic, emotional and explanatory holds a clear reason. Avoid using whip pans, shake, snap zooms or small idle gestures as the default source of energy.
 
-See [shot planning](STORYBOARD.md#cinematic-shot-planning), [character and prop motion](CHARACTER-RIG.md#character-and-prop-motion-standards) and [motion QA](MOTION-QA.md).
+See [shot planning](STORYBOARD.md#cinematic-shot-planning), [character and prop motion](CHARACTER-RIG.md#character-and-prop-motion-standards), [motion QA](MOTION-QA.md) and the [motion lessons log](MOTION-LESSONS.md), which collects what each owner review taught us.
 
 ## Reference observations
 
@@ -36,6 +36,20 @@ Each instruction below is an original blocking example. `track` in the declarati
 - **Declarative.** [`camera.mjs`](../tools/storyboard/camera.mjs) solves framing and samples position, target and FOV. [`easing.mjs`](../tools/storyboard/easing.mjs) supplies the current timing functions. [`sample.mjs`](../tools/storyboard/sample.mjs) combines camera, effects, props and character tracks for validation and rendering. Build with the supported behaviors first. Use semantic framing to establish the shot and evaluate the resolved pose in the actual scene.
 - **Hand-directed.** [`tools/episode/render.mjs`](../tools/episode/render.mjs) uses measured words and the story's ordered shots. The episode scene owns exact camera and action choreography. Record pose/path, aim and key action anchors in that scene, then render it through the existing episode entry point. The [seatbelt scene](../stories/seatbelt-locking/scene.mjs) is an example of an action the declarative rig cannot express directly.
 - **Both paths.** Keep travel progress, orientation and FOV as distinct controls. Define world-space positions, subject-relative offsets and screen framing explicitly. A world path stays fixed through the set. A subject-relative offset follows a chosen actor frame. A local truck follows the camera's right axis, which may itself turn. Sample the evaluated result at delivered frame times and include effects that shift the actual camera.
+
+## Hand-directed camera toolkit
+
+These techniques were proven in the [Runaway Ore Cart test](MOTION-LESSONS.md#2026-11--runaway-ore-cart-motion-test-storiesmine-cart-motion-test). The reference implementation is in [`stories/mine-cart-motion-test/scene.mjs`](../stories/mine-cart-motion-test/scene.mjs).
+
+- **Key the camera as timed (position, aim, FOV) tuples and interpolate each channel with a C2 natural cubic spline.** Velocity and acceleration then carry through every key. Hermite or Catmull-Rom keys are only C1: in the ore-cart test they produced jerk spikes around 158 m/s³, against about 20 m/s³ with C2. Comment every key with what it shows.
+- **Mind the 9:16 horizontal FOV.** Horizontal FOV = 2·atan(tan(vFOV/2)·0.5625), which is only 28° at a 50° vertical FOV. Two subjects spread along the screen's horizontal axis rarely fit. Stage relationships along depth or the frame's vertical axis instead: look down the line, keep the near subject low and the goal high. Widen to 58–62° for reveals and establishing beats.
+- **Show danger with height.** A drop reads when the camera sees structure falling away below the edge. A far wall behind the edge flattens it. Add warm atmospheric haze (Three.js `Fog`) to separate near set pieces from distant landforms.
+- **Foreground wipe on frame 1.** Start low beside the moving subject, with a near post or rail between lens and subject, so the layer crosses the frame within the first ~0.5 s.
+- **Follow a fast prop with a lagged, low-passed aim.** Average the prop's position over the last ~0.15–0.45 s, clamp it vertically, and blend it in with a smooth weight ≤ 0.5. Snapping the aim to a bouncing prop spikes angular acceleration.
+- **Pin keys after any dip or crest.** A natural spline overshoots after a large aim change. In the test this cropped the worker at the end until an extra key pinned it.
+- **Tune numerically before rendering.** Project the subject landmarks (both ends of the vehicle, the goal, the character's head and feet, the contact point) for candidate keys, and check NDC on every frame. Candidate paths for the ore-cart test were compared in seconds this way, against about 90 s per preview render.
+- **Keep the camera moving through impacts.** Sell weight with the subject (pitch, bounce, load surge), not with camera shake.
+- **Settle on purpose.** It is fine to bring the closing move below 0.05 m/s; record it as an intended settle in the QA notes.
 
 ## Motion engineering and optional Blender authoring
 

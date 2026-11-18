@@ -315,6 +315,7 @@ export async function build(ctx) {
     const blink = [3.1, 5.0, 6.8, 9.2].some(b => Math.abs(t - b) < 0.06) ? 1 : 0;
     worker.set({ pose, face: faceAt(t), gaze, blink }, { hip: hipW, mirror: 1, outlineMm: 7, tint: new THREE.Color(1, 0.975, 0.94) });
     // contact evidence for the QA sampler
+    qa.pose = { armF: [...pose.armF], armB: [...pose.armB], torso: pose.torso, head: pose.head };
     if (onLever) qa.hands = { t, B: worker.joint('handB'), target: handTarget.clone(), F: worker.joint('handF'), shaft: shaftTarget.clone() };
     else qa.hands = null;
     for (const s of ['B', 'F']) {
@@ -425,6 +426,8 @@ export async function build(ctx) {
         bumperGap: +(gx - bx).toFixed(4), gate: +(gatePivot.rotation.z * 180 / Math.PI).toFixed(2), lever: +leverAngle(t).toFixed(2),
         ore: heroOre.position.toArray().map(v => +v.toFixed(3)) };
       if (qa.hands) rec.hand = { B: +qa.hands.B.distanceTo(qa.hands.target).toFixed(4), F: +qa.hands.F.distanceTo(qa.hands.shaft).toFixed(4) };
+      rec.workerVisible = worker.group.visible;
+      if (worker.group.visible) rec.pose = qa.pose;
       rec.feet = Object.fromEntries(Object.entries(qa.feet).map(([s, v]) => [s, { planted: v.planted, dx: +(v.x - v.target).toFixed(4), y: +v.y.toFixed(4), x: +v.x.toFixed(4) }]));
       // screen projections of the focal subjects (NDC)
       const ndc = p => { const v = p.clone().project(camera); return [+v.x.toFixed(3), +v.y.toFixed(3)]; };

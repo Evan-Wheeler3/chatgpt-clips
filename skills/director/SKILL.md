@@ -5,7 +5,7 @@ description: Direct original narrated 3D animated vertical Shorts using staged v
 
 # Hold Up — director
 
-Use this skill to direct a Hold Up animated Short. Load [`hold-up-cinematography`](../cinematography/SKILL.md) for the edit map, animatic, camera rig, animation plan, motion review and final validation.
+Use this skill to direct a Hold Up animated Short. Read the [motion lessons log](../../docs/MOTION-LESSONS.md) before planning. Load [`hold-up-cinematography`](../cinematography/SKILL.md) for the edit map, animatic, camera rig, animation plan, motion review and final validation.
 
 ## Mandatory checkpoints
 1. **Story:** identify the first-second question, stakes, mechanism and payoff; make a factual source sheet.

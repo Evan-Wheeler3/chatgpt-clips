@@ -73,6 +73,13 @@ for (const s of ['B', 'F']) F.forEach(r => { const ft = r.feet?.[s]; if (ft?.pla
 const handSeen = r => r.screen.hand && Math.abs(r.screen.hand[0]) < 1.05 && Math.abs(r.screen.hand[1]) < 1.05;
 F.forEach(r => { if (r.hand && handSeen(r) && r.t > 2.82 && r.t < 5.6 && r.hand.B > 0.012) flag('grip', r.f, `near hand ${(r.hand.B * 1000).toFixed(0)} mm off the grip`); });
 F.forEach(r => { if (r.hand && handSeen(r) && r.t > 2.82 && r.t < 5.6 && r.hand.F > 0.02) flag('grip', r.f, `far hand ${(r.hand.F * 1000).toFixed(0)} mm off the lever`); });
+// Character entrances: the worker must never appear (or vanish) while his body is inside the frame
+F.forEach((r, i) => { if (i && r.workerVisible !== F[i - 1].workerVisible && r.screen.worker && Math.abs(r.screen.worker[0]) < 1.1 && Math.abs(r.screen.worker[1]) < 1.1) flag('entrance', r.f, `worker ${r.workerVisible ? 'appears' : 'vanishes'} inside the frame at ${r.screen.worker}`); });
+// Pose speed: limb and torso rotation rates (deg/s). Fast gestures read as robotic snaps on a flat card
+const RATE = { arm: 420, torso: 160 }, dAng = (a, b) => Math.abs(((a - b) % 360 + 540) % 360 - 180);
+F.forEach((r, i) => { const p = F[i - 1]; if (!i || !r.pose || !p?.pose) return;
+  for (const k of ['armF', 'armB']) { const w = dAng(r.pose[k][0], p.pose[k][0]) * fps; if (w > RATE.arm) flag('pose-speed', r.f, `${k} swings ${w.toFixed(0)}°/s (> ${RATE.arm})`); }
+  const wt = dAng(r.pose.torso, p.pose.torso) * fps; if (wt > RATE.torso) flag('pose-speed', r.f, `torso ${wt.toFixed(0)}°/s (> ${RATE.torso})`); });
 const inFrame = p => p && Math.abs(p[0]) < 0.95 && Math.abs(p[1]) < 0.95;
 F.forEach(r => { if (r.t < 4.6 && !inFrame(r.screen.cartFront)) flag('framing', r.f, `cart front off screen ${r.screen.cartFront}`); });
 

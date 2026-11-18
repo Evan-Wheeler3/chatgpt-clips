@@ -89,6 +89,49 @@ Use arms, torso overlap, clothing, accessories, blinks and breathing to support 
 - For a specialized Blender asset or full armature where one already fits the shot, author foot targets in the support frame, position the root relative to them, and key hand/prop attachment constraints with a transform match at switches. Use compatible pose phases for clip blends and inspect the evaluated result across the full shot. Bake and compare any exported animation in the actual production renderer before relying on it.
 - Keep story-specific blocking and contact timing outside locked character assets. Cover walk-to-turn, grab-to-carry, release and cut continuity in the preview. Keep the current design regression checks when extending the animation code.
 
+## Card characters in a 3D set
+
+These lessons come from the [Runaway Ore Cart test](MOTION-LESSONS.md#2026-11--runaway-ore-cart-motion-test-storiesmine-cart-motion-test). The reference implementation is `poseWorker` in [`stories/mine-cart-motion-test/scene.mjs`](../stories/mine-cart-motion-test/scene.mjs).
+
+### Staging the card
+
+- **Choose one walking-line depth (card plane z) that clears every prop the character passes.** Placing it a few centimetres in front of a fence post makes the post occlude correctly. Placing it through a prop clips. A depth slide while a foot is planted is a slide, so don't change the plane mid-plant.
+- **Viewing angle:** keep the camera within about 35° of the card normal while the character carries the beat. Between 35° and 55°, the character should be secondary or small. Beyond about 55° the card reads as a sliver, so keep it off frame.
+- **Grip on a prop behind or in front of the card:** target the point where the camera ray to the real grip crosses the card plane. Solve the arm with `solveArm`. If the target is out of reach, nudge the pelvis along the walking line, but only within the reach of both planted feet. Measure grip error only while the hand is on screen.
+- **Cooper's reach:** arm about 0.41 m, leg about 0.36 m. Keep stances ≤ 0.45 m and shuffle steps about 0.3 m in about 0.2 s. Taller rigs scale proportionally.
+
+### Locomotion
+
+- Generate steps; don't key the hip. A `walk(plan, t0, t1, n, finalBack, finalFront)` step generator alternates landings, back foot first, with each swing taking about 80% of a step. Derive the pelvis X from the mean of the feet, plus an authored lean shift.
+- Solve each leg with two-bone IK in rig millimetres, knee forward. Cap the pelvis height by what both legs can reach, and add a small bob from swing phase.
+- Planted-foot drift must measure 0 mm. If it doesn't, the stance or pelvis path is wrong; don't add smoothing.
+
+### Entrances and exits
+
+- **Never switch a character's visibility while any part of the body projects inside the frame.** In the ore-cart test the worker "spawned out of thin air" at 1.5 s.
+- Instead, use one of these entrances:
+  - **Off frame:** start the walk outside the frame edge (check head and feet NDC for the whole camera path, because the camera may move toward them).
+  - **Occluder:** step out from behind a foreground post, crate or door frame, or the cart itself.
+  - **Portal:** come through a tunnel, door or ladder.
+  - **Already present:** keep the character visible from frame 0 in a neutral idle and start the action later.
+- Exits mirror entrances. Hide a character only once it is off frame or fully occluded.
+
+### Pose timing and arcs
+
+A flat card exaggerates speed: there is no motion blur, and the whole limb changes silhouette at once. In the ore-cart test a recoil raised both arms about 128° in 0.15 s (about 1,400°/s) and the owner called it "too fast and unnatural".
+
+| Motion | Minimum duration / maximum rate | Shape |
+|---|---|---|
+| Big reaction (recoil, arms up, flinch) | 0.30–0.45 s to the extreme; limbs ≤ 420°/s, torso ≤ 160°/s | 2–4 frames of anticipation (a small dip or arm drop), then ease out into the extreme. Arms trail the torso by 2–3 frames (overlap). Hold or settle 0.3 s or more before the next pose. |
+| Grab or release a prop | 0.2–0.3 s blend between arm drivers | Cross-fade the solved arm angles from the walk-swing pose; never switch drivers within one or two frames. The hand closes after contact. |
+| Heave or pull | 0.35–0.45 s for the main pull | Anticipation in the opposite direction first. Lean and pelvis move before the arms finish, and the back foot braces. |
+| Head turn or eyeline change | 0.15–0.25 s | The eyes lead the head by about 2 frames. |
+| Lean to look over an edge | 0.6–0.9 s | Torso, then head, then hands to knees. |
+
+- Blend between whole pose states (walk swing → lever solve → walk → recoil) with weights that never change faster than about 0.2 s, even where an authored effect ends. In the ore-cart test the walk-arm window ended abruptly at 2.7 s, 5.7 s and 7.4 s.
+- Interpolate arm angles with wrap-aware differences, because solver outputs can jump by 360°.
+- `qa.mjs` flags limb rates above 420°/s and torso rates above 160°/s. These are provisional thresholds set from this one review; re-calibrate them after the next one.
+
 ## Colour
 - **Palette:** the sheet's swatches, sampled from their pixels. The sheet's printed hex labels were unreliable, and one wasn't a valid colour. Boots and mouth have no swatch, so they were sampled from the drawn figure; the tongue is an estimate (`paletteSource` in the definition).
 - **Display compensation** (`tools/characters/display.mjs`): the scene's NeutralToneMapping subtracts a small offset that crushes dark browns, and the channel grade adds saturation, contrast and split toning. Measured drift without compensation was ΔE 15–17 on the browns.

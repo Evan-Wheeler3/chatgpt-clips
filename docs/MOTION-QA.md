@@ -53,6 +53,50 @@ Motion pass: pending / changes requested / approved
 Reviewer and date:
 ```
 
+## Hand-directed QA sampler (first implementation)
+
+[`stories/mine-cart-motion-test/qa.mjs`](../stories/mine-cart-motion-test/qa.mjs) is the first implementation of roadmap item 1 for the hand-directed path.
+
+**How it works:**
+- It loads the production scene in the renderer's own page.
+- It calls a scene-provided `window.<episode>QA()` hook that evaluates every delivered frame (no pixels).
+- It writes `production/<slug>/qa.json`.
+
+**What it checks:**
+
+| Area | What it measures |
+|---|---|
+| Camera | Speed, acceleration, jerk, angular velocity and angular acceleration (sign-invariant quaternion) |
+| Clearance | Distance to the bounds of every set and prop mesh |
+| Rolling contact | Wheel-to-rail gap; spin against travel |
+| Impact contact | Bumper-to-pad gap |
+| Feet | Planted-foot drift |
+| Grip | Hand-to-grip error, counted only while the hand is on screen |
+| Framing | Subject's front edge stays in frame |
+| Character entrances | Appear or vanish while inside the frame |
+| Pose speed | Wrap-aware limb and torso rotation rates |
+
+Copy it into the next hand-directed episode and adapt the hook. Owner notes the sampler didn't catch become new checks; the entrance and pose-speed checks came from the ore-cart review. See the [motion lessons log](MOTION-LESSONS.md).
+
+Provisional warning thresholds:
+
+| Measure | Threshold |
+|---|---|
+| Camera acceleration | 6 m/s² |
+| Angular velocity | 60°/s |
+| Angular acceleration | 260°/s² |
+| Camera speed (near-stop) | below 0.05 m/s |
+| Clearance | 0.25 m |
+| Planted-foot drift | 6 mm |
+| On-screen grip error | 12 mm |
+| Limb rotation | 420°/s |
+| Torso rotation | 160°/s |
+
+The owner accepted these camera excursions in the ore-cart preview:
+- a crane crest at 9 m/s²
+- pans of 69–70°/s for under 0.4 s
+- a closing settle
+
 ## Validation coverage and proposed measurements
 
 [`tools/storyboard/validate.mjs`](../tools/storyboard/validate.mjs) already checks declarative timing, framing, occlusion, contacts, camera clearance, camera pops/jerk and cut continuity using simplified scene data. [`tools/render/qa.mjs`](../tools/render/qa.mjs) samples frames for pixel/performance QA. [`tools/storyboard/attach.mjs`](../tools/storyboard/attach.mjs) has specialized socket and geometry checks. The hand-directed renderer does not run these declarative scene-motion checks against its custom camera and pose code. Use manual preview QA on both paths.
