@@ -32,6 +32,43 @@ Outputs go to `production/<slug>/` (gitignored): `narration.wav`, `words.json`, 
 - **Measured timing:** `vad.mjs` finds speech islands from the audio's energy (≥150 ms silences). `whisper.mjs` runs whisper.cpp with DTW word timestamps **separately on each island**, and words are clamped inside their island. This was necessary: on the full clip, whisper's word times drifted after pauses ("Iron" placed 0.43 s early, inside a silence).
 - **Alignment:** `align.mjs` aligns the authored script to the recognised words (edit distance). Exact and substituted words take measured timing. A script word whisper missed gets the measured gap between its neighbours and is flagged `bounded-by-neighbours`. More than 10% unaligned fails. Nothing is estimated from text length or words-per-second.
 
+## Cinematic shot planning
+
+Load [`hold-up-cinematography`](../skills/cinematography/SKILL.md) before outlining shots. Build a first blocking pass around the script's purpose and revise it to the selected narration's measured `words.json`. Lock final frame ranges, action anchors and visual emphasis against that take. Keep the producer's intent in the storyboard and the resolved, deterministic camera and action in the story data or episode scene. See [camera direction](CAMERA-DIRECTION.md) for techniques and [motion QA](MOTION-QA.md) for review.
+
+- Give each shot one dominant visual idea. Use wide and high-angle views for geography or scale, medium and over-the-shoulder views for interaction, low angles where perspective serves the beat, and close-ups or object details for reactions, physical contact and mechanisms. Choose tracking and moving reveals when travel gives the viewer information.
+- Plan visible developments roughly every 1–2 seconds during active beats. Name what changes in the frame and what it tells the viewer. Useful changes include a character crossing the scene, a large object changing state, a near layer clearing a reveal, a change of scale or depth, and a focal handoff prompted by action. Centered tracking can qualify through changing relationships and background parallax. Subtle breathing, blinks and arbitrary camera drift are secondary.
+- Keep a longer shot when the action or view keeps evolving. Use a deliberate hold when it improves comprehension or timing, and specify the cue that ends it. When a cut adds information, preserve direction, eyeline and action state or use a clear orientation cue for a new viewpoint.
+- Check caption and mobile crop throughout. Time the readable onset or reveal to the supporting word or intentional pause. Build room for the viewer to register the action and retime through anchors whenever the take changes.
+
+Use these fields for each shot. Poses can be expressed relative to recognizable scene landmarks during planning. Resolve transforms or framing parameters during implementation.
+
+| Field | What to record |
+|---|---|
+| Shot ID, beat and narration | Stable ID, line or word anchor, desired first point of attention, and what the shot adds. |
+| Duration and timing | Start/end and duration, initially estimated. Replace estimates with aligned timecodes and a frame range `[startFrame, endFrame)` at the episode FPS. Mark contact and reveal frames. |
+| Opening and closing cameras | Position relative to a named landmark, orientation or target, up/roll when relevant, framing and lens/FOV. |
+| Camera technique and path | Move or hold, coordinate space, waypoints or subject-relative offsets, aim handoffs and motion window. Describe where travel enters, carries momentum or settles. |
+| Primary subject and action | Named subject, purpose and readable primary physical action. Include start, contact or reveal, and end state. |
+| Secondary action and depth | Supporting acting, foreground entrances or occluders, and background movement or environmental relationships. Mark intentional obstruction windows. |
+| Focal point and composition change | What must be visible at the key anchor, what the viewer sees change and when, and framing or caption-safe requirements. |
+| Transition and continuity | Why the next move or cut happens. Carry screen direction, eyeline, pose phase, contact, prop placement, motion vector and geography as applicable. Mark intentional holds and disguised transitions. |
+
+### Example shot direction
+
+| Field | Example, relative to shot start |
+|---|---|
+| ID / beat / timing | `cart-arrives`. Show the worker bringing the crate to the scale. Draft 5.0 s, then resolve approach, placement and needle rise against the take. |
+| Camera / path | Open medium-wide at waist height outside the workshop door, aimed down the corridor. Track alongside the worker past a near doorjamb at ~1.2 s. Curve toward the scale at ~3 s while easing aim from the worker's torso toward the crate, then end medium-close on the crate and dial. Keep the horizon level and carry speed through the bend. |
+| Action / depth | Worker and crate cross from left to right. Steps plant through the turn. The doorjamb clears the far scale around ~1.2 s. At ~3 s the worker bends and the scale enters frame. The crate lands and the needle rises around ~4.5 s. The clear release gives the viewer time to follow the needle. |
+| Focal point / transition | Reach the dial and load together just before the narration references weight. Keep them above the caption band. Cut on the needle's upward movement if the next shot needs a dial detail. Preserve the same angle of the needle at that time and keep screen direction apparent. |
+
+### Repository handoff
+
+- For the declarative path, author the schema below with supported camera behaviors, `purpose`, cut `motivation`, `subject`, permitted `foreground`, `focus`, word-anchored `during` and action events. Keep shot notes where the schema has no field for the intent. Review the generated `shots.json` and `validation.json`.
+- For a hand-directed episode, use the existing `stories/<slug>/story.json` shot list and `scene.mjs` implementation, as in [seatbelt-locking](../stories/seatbelt-locking/README.md). Keep exact camera and pose/action behavior in `scene.mjs` and keep measured-word anchors as the timing source. Treat target seconds as draft timings for look-development stills. Do not use hand-authored timing estimates to approve animated motion.
+- Run the [animatic and motion review](MOTION-QA.md#preview-and-approval) for the selected route. If the declarative validator has a duration or static-shot advisory, check the actual intent and rendered coverage. For an evolving long take or designed hold, record the reason in review rather than forcing a cut.
+
 ## Story format (`stories/<slug>/story.json`)
 - `props[]`: `{id, asset:{query, style, tags?}, position, rotation (deg), scale?, grounded?, sizeHint?}`. Every prop is resolved through the catalog. Every word of the query must match, so "wooden crate" never resolves to a stool.
 - `beats[]`: `{id, purpose, shots[]}`. Each shot:

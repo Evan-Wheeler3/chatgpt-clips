@@ -23,8 +23,8 @@ Improve pacing, voice performance, camera direction and environment quality whil
 ## Current pipeline
 ```text
 Research & script -> voice + word timing -> beat/shot plan -> asset resolver
-  -> style+license review -> scene construction -> low-res animatic
-  -> camera/animation/audio edit -> QA -> final Remotion render
+  -> style+license review -> animatic/blockout -> scene and motion pass
+  -> low-res motion preview -> motion approval -> final render and QA
 ```
 
 **No fabricated assets or invented provider results:** the resolver searches a local JSON catalog and returns a structured miss. With `--external polyhaven` it attaches Poly Haven suggestions to misses for review; it never downloads or substitutes them. Downloads happen only through the explicit `assets:fetch` command.
@@ -51,7 +51,7 @@ Add models to `assets/library/` and declare them in `assets/catalog.json`. See `
 [claude-animated-shorts](https://github.com/Evan-Wheeler3/claude-animated-shorts) is preserved unchanged. Its `SKILL.md`, bridge composition and visual measurements are reference material, **not yet installed** into V2. We will migrate only validated pieces, not blindly copy the entire bridge example.
 
 ## Production rules
-Read `CLAUDE.md`, then `skills/director/SKILL.md`. The other skill files apply only to the stage currently in progress.
+Read [production instructions](CLAUDE.md) and [`hold-up-director`](skills/director/SKILL.md). For storyboards, shot lists, animatics, camera rigs, animation plans, motion review and final validation, load [`hold-up-cinematography`](skills/cinematography/SKILL.md). Follow the [motion preview and approval gate](docs/MOTION-QA.md) before final rendering.
 
 ## Licensing and safety
 Only download or redistribute assets under verified terms. Store original source URLs, authors, licenses, and attribution with every asset. Do not add copyrighted reference frames, downloaded media, or large GLBs to Git by default. Keep original stories and imagery; references are for technique study rather than replication.

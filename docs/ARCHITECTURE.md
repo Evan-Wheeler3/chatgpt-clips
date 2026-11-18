@@ -24,6 +24,15 @@ Original `SKILL.md` is a detailed instruction set for a particular bridge short.
    6.2 Burned-in Hold Up captions (word-synced groups, emphasis, per-shot safe placement), a generated CC0 sound library with licence-checked imports, animation-driven sound effects, ambience, optional ducked music, a local mixer mastered to −14 LUFS, and caption and audio QA. See `docs/CAPTIONS-AUDIO.md`.
 6. Benchmarked end-to-end sample and iteration.
 
+## Camera and animation entry points
+
+| Production path | Current implementation |
+|---|---|
+| Declarative story | [`tools/storyboard.mjs`](../tools/storyboard.mjs) compiles word-anchored shots, props and character events via [`compile.mjs`](../tools/storyboard/compile.mjs). [`camera.mjs`](../tools/storyboard/camera.mjs), [`easing.mjs`](../tools/storyboard/easing.mjs) and [`character.mjs`](../tools/storyboard/character.mjs) drive frame evaluation. [`sample.mjs`](../tools/storyboard/sample.mjs) is shared by plan validation and the browser render. [`animatic.mjs`](../tools/storyboard/animatic.mjs) drives Three.js in Chrome and assembles preview video. |
+| Hand-directed episode | [`tools/episode/render.mjs`](../tools/episode/render.mjs) builds a measured-word shot timeline and launches [`tools/episode/page.mjs`](../tools/episode/page.mjs). The episode's scene module directs actual camera and pose changes. Examples include [seatbelt-locking](../stories/seatbelt-locking/scene.mjs) and [school-bus-yellow](../stories/school-bus-yellow/scene.mjs). |
+| Motion review | The [cinematography skill](../skills/cinematography/SKILL.md) applies to both paths. [Motion QA](MOTION-QA.md) specifies the human preview gate, current coverage and future instrumentation. |
+| Blender | Optional authoring for specialized models, rigs or camera moves. There is no active Blender shot runtime or camera interchange contract. [Camera direction](CAMERA-DIRECTION.md) describes how to prototype and verify that handoff in the existing renderer. |
+
 ## Data contracts
 - Catalog: `assets/catalog.json`.
 - Request: `examples/asset-requests.json`.

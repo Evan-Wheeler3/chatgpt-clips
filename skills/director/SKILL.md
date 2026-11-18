@@ -5,24 +5,25 @@ description: Direct original narrated 3D animated vertical Shorts using staged v
 
 # Hold Up — director
 
-Use this skill when the user asks Claude Code to create a new Hold Up animated Short.
+Use this skill to direct a Hold Up animated Short. Load [`hold-up-cinematography`](../cinematography/SKILL.md) for the edit map, animatic, camera rig, animation plan, motion review and final validation.
 
 ## Mandatory checkpoints
 1. **Story:** identify the first-second question, stakes, mechanism and payoff; make a factual source sheet.
 2. **Voice:** render narration once the draft is approved, select delivery appropriate to the story, measure actual word times. Avoid rigid monotone.
-3. **Edit map:** define shots by voice timestamps, with one readable visual idea per beat. Any movement or cut must support a word, action, reveal or perspective change. Create a basic storyboard/animatic.
+3. **Edit map:** plan one readable visual idea per beat and resolve it to measured voice timestamps. Specify evolving compositions, motivated transitions and contact timing with the [shot planning standard](../../docs/STORYBOARD.md#cinematic-shot-planning). Create and review a storyboard/animatic.
 4. **Asset map:** produce requests in the documented JSON format; resolve local assets first. If an asset is missing, try curated external adapter when available; escalate to Blender asset creation only when reuse fails.
 5. **Scene:** place/import models in Three.js, enforce coherent materials, scale, lighting and outlines. Build reusable props, not one-off verbose geometry.
-6. **Camera:** use subject tracking, punch-in, reveal, pan, object-follow, motivated transition or stillness. Check vertical safe areas. Avoid obligatory constant creep.
+6. **Camera and action:** choose a motivated technique and specify path, aim, continuity, locomotion and contact. Check substantial visual developments and vertical safe areas in-engine.
 7. **Audio:** sync SFX with physical impacts, duck score beneath narration, check loudness and intelligibility.
-8. **Review:** low-res preview first; check frame-level pops, camera collisions, continuity, unexplained silent gaps, dead frames and narration sync. Human review gate before final.
-9. **Final:** render final through Remotion and export an audit containing real timings, sources, licenses, measured metrics and unresolved concerns.
+8. **Review:** render a low-resolution motion preview. Check smoothness, contacts, continuity, visual rhythm, readability and narration sync. Fix and re-preview problems, then record the [motion-pass approval](../../docs/MOTION-QA.md#preview-and-approval).
+9. **Final:** use the episode's existing render path after motion approval. Verify the final against the approved preview and report actual timings, sources, licenses, metrics and unresolved concerns.
 
 ## Inputs
-An original script or topic, reference style guidance, asset catalog, the user's narration preference, and a working local Three.js/Remotion project.
+An original script or topic, reference style guidance, asset catalog, the user's narration preference, and the local Three.js production checkout.
 
 ## Outputs
-`production/<slug>/story.md`, `words.json`, `shots.json`, `asset-requests.json`, `asset-resolution.json`, preview, final video, `qa.json`.
+Episode source files under `stories/<slug>/`. Generated measured words, resolved shots, asset-resolution and QA reports, previews and final exports follow the existing episode paths.
 
-## Current implementation limitations
-This repo currently implements the **local asset resolver, the Poly Haven adapter, glTF → GLB conversion/validation, catalog registration, and Phase 4 storyboarding: measured narration timing, `story.json` → `shots.json`, validation and a low-res animatic**. Phase 5 adds environments, the Hold Up look, original 2D characters and preview/production renders (`docs/VISUALS.md`, `skills/art-direction`). Final voice, captions, SFX/score and Remotion composition are not built yet. Use `npm run storyboard` (see `docs/STORYBOARD.md`) for steps 2–3 and the animatic; review `storyboard.png` and the animatic yourself, because validation passing is not the same as good direction. Do not claim the complete studio pipeline or Blender MCP is working until integrated and tested.
+## Current implementation
+
+The declarative [storyboard route](../../docs/STORYBOARD.md) produces narration-aligned plans, validation and previews. The [hand-directed episode route](../../stories/seatbelt-locking/README.md) covers actions outside the declarative vocabulary using a custom Three.js scene. Follow the episode's current render instructions. See [architecture](../../docs/ARCHITECTURE.md) for current entry points and [narration](../../docs/NARRATION.md) for the approved voice pipeline.

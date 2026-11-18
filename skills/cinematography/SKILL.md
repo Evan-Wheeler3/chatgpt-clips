@@ -1,16 +1,17 @@
 ---
 name: hold-up-cinematography
-description: Plan legible and meaningful 3D camera work for vertical narrated videos.
+description: Plan and review smooth camera travel, character and prop choreography, and meaningful visual development for Hold Up storyboards, shot lists, animatics, camera rigs, animation passes, motion previews, and final validation.
 ---
 
-# Camera principles
-- Establish who/what the viewer should notice every second.
-- Motivate each camera move by new information, an object moving, a reaction, a reveal, or a suspense beat.
-- Favor camera motion that introduces parallax and physical scale. Avoid generic perpetual zooms and excessive orbiting.
-- Combine purposeful still shots with motion bursts, reframes, whip pans, tracked object moves and hard cuts where needed.
-- Make actual action start before or on narration reference. Use the word timestamp timeline.
-- Preview on a phone-sized vertical viewport: faces, objects and actions must read.
-- Record camera positions and target trajectories in deterministic frame-based scene metadata, not free-form prose only.
-- Track every shot's entrance, exit, reveal target and transition mechanism.
-- In `story.json`, write a `purpose` for every shot and a `motivation` for every hard cut. Anchor moves to words with `during`, and declare intended foreground props. Use semantic framing (`wide`/`medium`/`close`/`detail`) and the behaviors in `docs/STORYBOARD.md` rather than raw coordinates.
-- Symmetrical subjects look the same from many angles: change framing, height or focus, not only azimuth, or the cut reads as a jump cut.
+# Hold Up cinematography
+
+Read the episode's script, shot list or story data, and the selected narration's measured word timings. Use draft beat timings during early storyboarding and resolve them once the take is aligned. Identify which scene path the episode uses and check the available rigs, props, set geometry and caption layout.
+
+1. **Storyboard and shot list.** Identify the dominant visual action for each beat. Decide what the viewer sees first, what meaningful visual development follows roughly every 1–2 seconds, and how it motivates the next point of attention. Keep an evolving continuous shot when it fits. Give each static hold or cut a story purpose. Use the fields and example in [cinematic shot planning](../../docs/STORYBOARD.md#cinematic-shot-planning).
+2. **Animatic.** Build from measured word anchors and preview the full sequence at delivery FPS in 9:16. Check geography, depth, action readability and pacing. Flag active stretches that rely on idle animation or minor drift. Strengthen the action, perspective or focal handoff where it improves the beat.
+3. **Camera rig and paths.** Pick a technique from [camera direction](../../docs/CAMERA-DIRECTION.md). Write the opening and closing pose, target, path, timing and lens, including how motion enters, continues and settles. Preserve velocity through continuous segments, keep orientation stable and check clearance, foreground crossings and the view of key contact or reveal frames. Make shake, whip pans and rapid zooms exceptional choices with a story reason.
+4. **Character and prop choreography.** Follow the [rig motion standards](../../docs/CHARACTER-RIG.md#character-and-prop-motion-standards). Plan weight transfer, planted steps, turns, contacts, releases and prop momentum. Keep secondary acting subordinate to the large action. Match screen direction, pose phase, eyeline, object state and contact across cuts. Keep approved character definitions and the existing narration workflow.
+5. **Implementation handoff.** For declarative shots, use supported `story.json` camera and action fields with word anchors, subject and foreground IDs, focus, purpose and cut motivation. Keep authored shot records with the intended purpose and inspect the resolved plan. For hand-directed shots, put deterministic paths, aim and action in the episode scene and key the timing to measured words. Use Blender for specialized authoring when the shot needs it.
+6. **Motion review and final validation.** Render and watch a low-resolution motion preview from the production scene. Apply the [motion QA gate](../../docs/MOTION-QA.md), fix or explicitly resolve findings, then submit the latest preview for approval before full rendering. Record the take, preview, timecoded findings and decision in the episode QA notes. Recheck the final render against the approved motion pass.
+
+Deliver shot directions with visible developments, camera and action continuity, and review evidence suitable for the current stage. A completed shot plan gives the next agent enough information to block the scene and judge the result without guessing the intended movement.

@@ -60,6 +60,35 @@ The rig is the same pose engine as Phase 5 (`tools/storyboard/character.mjs`); t
 
 **Accessories:** the cap is its own frame (`forms.cap.pivot`, `tilt`, `drop`) on the head and follows through on the existing cap spring. Hair is drawn between the head and the cap, so it can't float free of either.
 
+## Character and prop motion standards
+
+Use the approved character definition, proportions, silhouette, line weight and existing pose engine. Plan each action at the camera angle that will ship. The approved vector cooper is a camera-facing 3/4 rig with mirrored views. Favor a supported view and act through the turn or re-stage the camera when a move would expose a missing angle or cause an abrupt mirror flip. For actions beyond the supported rig vocabulary, use the existing hand-directed episode path and prove the result in-engine. See [camera direction](CAMERA-DIRECTION.md) and [motion QA](MOTION-QA.md).
+
+### Locomotion and pose transitions
+
+- Block a route through the set with intent, clearances, steps, stops and changes of direction. Plan body translation and stride phase together. A walk transfers weight over the support foot before the free leg swings. A run carries greater momentum and may have an airborne phase. Match stride length and cadence to root speed and character scale.
+- Lock the supporting foot relative to the floor, slope or moving platform during its plant. Track both toe and heel when the foot rolls through the step. Position the pelvis over support, maintain plausible leg reach, and transition with weight transfer and knee bend. Use local foot targets or contact-aware IK when available. Inspect in camera and from an alternate angle where possible.
+- Integrate turns into approaching or planted steps. Lead with attention, pivot through the supporting foot and let the torso, hips and footfalls agree with the new direction. Carry speed across continuing segments. At a real stop, absorb momentum into the final step and settle the body. Blend poses at compatible action phases and preserve the state on both sides of an edit.
+
+### Physical actions and interactions
+
+| Action | Direct and verify |
+|---|---|
+| Grab, release and carry | Stage the grip point, reach and contact frame. Align the hand to a prop socket or visible grip and preserve the evaluated world transform when changing ownership. During carry, keep contact fixed and let the actor's load affect posture and steps. At release, continue the prop trajectory with the intended momentum or support it on a surface. |
+| Push and pull | Show the setup, force and result in that order. Plant the feet, align lean and arm force, keep the hand on the surface, and start prop motion with the force. Release or regain balance as it stops or moves away. |
+| Sit and stand | Mark the seat and foot locations. Bring the hips to seat height without penetration. Transfer weight from the seat onto planted feet before straightening. Avoid letting the character hover during a hold. |
+| Turn, react and avoid obstacles | Stage the stimulus so the reaction reads as cause and effect. Allow eyes or head to lead, then turn through torso, hips and steps. Plot a route with enough clearance for limbs and carried objects. Land on a distinct readable pose or direction. |
+
+Use concise anticipation, primary movement, follow-through and settling where the action benefits. Ordinary grabs and turns can begin promptly. Match force and mass with the extent and duration of the windup, contact, recovery and residual motion. Check hands, feet, weights and moving props at the contact frame and neighboring frames. A freely moving prop needs continuous position and velocity through a transfer. An intentional impact can change velocity sharply at the contact frame.
+
+Use arms, torso overlap, clothing, accessories, blinks and breathing to support the main action. During an active beat, assign a clear large action or a camera composition that meaningfully evolves. Secondary movement alone cannot carry the beat.
+
+### Implementation notes
+
+- Reuse `walk`, `pose`, `push`, `touch` and the existing gaze and expression tracks in [`character.mjs`](../tools/storyboard/character.mjs) where they fit. Current reach IK works in the camera-facing plane. Inspect an oblique camera or new contact visually. [`sockets.mjs`](../tools/storyboard/sockets.mjs) and [`attach.mjs`](../tools/storyboard/attach.mjs) supply existing prop attachment and contact tools. The declarative path has no general hand-parent switching or full-body plant solver.
+- For a specialized Blender asset or full armature where one already fits the shot, author foot targets in the support frame, position the root relative to them, and key hand/prop attachment constraints with a transform match at switches. Use compatible pose phases for clip blends and inspect the evaluated result across the full shot. Bake and compare any exported animation in the actual production renderer before relying on it.
+- Keep story-specific blocking and contact timing outside locked character assets. Cover walk-to-turn, grab-to-carry, release and cut continuity in the preview. Keep the current design regression checks when extending the animation code.
+
 ## Colour
 - **Palette:** the sheet's swatches, sampled from their pixels. The sheet's printed hex labels were unreliable, and one wasn't a valid colour. Boots and mouth have no swatch, so they were sampled from the drawn figure; the tongue is an estimate (`paletteSource` in the definition).
 - **Display compensation** (`tools/characters/display.mjs`): the scene's NeutralToneMapping subtracts a small offset that crushes dark browns, and the channel grade adds saturation, contrast and split toning. Measured drift without compensation was ΔE 15–17 on the browns.
